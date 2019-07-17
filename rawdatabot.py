@@ -32,6 +32,7 @@ def decodeGzippedContent(encoded_content):
     return(decoded_content)
 
 
+# Function to scrape data from investing.com
 def scrapeFromInvest():
     url = "https://www.investing.com/crypto/"
     opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), NoRedirectHandler())
@@ -82,11 +83,12 @@ def scrapeFromInvest():
         ins_sql = "insert into investdata (name, symbol, price_usd, marketcap, vol24h, totalvol, chg24hr, chg7d, observationdatetime) values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', NOW())"%(currname, currsymbol, currprice, market_cap, vol24h, totalvol, chg24h, chg7d)
         cursor.execute(ins_sql)
         dbconn.commit()
-    print "Done collecting data in this iteration.\n"
+    print "Done collecting data from investing...\n"
 
 
+# Function to get data from coinmarket API
 def getDataFromCoinMarket():
-    coinmarketapikey = "edc74898-5367-43bf-b3cb-2af1ab8b42b7"
+    coinmarketapikey = "##############################" # coin market API Key
     opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), NoRedirectHandler())
     http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : 'pro-api.coinmarketcap.com', 'X-CMC_PRO_API_KEY' : coinmarketapikey } 
     listings_latest_url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?sort=market_cap&start=1&limit=50&convert=USD&cryptocurrency_type=coins"
@@ -123,7 +125,6 @@ def getDataFromCoinMarket():
         dbconn.commit()
     print "Collected data from coinmarket...\n"
     return curr_data_map
-        
 
 
 def collectionEventLoop(scraper_functions_list):
@@ -141,8 +142,6 @@ def collectionEventLoop(scraper_functions_list):
 if __name__ == "__main__":
     scraperslist = [scrapeFromInvest, getDataFromCoinMarket, ] # Add scraper functions here.
     collectionEventLoop(scraperslist)
-
-
 
 
 
