@@ -178,18 +178,21 @@ def coinmarketcap():
         percent1hr = percent1hrtd.getText()
         percent1hr = percent1hr.replace("$", "")
         percent1hr = percent1hr.replace(",", "")
+        percent1hr = percent1hr.replace("%", "")
         if percent1hr == "?":
             percent1hr = 0.0
         percent24hrtd = percent1hrtd.findNext("td")
         percent24hr = percent24hrtd.getText()
         percent24hr = percent24hr.replace("$", "")
         percent24hr = percent24hr.replace(",", "")
+        percent24hr = percent24hr.replace("%", "")
         if percent24hr == "?":
             percent24hr = 0.0
         percent7dtd = percent24hrtd.findNext("td")
         percent7d = percent7dtd.getText()
         percent7d = percent7d.replace("$", "")
         percent7d = percent7d.replace(",", "")
+        percent7d = percent7d.replace("%", "")
         if percent7d == "?":
             percent7d = 0.0
         """
@@ -204,6 +207,7 @@ def coinmarketcap():
         sql = "insert into coinmarketcapdata (name, symbol, marketcap_usd, price_usd, circulatingsupply, volume_usd_24h, onehour_percent, twentyfourhour_percent, sevendays_percent) values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')"%(elemdict['name'], elemdict['symbol'], elemdict['marketcap'], elemdict['price'], elemdict['supply'], elemdict['volume'], elemdict['percent1hr'], elemdict['percent24hr'], elemdict['percent7d'])
         cursor.execute(sql)
     dbconn.commit()
+    print "Collected data from coinmarketcap website.\n"
     return infolist
         
 
