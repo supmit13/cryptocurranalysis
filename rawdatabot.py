@@ -7,6 +7,7 @@ import MySQLdb
 import simplejson as json
 import datetime
 import pandas as pd
+import pymongo
 
 sleeptime = 3600
 
@@ -34,6 +35,10 @@ def decodeGzippedContent(encoded_content):
     return(decoded_content)
 
 
+def getmongoclient():
+    client = pymongo.MongoClient(port=27017)
+
+
 def scrapeFromInvest():
     url = "https://www.investing.com/crypto/"
     opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), NoRedirectHandler())
@@ -53,8 +58,8 @@ def scrapeFromInvest():
     #print investing_data
     soup = BeautifulSoup(investing_data)
     datatds = soup.findAll("td", {'class' : 'flag'})
-    dbconn = MySQLdb.connect("localhost", "root", "spmprx", "cryptocurrency")
-    cursor = dbconn.cursor()
+    mongoconn = pymongo.MongoClient("mongodb://supmit:spmprx@localhost:27017/cryptocurrency")
+    db = mongoconn.cryptocurrency
     for td in datatds:
         currnametd = td.findNext('td')
         currname = currnametd['title']
@@ -81,9 +86,11 @@ def scrapeFromInvest():
         chg7d = currnametd.getText()
         chg7d = chg7d.replace('+', "")
         chg7d = chg7d.replace('%', "")
-        ins_sql = "insert into investdata (name, symbol, price_usd, marketcap, vol24h, totalvol, chg24hr, chg7d, observationdatetime) values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', NOW())"%(currname, currsymbol, currprice, market_cap, vol24h, totalvol, chg24h, chg7d)
-        cursor.execute(ins_sql)
-        dbconn.commit()
+        mongodata = {'currency_name' : currname, 'currency_symbol' : currsymbol, 'currency_price' : currprice, 'market_cap' : market_cap, 'volume_24hr' : vol24h, 'total_volume' : totalvol, 'change_24hr' : chg24h, 'change_7days' : chg7d, 'entrydatetime' : str(datetime.datetime.now())}        
+        try:
+            result = db.investdata.insert_one(mongodata)
+        except:
+            print "Could not enter data in mongo db. Error: %s\n"%sys.exc_info()[1].__str__()
     print "Done collecting data from investing at %s...\n"%str(datetime.datetime.now())
     return True
 
@@ -108,9 +115,9 @@ def getDataFromCoinMarket():
     #print listings_data
     listings_dict = json.loads(listings_data)
     listings_data_list = listings_dict['data']
-    dbconn = MySQLdb.connect("localhost", "root", "spmprx", "cryptocurrency")
-    cursor = dbconn.cursor()
     curr_data_map = {}
+    mongoconn = pymongo.MongoClient("mongodb://supmit:spmprx@localhost:27017/cryptocurrency")
+    db = mongoconn.cryptocurrency
     for elemdict in listings_data_list:
         idno = elemdict['id']
         name = elemdict['name']
@@ -120,10 +127,11 @@ def getDataFromCoinMarket():
         percent_change_24h = elemdict['quote']['USD']['percent_change_24h']
         percent_change_7d = elemdict['quote']['USD']['percent_change_7d']
         last_updated = elemdict['quote']['USD']['last_updated']
-        curr_data_map[str(idno)] = [name, price, volume_24h, percent_change_1h, percent_change_24h, percent_change_7d, last_updated]
-        ins_sql = "insert into coinmarketdata (cmid, name, volume_24h, price, percent_change_1h, percent_change_24h, percent_change_7d, cm_last_updated, last_updated) values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', NOW())"%(idno, name, volume_24h, price, percent_change_1h, percent_change_24h, percent_change_7d, last_updated)
-        cursor.execute(ins_sql)
-        dbconn.commit()
+        mongodata = {'idno' : str(idno), 'currency_name' : name, 'currency_price' : price, 'volume_24hr' : volume_24h, 'percent_change_1hr' : percent_change_1h, 'percent_change_24hr' : percent_change_24h, 'percent_change_7days' : percent_change_7d, 'last_updated' : last_updated, 'entrydatetime' : str(datetime.datetime.now())}
+        try:
+            result = db.coinmarketdata.insert_one(mongodata)
+        except:
+            print "Could not enter data in mongo db. Error: %s\n"%sys.exc_info()[1].__str__()
     print "Collected data from coinmarket at %s...\n"%str(datetime.datetime.now())
     return curr_data_map
 
@@ -145,6 +153,8 @@ def coinmarketcap():
         print "Soup is empty."
         return False
     infolist = []
+    mongoconn = pymongo.MongoClient("mongodb://supmit:spmprx@localhost:27017/cryptocurrency")
+    db = mongoconn.cryptocurrency
     currencytdlist = soup.findAll("a", {'class' : 'currency-name-container link-secondary'})
     for currencysoup in currencytdlist:
         currencyname = currencysoup.getText()
@@ -199,14 +209,12 @@ def coinmarketcap():
         if float(marketcap) > 0.0:
             print "MARKET CAP = %s\n"%marketcap
         """
-        valdict = {'name' : currencyname, 'symbol' : symbol, 'marketcap' : marketcap, 'price' : price, 'supply' : supply, 'volume' : volume, 'percent1hr' : percent1hr, 'percent24hr' : percent24hr, 'percent7d' : percent7d}
+        valdict = {'currency_name' : currencyname, 'currency_symbol' : symbol, 'marketcap' : marketcap, 'currency_price' : price, 'supply' : supply, 'volume' : volume, 'percent1hr' : percent1hr, 'percent24hr' : percent24hr, 'percent7d' : percent7d}
         infolist.append(valdict)
-    dbconn = MySQLdb.connect("localhost", "root", "spmprx", "cryptocurrency")
-    cursor = dbconn.cursor()
-    for elemdict in infolist:
-        sql = "insert into coinmarketcapdata (name, symbol, marketcap_usd, price_usd, circulatingsupply, volume_usd_24h, onehour_percent, twentyfourhour_percent, sevendays_percent) values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')"%(elemdict['name'], elemdict['symbol'], elemdict['marketcap'], elemdict['price'], elemdict['supply'], elemdict['volume'], elemdict['percent1hr'], elemdict['percent24hr'], elemdict['percent7d'])
-        cursor.execute(sql)
-    dbconn.commit()
+        try:
+            result = db.coinmarketcapdata.insert_one(valdict)
+        except:
+            print "Could not enter data in mongo db. Error: %s\n"%sys.exc_info()[1].__str__()
     print "Collected data from coinmarketcap website.\n"
     return infolist
         
