@@ -8,8 +8,9 @@ import simplejson as json
 import datetime
 import pandas as pd
 import pymongo
+import conf.config as config
 
-sleeptime = 3600
+sleeptime = config.SLEEPTIME
 
 class NoRedirectHandler(urllib2.HTTPRedirectHandler):
     def http_error_302(self, req, fp, code, msg, headers):
@@ -36,7 +37,7 @@ def decodeGzippedContent(encoded_content):
 
 
 def getmongoclient():
-    client = pymongo.MongoClient(port=27017)
+    client = pymongo.MongoClient(port=config.MONGO_PORT)
 
 
 def scrapeFromInvest():
@@ -58,7 +59,7 @@ def scrapeFromInvest():
     #print investing_data
     soup = BeautifulSoup(investing_data)
     datatds = soup.findAll("td", {'class' : 'flag'})
-    mongoconn = pymongo.MongoClient("mongodb://supmit:spmprx@localhost:27017/cryptocurrency")
+    mongoconn = pymongo.MongoClient("mongodb://%s:%s@localhost:%s/cryptocurrency"%(config.MONGO_USER, config.MONGO_PASSWD, config.MONGO_PORT))
     db = mongoconn.cryptocurrency
     for td in datatds:
         currnametd = td.findNext('td')
@@ -116,7 +117,7 @@ def getDataFromCoinMarket():
     listings_dict = json.loads(listings_data)
     listings_data_list = listings_dict['data']
     curr_data_map = {}
-    mongoconn = pymongo.MongoClient("mongodb://supmit:spmprx@localhost:27017/cryptocurrency")
+    mongoconn = pymongo.MongoClient("mongodb://%s:%s@localhost:%s/cryptocurrency"%(config.MONGO_USER, config.MONGO_PASSWD, config.MONGO_PORT))
     db = mongoconn.cryptocurrency
     for elemdict in listings_data_list:
         idno = elemdict['id']
@@ -153,7 +154,7 @@ def coinmarketcap():
         print "Soup is empty."
         return False
     infolist = []
-    mongoconn = pymongo.MongoClient("mongodb://supmit:spmprx@localhost:27017/cryptocurrency")
+    mongoconn = pymongo.MongoClient("mongodb://%s:%s@localhost:%s/cryptocurrency"%(config.MONGO_USER, config.MONGO_PASSWD, config.MONGO_PORT))
     db = mongoconn.cryptocurrency
     currencytdlist = soup.findAll("a", {'class' : 'currency-name-container link-secondary'})
     for currencysoup in currencytdlist:
