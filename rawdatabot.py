@@ -218,7 +218,7 @@ def coinmarketcap():
             print "Could not enter data in mongo db. Error: %s\n"%sys.exc_info()[1].__str__()
     print "Collected data from coinmarketcap website.\n"
     return infolist
-        
+
 
 
 def collectionEventLoop(scraper_functions_list):
