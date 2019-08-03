@@ -26,8 +26,7 @@ if __name__ == "__main__":
             continue
         currencyname = cpreclist[0]['currency_name']
         url = "https://rest.coinapi.io/v1/ohlcv/%s/USD/latest?period_id=1HRS&limit=%s"%(currsymbol, str(config.OHLCV_LIMIT).strip())
-        #url += currsymbol + "/USD/latest?period_id=1HRS"
-        print url, "*****************\n"
+        #print url, "*****************\n"
         #print http_headers
         ohlcv_request = urllib2.Request(url, None, http_headers)
         ohlcv_response = None
