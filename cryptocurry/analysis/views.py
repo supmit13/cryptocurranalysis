@@ -33,7 +33,43 @@ from django.contrib.sessions.backends.db import SessionStore
 
 
 def datasourceentryiface(request):
-    pass
+    message = ''
+    if request.method != 'GET': # Illegal bad request... 
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    dsentrydict = {}
+    ifacedict = {}
+    colllist = []
+    for element in COLLECTIONS:
+        colllist.append(element)
+    ifacedict['indexes'] = colllist
+    metricsdict = {'metrics' : {}}
+    for element in COLLECTIONS:
+        indxkey = element
+        m = metricsdict['metrics']
+        if element == "coinmarketcapdata":
+            m[indxkey] = METRICS_COINMARKETCAPDATA
+        elif element == "coinmarketdata":
+            m[indxkey] = METRICS_COINMARKETDATA
+        elif element == "investdata":
+            m[indxkey] = METRICS_INVESTDATA
+        elif element == "ohlcvdata":
+            m[indxkey] = METRICS_OHLCVDATA
+        elif element == "coinbase":
+            m[indxkey] = METRICS_COINBASE
+        else:
+             pass # We don't consider any other currency now.
+    metricsdict['metrics'] = m
+    ifacedict['metricsdict'] = metricsdict
+    
+    tmpl = get_template("dsentry.html")
+    ifacedict.update(csrf(request))
+    cxt = Context(ifacedict)
+    dsentryhtml = tmpl.render(cxt)
+    for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+        dsentryhtml = dsentryhtml.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
+    return HttpResponse(dsentryhtml)
 
 
 def visualize_investdb_currencyprice(request):
@@ -186,14 +222,16 @@ def visualize_ohlcv_voltraded(request):
             break
         try:
             ts_open_all = currency_grp[1]['time_open']
-            ctr = 0
             time_all = []
+            ctr = 0
             for ts_open in ts_open_all:
+                print "\n******************* ", ts_open, " ### ", list(currency_grp[1]['volume_traded'])[ctr], " **********************\n"
                 ts_open = re.sub('(\:\d{2}\.\d+)Z$', '', str(ts_open))
                 ts_open = re.sub('\d+\s+', '', str(ts_open))
                 ts_open = re.sub('T', ' ', str(ts_open))
                 dt_open = datetime.datetime.strptime(ts_open, "%Y-%m-%d %H:%M")
                 time_all.append(dt_open)
+                ctr += 1
             time_series.append(time_all)
             volume_traded.append(currency_grp[1]['volume_traded'])
         except:
@@ -443,6 +481,14 @@ def visualize_ohlcv_tradescount(request):
     fig1.autofmt_xdate()
     mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/ohlcv_tradescount.png')
     return HttpResponse("<img size='100%' src='media/ohlcv_tradescount.png'>")
+
+
+def coinbaseindexdisplay(request):
+    if request.METHOD != "POST":
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    return HttpResponse("<img src='https://index-am.coinbase.com/oembed.json?url=https://index-am.coinbase.com/widget/index&maxwidth=500&maxheight=200'>")
 
 
 

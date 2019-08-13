@@ -1,0 +1,60 @@
+<!-- ##### Course Area Start ##### -->
+    <div class="cryptos-feature-area section-padding-100-0">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="section-heading text-center mx-auto">
+                        <h3>Let’s analyze <br><span>the situation</span> now</h3>
+                        <p>Please select the options on any of the boxes below and it will graphically display the past and present situation as per the metric chosen.</p>
+                    </div>
+                </div>
+            </div>
+            <form name='cryptoanalysis' method='POST' action=''>
+	    {% csrf_token %}
+            <div class="row">
+		{% for index in indexes %}
+                <!-- Single Course Area -->
+                <div class="col-12 col-md-6 col-xl-3">
+                    <div class="single-feature-area mb-100 text-center">
+                        <i class="icon-safebox"></i>
+                        <h3>{{index}}
+</h3>
+				{% if index == "coinmarketcapdata" %}
+				<p>Select Metric to Analyze from the Dropdown: <select name="{{index}}" id="{{index}}">
+				{% for elem in metricsdict.metrics.coinmarketcapdata %}
+				<option value="{{elem}}">{{elem}}</option>
+				{% endfor %}
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnmetric_{{index}}' value='View' onClick='javascirpt:displayplots("{{index}}");'>
+				{% elif index == "coinmarketdata" %}
+				<p>Select Metric to Analyze from the Dropdown: <select name="{{index}}" id="{{index}}">
+				{% for elem in metricsdict.metrics.coinmarketdata %}
+				<option value="{{elem}}">{{elem}}</option>
+				{% endfor %}
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnmetric_{{index}}' value='View' onClick='javascirpt:displayplots("{{index}}");'>
+				{% elif index == "investdata" %}
+				<p>Select Metric to Analyze from the Dropdown: <select name="{{index}}" id="{{index}}">
+				{% for elem in metricsdict.metrics.investdata %}
+				<option value="{{elem}}">{{elem}}</option>
+				{% endfor %}
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnmetric_{{index}}' value='View' onClick='javascirpt:displayplots("{{index}}");'>
+				{% elif index == "ohlcvdata" %}
+				<p>Select Metric to Analyze from the Dropdown: <select name="{{index}}" id="{{index}}">
+				{% for elem in metricsdict.metrics.ohlcvdata %}
+				<option value="{{elem}}">{{elem}}</option>
+				{% endfor %}
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnmetric_{{index}}' value='View' onClick='javascirpt:displayplots("{{index}}");'>
+				{% elif index == "coinbase" %}
+				<a href='#/' onClick='javascript:showcoinbase();'>Coinbase</a>
+				{% endif %}
+				
+			</p>
+                        <a href="#" class="btn cryptos-btn">Read More</a>
+                    </div>
+                </div>
+		{% endfor %}
+		<div id='displayzone' class='semitrans' style=''></div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- ##### Course Area End ##### -->

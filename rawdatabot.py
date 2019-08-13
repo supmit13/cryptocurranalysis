@@ -220,6 +220,72 @@ def coinmarketcap():
     return infolist
 
 
+"""
+This is an index for 30 cryptocurrencies combined on some mathematical basis. This
+information is useful to those who want to invest in cryptocurrencies and hedge
+their risks by putting various sums in the 30 selected cryptocurrencies. In order to
+know more, please to the explanation at https://cci30.com/
+
+"""
+def cci30index():
+    cci30url = "https://cci30.com/ajax/getIndexHistory.php"
+    opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), NoRedirectHandler())
+    http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : 'coinmarketcap.com', 'Referer' : 'https://www.google.com' }
+    cci30_request = urllib2.Request(cci30url, None, http_headers)
+    cci30_response = None
+    try:
+        cci30_response = opener.open(cci30_request)
+    except:
+        print "Could not get the raw cryptocurrency data - Error: %s\n"%sys.exc_info()[1].__str__()
+        return False
+    content = decodeGzippedContent(cci30_response.read())
+    # content is a csv formatted data set
+    mongoconn = pymongo.MongoClient("mongodb://%s:%s@localhost:%s/cryptocurrency"%(config.MONGO_USER, config.MONGO_PASSWD, config.MONGO_PORT))
+    db = mongoconn.cryptocurrency
+    headers = []
+    records = []
+    alldata = []
+    datarecs = content.split("\n")
+    headers = datarecs[0].split(",")
+    for i in range(headers.__len__()):
+        headers[i] = headers[i].strip() # Remove whitespace characters
+    for datastr in datarecs:
+        datalist = datastr.split(",")
+        for i in range(1, datalist.__len__()):
+            datalist[i] = datalist[i].strip()
+        records.append(datalist)
+    for recdata in records[1:]:
+        ictr = 0
+        datadict = {}
+        for rdata in recdata:
+            datadict[headers[ictr]] = rdata
+            ictr += 1
+            if ictr == headers.__len__():
+                break
+        try:
+            result = db.cci30data.insert_one(datadict)
+            alldata.append(datadict)
+        except:
+            print "Error: ", sys.exc_info()[1].__str__(), "\n"
+    print "collected data from cci30 index at %s"%datetime.datetime.now()
+    return alldata
+
+
+"""
+There doesn't seem to be any fucking location that provides a feed, either as an
+API or as some screen data. How do I get the data from this asshole? Don't say I 
+have to pay to get it, 'cause if that is so, then they are going to get troubled
+by illegal means.... Accidents happen all the time, buildings collapse for
+no apparent reason, fire breaks out for myriad reasons, bank accounts get hacked,
+footage of senior executives in a compromizing situations come out of nowhere,
+people show up at the wrong place at the wrong time, and then they vanish... 
+Hmmmmm.... your actions route your life.
+"""
+def bloombergcryptoindex():
+    url = "https://www.bloomberg.com/professional/product/indices/bloomberg-galaxy-crypto-index/"
+
+
+
 
 def collectionEventLoop(scraper_functions_list):
     lasttime = 0
@@ -234,7 +300,7 @@ def collectionEventLoop(scraper_functions_list):
 
 
 if __name__ == "__main__":
-    scraperslist = [scrapeFromInvest, getDataFromCoinMarket, coinmarketcap, ] # Add scraper functions here.
+    scraperslist = [scrapeFromInvest, getDataFromCoinMarket, coinmarketcap, cci30index,] # Add scraper functions here.
     collectionEventLoop(scraperslist)
 
 
