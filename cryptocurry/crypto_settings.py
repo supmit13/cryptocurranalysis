@@ -4,13 +4,13 @@ import pandas as pd
 
 DB_NAME = "cryptocurrency"
 DB_USER = "supmit"
-DB_PASS = "spmprx"
+DB_PASS = "###############"
 DB_PORT = 27017
 DB_HOST = "localhost"
 
 COLLECTIONS = ['coinmarketcapdata', 'coinmarketdata', 'investdata', 'ohlcvdata', 'coinbase']
 
-METRICS = ['volume_total', 'volume_24hr', 'supply', 'percent_1hr', 'percent_24hr', 'percent_7d', 'curr_price', 'marketcap', ]
+STANDARD_METRICS = ['volume_total', 'volume_24hr', 'supply', 'percent_1hr', 'percent_24hr', 'percent_7d', 'curr_price', 'marketcap', ]
 
 METRICS_COINMARKETCAPDATA = ['volume', 'percent7d', 'percent24hr', 'marketcap', 'supply', 'currency_price', 'percent1hr']
 METRICS_COINMARKETDATA = ['percent_change_7days', 'last_updated', 'percent_change_24hr', 'volume_24hr', 'percent_change_1hr', 'currency_price' ]
@@ -64,5 +64,19 @@ INV_HTML_ENTITIES_CHAR_MAP = { \
     ']' : '&#93;', \
     '"' : '&#39;', \
     }
+
+URL_PROTOCOL = "http://"
+APP_URL_PREFIX = "http://192.168.1.4:8002/"
+LOGIN_URL = ""
+
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+# The above 2 config params should be turned on (True) once we start using https.
+CSRF_COOKIE_NAME = "csrftoken"
+SESSION_EXPIRE_AT_BROWSER_CLOSE=True
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000 
+
+MAX_SESSION_VALID = 86400
 
 

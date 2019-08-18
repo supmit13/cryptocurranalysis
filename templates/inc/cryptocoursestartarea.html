@@ -1,6 +1,7 @@
 <!-- ##### Course Area Start ##### -->
     <div class="cryptos-feature-area section-padding-100-0">
         <div class="container-fluid">
+		<div id='plotimage' align='center' style="display:none;"></div>
             <div class="row">
                 <div class="col-12">
                     <div class="section-heading text-center mx-auto">
@@ -9,40 +10,38 @@
                     </div>
                 </div>
             </div>
-            <form name='cryptoanalysis' method='POST' action=''>
-	    {% csrf_token %}
+            <form name='cryptoanalysis' method='POST' action='/cryptocurry/analyze/visual/{{index}}/'>
             <div class="row">
 		{% for index in indexes %}
                 <!-- Single Course Area -->
                 <div class="col-12 col-md-6 col-xl-3">
                     <div class="single-feature-area mb-100 text-center">
                         <i class="icon-safebox"></i>
-                        <h3>{{index}}
-</h3>
+                        <h3>{{index}}</h3>
 				{% if index == "coinmarketcapdata" %}
 				<p>Select Metric to Analyze from the Dropdown: <select name="{{index}}" id="{{index}}">
 				{% for elem in metricsdict.metrics.coinmarketcapdata %}
 				<option value="{{elem}}">{{elem}}</option>
 				{% endfor %}
-				</select>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnmetric_{{index}}' value='View' onClick='javascirpt:displayplots("{{index}}");'>
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnmetric_{{index}}' value='View' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}");'>
 				{% elif index == "coinmarketdata" %}
 				<p>Select Metric to Analyze from the Dropdown: <select name="{{index}}" id="{{index}}">
 				{% for elem in metricsdict.metrics.coinmarketdata %}
 				<option value="{{elem}}">{{elem}}</option>
 				{% endfor %}
-				</select>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnmetric_{{index}}' value='View' onClick='javascirpt:displayplots("{{index}}");'>
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnmetric_{{index}}' value='View' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}");'>
 				{% elif index == "investdata" %}
 				<p>Select Metric to Analyze from the Dropdown: <select name="{{index}}" id="{{index}}">
 				{% for elem in metricsdict.metrics.investdata %}
 				<option value="{{elem}}">{{elem}}</option>
 				{% endfor %}
-				</select>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnmetric_{{index}}' value='View' onClick='javascirpt:displayplots("{{index}}");'>
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnmetric_{{index}}' value='View' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}");'>
 				{% elif index == "ohlcvdata" %}
 				<p>Select Metric to Analyze from the Dropdown: <select name="{{index}}" id="{{index}}">
 				{% for elem in metricsdict.metrics.ohlcvdata %}
 				<option value="{{elem}}">{{elem}}</option>
 				{% endfor %}
-				</select>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnmetric_{{index}}' value='View' onClick='javascirpt:displayplots("{{index}}");'>
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnmetric_{{index}}' value='View' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}");'>
 				{% elif index == "coinbase" %}
 				<a href='#/' onClick='javascript:showcoinbase();'>Coinbase</a>
 				{% endif %}
@@ -52,8 +51,10 @@
                     </div>
                 </div>
 		{% endfor %}
-		<div id='displayzone' class='semitrans' style=''></div>
-                </form>
+		{% csrf_token %}
+		</form>
+		<div id='displayzone' class='semitrans' style='display:none;'></div>
+
             </div>
         </div>
     </div>

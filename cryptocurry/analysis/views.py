@@ -9,13 +9,16 @@ import matplotlib.dates as mdates
 #import scikit-learn as sk
 import pymongo
 import datetime
+import cPickle, urlparse
+import decimal, math, base64
+from passlib.hash import pbkdf2_sha256 # To create hash of passwords
 from pandas.plotting import register_matplotlib_converters
 
 import cryptocurry.errors as err
 import cryptocurry.utils as utils
 from cryptocurry.crypto_settings import * 
 
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie, requires_csrf_token
 from django.core.context_processors import csrf
 from django.views.generic import View
 from django.http import HttpResponseBadRequest, HttpResponse , HttpResponseRedirect
@@ -30,8 +33,10 @@ from django.template import Template, Context
 from django.template.loader import get_template
 from django.contrib.sites.models import get_current_site
 from django.contrib.sessions.backends.db import SessionStore
+from django.middleware.csrf import get_token
 
 
+@ensure_csrf_cookie
 def datasourceentryiface(request):
     message = ''
     if request.method != 'GET': # Illegal bad request... 
@@ -62,19 +67,22 @@ def datasourceentryiface(request):
              pass # We don't consider any other currency now.
     metricsdict['metrics'] = m
     ifacedict['metricsdict'] = metricsdict
-    
-    tmpl = get_template("dsentry.html")
+    ifacedict['urlprefix'] = utils.gethosturl(request)
+    csrf_token = get_token(request)
+    #tmpl = get_template("dsentry.html")
     ifacedict.update(csrf(request))
-    cxt = Context(ifacedict)
-    dsentryhtml = tmpl.render(cxt)
-    for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
-        dsentryhtml = dsentryhtml.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
-    return HttpResponse(dsentryhtml)
+    cxt = RequestContext(request, ifacedict)
+    #for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+    #    dsentryhtml = dsentryhtml.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
+    #dsentryhtml = tmpl.render(cxt)
+    rtr = render_to_response("dsentry.html", ifacedict, context_instance=cxt)
+    return rtr
 
 
+@csrf_protect
 def visualize_investdb_currencyprice(request):
     message = ''
-    if request.method != 'GET': # Illegal bad request... 
+    if request.method != 'POST': # Illegal bad request... 
         message = err.ERR_INCORRECT_HTTP_METHOD
         response = HttpResponseBadRequest(message)
         return response
@@ -128,16 +136,17 @@ def visualize_investdb_currencyprice(request):
     mlt.ylabel("Currency Price")
     mlt.suptitle("Currency Price vs Time")
     mlt.tick_params(axis='both', labelrotation=90)
-    ax1.xaxis_date()     # interpret the x-axis values as dates
+    ax1.xaxis_date() # interpret the x-axis values as dates
     fig1.autofmt_xdate()
     #ax.set_ylabel('Currency Price', va='bottom', labelpad=10)
     mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/investdata_currprice.png')
-    return HttpResponse("<img size='100%' src='media/investdata_currprice.png'>")
+    return HttpResponse("media/investdata_currprice.png")
 
 
+@csrf_protect
 def visualize_investdb_marketcap(request):
     message = ''
-    if request.method != 'GET': # Illegal bad request... 
+    if request.method != 'POST': # Illegal bad request... 
         message = err.ERR_INCORRECT_HTTP_METHOD
         response = HttpResponseBadRequest(message)
         return response
@@ -195,12 +204,13 @@ def visualize_investdb_marketcap(request):
     fig1.autofmt_xdate()
     #ax.set_ylabel('Currency Price', va='bottom', labelpad=10)
     mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/investdata_marketcap.png')
-    return HttpResponse("<img size='100%' src='media/investdata_marketcap.png'>")
+    return HttpResponse("media/investdata_marketcap.png")
 
 
+@csrf_protect
 def visualize_ohlcv_voltraded(request):
     message = ''
-    if request.method != 'GET': # Illegal bad request... 
+    if request.method != 'POST': # Illegal bad request... 
         message = err.ERR_INCORRECT_HTTP_METHOD
         response = HttpResponseBadRequest(message)
         return response
@@ -253,12 +263,13 @@ def visualize_ohlcv_voltraded(request):
     ax1.xaxis_date()     # interpret the x-axis values as dates
     fig1.autofmt_xdate()
     mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/ohlcv_voltraded.png')
-    return HttpResponse("<img size='100%' src='media/ohlcv_voltraded.png'>")
+    return HttpResponse("media/ohlcv_voltraded.png")
 
 
+@csrf_protect
 def visualize_ohlcv_priceopen(request):
     message = ''
-    if request.method != 'GET': # Illegal bad request... 
+    if request.method != 'POST': # Illegal bad request... 
         message = err.ERR_INCORRECT_HTTP_METHOD
         response = HttpResponseBadRequest(message)
         return response
@@ -309,13 +320,13 @@ def visualize_ohlcv_priceopen(request):
     ax1.xaxis_date()     # interpret the x-axis values as dates
     fig1.autofmt_xdate()
     mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/ohlcv_priceopen.png')
-    return HttpResponse("<img size='100%' src='media/ohlcv_priceopen.png'>")
+    return HttpResponse("media/ohlcv_priceopen.png")
 
 
-
+@csrf_protect
 def visualize_ohlcv_priceclose(request):
     message = ''
-    if request.method != 'GET': # Illegal bad request... 
+    if request.method != 'POST': # Illegal bad request... 
         message = err.ERR_INCORRECT_HTTP_METHOD
         response = HttpResponseBadRequest(message)
         return response
@@ -366,13 +377,13 @@ def visualize_ohlcv_priceclose(request):
     ax1.xaxis_date()     # interpret the x-axis values as dates
     fig1.autofmt_xdate()
     mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/ohlcv_priceclose.png')
-    return HttpResponse("<img size='100%' src='media/ohlcv_priceclose.png'>")
+    return HttpResponse("media/ohlcv_priceclose.png")
 
 
-
+@requires_csrf_token
 def visualize_ohlcv_pricehigh(request):
     message = ''
-    if request.method != 'GET': # Illegal bad request... 
+    if request.method != 'POST': # Illegal bad request... 
         message = err.ERR_INCORRECT_HTTP_METHOD
         response = HttpResponseBadRequest(message)
         return response
@@ -423,12 +434,13 @@ def visualize_ohlcv_pricehigh(request):
     ax1.xaxis_date()     # interpret the x-axis values as dates
     fig1.autofmt_xdate()
     mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/ohlcv_pricehigh.png')
-    return HttpResponse("<img size='100%' src='media/ohlcv_pricehigh.png'>")
+    return HttpResponse("media/ohlcv_pricehigh.png")
 
 
+@csrf_protect
 def visualize_ohlcv_tradescount(request):
     message = ''
-    if request.method != 'GET': # Illegal bad request... 
+    if request.method != 'POST': # Illegal bad request... 
         message = err.ERR_INCORRECT_HTTP_METHOD
         response = HttpResponseBadRequest(message)
         return response
@@ -480,9 +492,9 @@ def visualize_ohlcv_tradescount(request):
     ax1.xaxis_date()     # interpret the x-axis values as dates
     fig1.autofmt_xdate()
     mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/ohlcv_tradescount.png')
-    return HttpResponse("<img size='100%' src='media/ohlcv_tradescount.png'>")
+    return HttpResponse("media/ohlcv_tradescount.png")
 
-
+@csrf_protect
 def coinbaseindexdisplay(request):
     if request.METHOD != "POST":
         message = err.ERR_INCORRECT_HTTP_METHOD

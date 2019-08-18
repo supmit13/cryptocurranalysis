@@ -8,6 +8,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <!-- The above 4 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <script language='JavaScript' type="text/javascript" src='static/scripts/analysis.js'></script>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
+    <meta http-equiv="CACHE-CONTROL" content="NO-CACHE">
+    <meta http-equiv="PRAGMA" content="NO-CACHE">
+    
     <!-- Title -->
     <title>CryptoCurry - Cryptocurrency Analysis &amp; Trading Platform</title>
 
@@ -16,8 +20,6 @@
 
     <!-- Core Stylesheet -->
     <link rel="stylesheet" href="static/iface_resources/style.css">
-
-    <style>
     <style>
 	.semitrans {
 	  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=90)";
@@ -65,11 +67,11 @@
                             </div>
                             <!-- Top Login & Faq & Earn Monery btn -->
                             <div class="login-faq-earn-money">
-                                <a href="#" onClick='javascript:showloginscreen();'>Login</a> | <a href="#" onClick='javascript:showregisterscreen();'>Register</a>
+                                <a href="#" onClick='javascript:showloginscreen("{{urlprefix}}");'>Login</a> | <a href="#" onClick='javascript:showregisterscreen();'>Register</a>
                                 <a href="#">FAQ</a>
                                 <a href="#" class="active">Trade</a>
                             </div>
-			    <div id='loginregister' class='semitrans2'></div>
+			    <div id='loginregister' class='semitrans2' style='display:none'></div>
                         </div>
                     </div>
                 </div>
