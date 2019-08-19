@@ -45,16 +45,21 @@ def make_password(password):
 
 
 def authenticate(uname, passwd):
+    db = utils.get_mongo_client()
     try:
-        user = User.objects.filter(displayname=uname)
-        if pbkdf2_sha256.verify(passwd, user[0].password):  # Compare the hashes of the password
-            return user[0]
+        rec = db["users"].find({'username' : uname})
+        if not rec:
+            return None
+        passwd_hashed = make_password(passwd)
+        r = rec.next()
+        password = r["password"]
+        if passwd_hashed == password:
+            return uname
         else:
             return None
     except:
         return None
     
-
 
 def generatesessionid(username, csrftoken, userip, ts):
     hashstr = make_password(username + csrftoken + userip) + ts
@@ -65,66 +70,46 @@ def generatesessionid(username, csrftoken, userip, ts):
 @csrf_protect
 @never_cache
 def login(request):
-    if request.method == "GET":
-        msg = None
-        if request.META.has_key('QUERY_STRING'):
-            msg = request.META.get('QUERY_STRING', '')
-        if msg is not None and msg != '':
-            msg_color = 'FF0000'
-            msg = skillutils.formatmessage(msg, msg_color)
-        else:
-            msg = ""
-        # Display login form
-        curdate = datetime.datetime.now()
-        tmpl = get_template("authentication/login.html")
-        c = {'curdate' : curdate, 'msg' : msg, 'register_url' : skillutils.gethosturl(request) + "/" + mysettings.REGISTER_URL }
-        c.update(csrf(request))
-        cxt = Context(c)
-        loginhtml = tmpl.render(cxt)
-        for htmlkey in mysettings.HTML_ENTITIES_CHAR_MAP.keys():
-            loginhtml = loginhtml.replace(htmlkey, mysettings.HTML_ENTITIES_CHAR_MAP[htmlkey])
-        return HttpResponse(loginhtml)
-    elif request.method == "POST":
-        username = request.POST.get('username') or ""
-        password = request.POST.get('password') or ""
-        keeploggedin = request.POST.get('keepmeloggedin') or 0
-        csrfmiddlewaretoken = request.POST.get('csrfmiddlewaretoken', "")
-        userobj = authenticate(username, password)
-        if not userobj: # Incorrect password - return user to login screen with an appropriate message.
+    if request.method != 'POST': # Illegal bad request... 
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    username = request.POST.get('username') or ""
+    password = request.POST.get('password') or ""
+    keeploggedin = request.POST.get('keepmesignedin') or 0
+    csrfmiddlewaretoken = request.POST.get('csrfmiddlewaretoken', "")
+    db = utils.get_mongo_client()
+    uname = authenticate(username, password)
+    if not uname: # Incorrect password - return user to login screen with an appropriate message.
+        message = error_msg('1002')
+        return HttpResponseRedirect(utils.gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
+    else: # user will be logged in after checking the 'active' field
+        rec = db["users"].find({"username" : uname})
+        if not rec:
             message = error_msg('1002')
-            return HttpResponseRedirect(skillutils.gethosturl(request) + "/" + mysettings.LOGIN_URL + "?msg=" + message)
-        else: # user will be logged in after checking the 'active' field
-            if userobj.active:
-                sessobj = Session()
-                clientip = request.META['REMOTE_ADDR']
-                timestamp = int(time.time())
-                # timestamp will be a 10 digit string.
-                sesscode = generatesessionid(username, csrfmiddlewaretoken, clientip, timestamp.__str__())
-                sessobj.sessioncode = sesscode
-                sessobj.user = userobj
-                # sessobj.starttime should get populated on its own when we save this session object.
-                sessobj.endtime = None
-                sessobj.sourceip = clientip
-                if userobj.istest: # This session is being performed by a test user, so this must be a test session.
-                    sessobj.istest = True
-                elif mysettings.TEST_RUN: # This is a test run as mysettings.TEST_RUN is set to True
-                    sessobj.istest = True
-                else:
-                    sessobj.istest = False
-                sessobj.useragent = request.META['HTTP_USER_AGENT']
-                # Now save the session...
-                sessobj.save()
-                # ... and redirect to landing page (which happens to be the profile page).
-                response = HttpResponseRedirect(skillutils.gethosturl(request) + "/" + mysettings.LOGIN_REDIRECT_URL)
-                response.set_cookie('sessioncode', sesscode)
-                response.set_cookie('userid', userobj.usertype)
-                return response
-            else:
-                message = error_msg('1003')
-                return HttpResponseRedirect(skillutils.gethosturl(request) + "/" + mysettings.LOGIN_URL + "?msg=" + message)
-    else:
-        message = error_msg('1001')
-        return HttpResponseRedirect(skillutils.gethosturl(request) + "/" + mysettings.LOGIN_URL + "?msg=" + message)
+            return HttpResponseRedirect(utils.gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
+        r = rec.next()
+        active = r["active"]
+        if active == "true":
+            sessionid = ""
+            clientip = utils.get_client_ip(request)
+            timestamp = int(time.time())
+            sessionid = generatesessionid(username, csrfmiddlewaretoken, clientip, timestamp.__str__())
+            sessionuserrec = db["users"].find({'username' : username})
+            sessuserrec = sessionuserrec.next()
+            sessionuser = sessuserrec["userid"]
+            sessendtime = ''
+            timestamp = time.time()
+            useragent = request.META['HTTP_USER_AGENT']
+            insertd = {'sessionid' : sessionid, 'userid' : sessionuser, 'sessionstarttime' : timestamp, 'sessionendtime' : sessendtime, 'sourceip' : clientip, 'useragent' : useragent, 'sessionactive' : True}
+            db.sessions.insert(insertd)
+            response = HttpResponseRedirect(utils.gethosturl(request) + "/" + LOGIN_REDIRECT_URL)
+            response.set_cookie('sessioncode', sessionid)
+            response.set_cookie('userid', sessionuser)
+            return response
+        else:
+            message = error_msg('1003')
+            return HttpResponseRedirect(utils.gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
 
 
 def display_login_screen(request):

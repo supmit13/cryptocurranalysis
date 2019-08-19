@@ -7,14 +7,15 @@
         Log in
       </a>
       <div id="login-content">
-        <form method='POST' name='loginform' action='/cryptocurry/login/'>
+        <form method='POST' name='loginform' action='/cryptocurry/auth/login/'>
+	  {% csrf_token %}
           <fieldset id="inputs">
-            <input id="username" type="text" name="username" placeholder="Username" required>   
-            <input id="password" type="password" name="Password" placeholder="Password" required>
+            <input id="username" type="text" name="username" placeholder="Username" value='' required>   
+            <input id="password" type="password" name="password" placeholder="Password" value='' required>
           </fieldset>
           <fieldset id="actions">
-            <input type="button" id="submit1" name="submit1" value="Log in" onClick='javascript:dologin();'>
-            <label><input type="checkbox" checked="checked"> Keep me signed in</label>
+            <input type="button" id="submit1" name="submit1" value="Log in" onClick='javascript:dologin("{{urlprefix}}");'>
+            <label><input type="checkbox" name='keepmesignedin' checked="checked"> Keep me signed in</label>
           </fieldset>
         </form>
       </div>                     
