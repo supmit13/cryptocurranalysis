@@ -38,5 +38,18 @@ Monday, August 19, 2019, 20:43 HRS.
 9. git add files_to_commit.txt
 
 =========================================
+Tuesday, August 20, 2019, 04:31 HRS.
+-----------------------------------------
+1. git add cryptocurry/auth/views.py
+2. git add cryptocurry/auth/models.py
+3. git add cryptocurry/analysis/views.py
+4. git add cryptocurry/analysis/models.py
+5. git add cryptocurry/utils.py
+6. git add templates/loginform.html
+7. git add cryptocurry/urls.py
+8. git add static/scripts/analysis.js
+9. git add files_to_commit.txt
+
+=========================================
 
 

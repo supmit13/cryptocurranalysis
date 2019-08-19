@@ -3,6 +3,7 @@ import pymongo
 import pandas as pd
 import random
 import uuid, glob
+from passlib.hash import pbkdf2_sha256 # To create hash of passwords
 
 from cryptocurry.crypto_settings import * 
 import cryptocurry.errors as err
@@ -216,5 +217,31 @@ def generate_random_string():
     tstr = str(int(time.time() * 1000))
     random = random + tstr
     return random
+
+
+def make_password(password):
+    hash = pbkdf2_sha256.encrypt(password, rounds=200, salt_size=16)
+    return hash
+
+
+def authenticate(uname, passwd):
+    db = get_mongo_client()
+    try:
+        rec = db["users"].find({'username' : uname})
+        if not rec:
+            return None
+        r = rec.next()
+        passwd_hashed = r["password"]
+        if pbkdf2_sha256.verify(passwd, passwd_hashed):
+            return uname
+        else:
+            return None
+    except:
+        return None
+    
+
+def generatesessionid(username, csrftoken, userip, ts):
+    hashstr = make_password(username + csrftoken + userip) + ts
+    return hashstr
 
 

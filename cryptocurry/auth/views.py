@@ -1,7 +1,7 @@
 # Django specific imports...
 from django.conf import settings
 
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie, requires_csrf_token
 from django.core.context_processors import csrf
 from django.views.generic import View
 from django.http import HttpResponseBadRequest, HttpResponse , HttpResponseRedirect, QueryDict
@@ -36,37 +36,11 @@ import cryptocurry.errors as err
 import cryptocurry.utils as utils
 from cryptocurry.crypto_settings import * 
 
-
-
-
-def make_password(password):
-    hash = pbkdf2_sha256.encrypt(password, rounds=200, salt_size=16)
-    return hash
-
-
-def authenticate(uname, passwd):
-    db = utils.get_mongo_client()
-    try:
-        rec = db["users"].find({'username' : uname})
-        if not rec:
-            return None
-        passwd_hashed = make_password(passwd)
-        r = rec.next()
-        password = r["password"]
-        if passwd_hashed == password:
-            return uname
-        else:
-            return None
-    except:
-        return None
-    
-
-def generatesessionid(username, csrftoken, userip, ts):
-    hashstr = make_password(username + csrftoken + userip) + ts
-    return hashstr
+#******* End of imports **********#
 
 
 @sensitive_post_parameters()
+@ensure_csrf_cookie
 @csrf_protect
 @never_cache
 def login(request):
@@ -79,14 +53,14 @@ def login(request):
     keeploggedin = request.POST.get('keepmesignedin') or 0
     csrfmiddlewaretoken = request.POST.get('csrfmiddlewaretoken', "")
     db = utils.get_mongo_client()
-    uname = authenticate(username, password)
+    uname = utils.authenticate(username, password)
     if not uname: # Incorrect password - return user to login screen with an appropriate message.
-        message = error_msg('1002')
+        message = err.error_msg('1002')
         return HttpResponseRedirect(utils.gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
     else: # user will be logged in after checking the 'active' field
         rec = db["users"].find({"username" : uname})
         if not rec:
-            message = error_msg('1002')
+            message = err.error_msg('1002')
             return HttpResponseRedirect(utils.gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
         r = rec.next()
         active = r["active"]
@@ -94,7 +68,7 @@ def login(request):
             sessionid = ""
             clientip = utils.get_client_ip(request)
             timestamp = int(time.time())
-            sessionid = generatesessionid(username, csrfmiddlewaretoken, clientip, timestamp.__str__())
+            sessionid = utils.generatesessionid(username, csrfmiddlewaretoken, clientip, timestamp.__str__())
             sessionuserrec = db["users"].find({'username' : username})
             sessuserrec = sessionuserrec.next()
             sessionuser = sessuserrec["userid"]
@@ -108,7 +82,7 @@ def login(request):
             response.set_cookie('userid', sessionuser)
             return response
         else:
-            message = error_msg('1003')
+            message = err.error_msg('1003')
             return HttpResponseRedirect(utils.gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
 
 

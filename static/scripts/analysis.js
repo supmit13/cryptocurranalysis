@@ -30,12 +30,13 @@ function displayplots(indexval, urlprefix){
     posturl = urlprefix + "/cryptocurry/analyze/visual/" + indexval + "/" + selectedvalue + "/";
     xmlhttp.open('POST', posturl, true);
     xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-    xmlhttp.setRequestHeader("HTTP-X-CSRFToken", document.cryptoanalysis.csrfmiddlewaretoken.value);
+    xmlhttp.setRequestHeader("X-CSRFToken", document.cryptoanalysis.csrfmiddlewaretoken.value);
     //alert(posturl);
     plotdiv.style.display = "block";
     imgtag = document.createElement('img');
     imgtag.setAttribute('src', 'static/images/loading_big.gif');
     imgtag.setAttribute('id', 'waitprocess');
+    imgtag.setAttribute('title', 'This may take a while depending on the amount of data it needs to crunch. Please be patient.');
     plotdiv.appendChild(imgtag);
     xmlhttp.send(postdata);
 }
@@ -61,7 +62,7 @@ function showloginscreen(urlprefix){
     geturl = urlprefix + "/cryptocurry/auth/showlogin/";
     xmlhttp.open('GET', geturl, true);
     xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-    xmlhttp.setRequestHeader("HTTP-X-CSRFToken", document.cryptoanalysis.csrfmiddlewaretoken.value);
+    xmlhttp.setRequestHeader("X-CSRFToken", document.cryptoanalysis.csrfmiddlewaretoken.value);
     //alert(geturl);
     logindiv.style.display = "";
     xmlhttp.send();
@@ -72,7 +73,7 @@ function dologin(urlprefix){
     username = document.loginform.username.value;
     password = document.loginform.password.value;
     keepmesignedin = false;
-    if(document.loginform.keepmesignedin.checked == "checked"){
+    if(document.loginform.keepmesignedin.checked == true){
         keepmesignedin = true
     }
     data = "username=" + username + "&password=" + password + "&keepmesignedin=";
@@ -99,7 +100,7 @@ function dologin(urlprefix){
     //alert(posturl);
     xmlhttp.open('POST', posturl, true);
     xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-    xmlhttp.setRequestHeader("HTTP-X-CSRFToken", document.loginform.csrfmiddlewaretoken.value);
+    xmlhttp.setRequestHeader("X-CSRFToken", document.loginform.csrfmiddlewaretoken.value);
     logindiv.style.display = "";
     //alert(data);
     xmlhttp.send(data);

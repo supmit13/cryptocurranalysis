@@ -36,7 +36,7 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.middleware.csrf import get_token
 
 
-@ensure_csrf_cookie
+
 def datasourceentryiface(request):
     message = ''
     if request.method != 'GET': # Illegal bad request... 
@@ -64,21 +64,18 @@ def datasourceentryiface(request):
         elif element == "coinbase":
             m[indxkey] = METRICS_COINBASE
         else:
-             pass # We don't consider any other currency now.
+            pass # We don't consider any other currency now.
     metricsdict['metrics'] = m
     ifacedict['metricsdict'] = metricsdict
     ifacedict['urlprefix'] = utils.gethosturl(request)
     csrf_token = get_token(request)
-    #tmpl = get_template("dsentry.html")
     ifacedict.update(csrf(request))
     cxt = RequestContext(request, ifacedict)
-    #for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
-    #    dsentryhtml = dsentryhtml.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
-    #dsentryhtml = tmpl.render(cxt)
     rtr = render_to_response("dsentry.html", ifacedict, context_instance=cxt)
     return rtr
 
 
+@ensure_csrf_cookie
 @csrf_protect
 def visualize_investdb_currencyprice(request):
     message = ''
@@ -143,6 +140,7 @@ def visualize_investdb_currencyprice(request):
     return HttpResponse("media/investdata_currprice.png")
 
 
+@ensure_csrf_cookie
 @csrf_protect
 def visualize_investdb_marketcap(request):
     message = ''
@@ -207,6 +205,7 @@ def visualize_investdb_marketcap(request):
     return HttpResponse("media/investdata_marketcap.png")
 
 
+@ensure_csrf_cookie
 @csrf_protect
 def visualize_ohlcv_voltraded(request):
     message = ''
@@ -266,6 +265,7 @@ def visualize_ohlcv_voltraded(request):
     return HttpResponse("media/ohlcv_voltraded.png")
 
 
+@ensure_csrf_cookie
 @csrf_protect
 def visualize_ohlcv_priceopen(request):
     message = ''
@@ -323,6 +323,7 @@ def visualize_ohlcv_priceopen(request):
     return HttpResponse("media/ohlcv_priceopen.png")
 
 
+@ensure_csrf_cookie
 @csrf_protect
 def visualize_ohlcv_priceclose(request):
     message = ''
@@ -380,7 +381,8 @@ def visualize_ohlcv_priceclose(request):
     return HttpResponse("media/ohlcv_priceclose.png")
 
 
-@requires_csrf_token
+@ensure_csrf_cookie
+@csrf_protect
 def visualize_ohlcv_pricehigh(request):
     message = ''
     if request.method != 'POST': # Illegal bad request... 
@@ -437,6 +439,7 @@ def visualize_ohlcv_pricehigh(request):
     return HttpResponse("media/ohlcv_pricehigh.png")
 
 
+@ensure_csrf_cookie
 @csrf_protect
 def visualize_ohlcv_tradescount(request):
     message = ''
@@ -494,6 +497,8 @@ def visualize_ohlcv_tradescount(request):
     mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/ohlcv_tradescount.png')
     return HttpResponse("media/ohlcv_tradescount.png")
 
+
+@ensure_csrf_cookie
 @csrf_protect
 def coinbaseindexdisplay(request):
     if request.METHOD != "POST":
