@@ -1,0 +1,8 @@
+1. Create/Configure userid and password for mongodb [Done]
+2. Eliminate 'usertype' cookie and add 'userid' cookie for cryptocurry [Done]
+3. Check why csrftoken cookie is not being sent by javascript requests from the site. [Done]
+4. Eliminate "main thread is not in main loop" error while trying to plot more than one plot consecutively.
+5. Convert plotting to use google charts (refer to https://developers.google.com/chart/interactive/docs/gallery/linechart)
+6. Implement cryptocurry on Apache web server (httpd)
+7. Implement SSL for https on cryptocurry.
+8. Implement all other types of plots identified and put on the webpage.

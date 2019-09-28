@@ -1,0 +1,44 @@
+Start MongoDB service as below:
+-------------------------------
+mongod --port 27017 --dbpath /var/lib/mongodb &
+
+Create user with username and password:
+----------------------------------------
+use cryptocurrency
+db.addUser({user:'supmit', pwd : 'spmprx', roles : [ "readWrite"]})
+c = db.investdata
+
+Get the number of records in a collection:
+------------------------------------------
+db.coinmarketcapdata.count()
+
+Start the mongodb client to connect to the mongodb server:
+----------------------------------------------------------
+mongo --username supmit --password spmprx --authenticationDatabase cryptocurrency
+mongo --authenticationDatabase cryptocurrency # Newer version downloaded.
+use cryptocurrency
+
+
+Display Collections in a "selected" database:
+---------------------------------------------
+show collections
+
+Display unique values of "currency_name" in ohlcvdata table:
+------------------------------------------------------------
+db.ohlcvdata.distinct("currency_name")
+
+Count of above data:
+---------------------
+db.ohlcvdata.distinct("currency_name").length
+
+
+Create Collection for users:
+-----------------------------
+db.users.insert([ {'userid' : '4f9ce9ed39cb414e8641bf2338f14bf21566062133366', 'firstname' : 'supriyo', 'lastname' : 'mitra', 'username' : 'supmit', 'password' : '$pbkdf2-sha256$200$fo8RIkSIce7d2/t/D.E8pw$IRsCOqG30vE8mAsYPkGa5xYJEOpeR551ZceHap5RafE', 'emailid' : 'supmit@gmail.com', 'mobileno' : '9711998537', 'altphoneno' : '', 'dob' : '', 'sex' : 'M', 'active' : 'true', 'joindate' : '2019-08-17 22:30:00', 'userimagepath' : '', 'adddress' : {'house_num' : 'A-1904', 'street_address' : '', 'block_sector' : 'Omega', 'district' : 'GB Nagar', 'State' : 'UP', 'country' : 'India'} }, { 'userid' : '3f00d68de00b45699265c7804fc157a41566062246550', 'firstname' : 'sangeeta', 'lastname' : 'kashyap', 'username' : 'sang', 'password' : '$pbkdf2-sha256$200$U8q5l9L6/9/be88559xbyw$K41i6IuN0ausOeMINJKoqigx3SgPJbbw811rm5DweGo', 'emailid' : 'supmit13@yahoo.com', 'mobileno' : '9711998538', 'altphoneno' : '', 'dob' : '', 'sex' : 'F', 'active' : 'true', 'joindate' : '2019-08-17 22:30:00', 'userimagepath' : '', 'adddress' : {'house_num' : 'A-1904', 'street_address' : '', 'block_sector' : 'Omega', 'district' : 'GB Nagar', 'State' : 'UP', 'country' : 'India'} }])
+
+
+Create a collection for sessions:
+---------------------------------
+db.sessions.insert([ { 'sessionid' : '', 'userid' : '', 'sessionstarttime' : '', 'sessionactive' : false, 'sessionendtime' : '', 'sourceip' : '', 'useragent' : '' },] )
+db.sessions.insert([ { 'sessionid' : '$pbkdf2-sha256$200$OwcgxLgXglCKkRKCkJIypg$khJTb/nVrflrdizdqFx.vgxlGbi/WbN1tgkJsEdkeY81556193964', 'userid' : '4f9ce9ed39cb414e8641bf2338f14bf21566062133366', 'sessionstarttime' : '1566064578.401682', 'sessionactive' : true, 'sessionendtime' : '', 'sourceip' : '', 'useragent' : 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36 OPR/56.0.3051.31' },] )
+

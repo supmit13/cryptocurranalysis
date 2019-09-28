@@ -50,6 +50,262 @@
 
 
 
+function drawChart_old(data){
+      data = JSON.parse(data);
+      datadict = data["datadict"];
+      //datadict = datadict;
+      plotname = data["plotname"];
+      colors = data["colors"];
+      plotareadiv = document.getElementById('plotnamearea');
+      plotareadiv.innerHTML = ""; // Remove if something was written previously.
+      plotareadiv.innerHTML = plotname;
+      //alert(plotname);
+      currencynames = data["currencynames"];
+      //alert(currencynames);
+      //var data;
+      //alert(datadict);
+      datalists = [];
+      datacurr = [];
+      currlist = new Array();
+      headers = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM"];
+      
+      maxdate = new Date("01-01-1970 00:00");
+      ctr = 0;
+      var plotdata = new google.visualization.DataTable();
+      ////plotdata.addColumn('string', 'Currency');
+      //plotdata.addColumn('datetime', 'Datetime');
+      plotdata.addColumn('string', 'Datetime');
+      ////plotdata.addColumn('number', 'Value');
+      listedcurrencies = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM");
+      plotdata.addColumn('number', "EOS");
+      plotdata.addColumn('number', "BITCOIN");
+      plotdata.addColumn('number', "BINANCE COIN");
+      plotdata.addColumn('number', "BITCOIN SV");
+      plotdata.addColumn('number', "XRP");
+      plotdata.addColumn('number', "TETHER");
+      plotdata.addColumn('number', "STELLAR");
+      plotdata.addColumn('number', "BITCOIN CASH");
+      plotdata.addColumn('number', "ETHEREUM");
+      //alert(plotdata.length);
+      elements = {};
+      dictoflists = {'datetime' : new Array(), 'values' : new Array()};
+      for(k in datadict){
+	elements[k] = dictoflists;
+      }
+      currencydatetimedict = {};
+      //alert(datadict);
+      for(k in datadict){
+	//alert(k);
+	 currlist.push(k);
+         currencydatetimedict[k.toUpperCase()] = {};
+	 elements[k] = {};
+	 //alert(datadict[k].length);
+	 listctr = 0;
+	 strdatelist = new Array();
+         for(i=0;i < datadict[k].length; i++){
+	  ctrj = 1;
+	  for(j in datadict[k][i]){
+	     datetimeparts = j.split(" ");
+ 	     dateparts = datetimeparts[0].split("-");
+	     mm = parseInt(dateparts[1]) - 1;
+	     if((parseInt(dateparts[1]) - 1).toString().length < 2){
+		mm = '0' + mm;
+	     }
+	     else{
+		mm = (parseInt(dateparts[1]) - 1).toString();
+	     }
+	     if((dateparts[0]).toString().length < 2){
+		dateparts[0] = '0' + dateparts[0];
+	     }
+	     else{
+		dateparts[0] = dateparts[0].toString();
+	     }
+	     strdate = dateparts[2] + "-" + mm + "-" + dateparts[0] + " " + datetimeparts[1];
+	     date = new Date(strdate);
+             if(date > maxdate){
+		maxdate = date
+	     }
+	     val = datadict[k][i][j];
+             timeparts = datetimeparts[1].split(":");
+	     strdateforcurr = "";
+	     if(timeparts.length > 1){
+             	mnsec = timeparts[0] + ":" + timeparts[1];
+		strdateforcurr = dateparts[2] + "-" + mm + "-" + dateparts[0] + " " + mnsec;
+	     }
+	     else{
+		mnsec = "";
+		strdateforcurr = dateparts[2] + "-" + mm + "-" + dateparts[0];
+	     }
+	     if(!currencydatetimedict[k.toUpperCase()][strdateforcurr]){
+	         currencydatetimedict[k.toUpperCase()][strdateforcurr] = val;
+	     }
+	     else{
+		continue;
+	     }
+	     strdatelist.push(strdateforcurr);
+	     listctr++;
+	     //alert(strdateforcurr + " is for curr value");
+	     datalists[ctrj] = [k, strdate, parseFloat(val)];
+	     ctrj += 1;
+	  }
+	 }
+	 datacurr[ctr] = new Array();
+	 for(h=1;h < datalists.length;h++){
+	   datacurr[ctr][h-1] = new Array(datalists[h]);
+	 }
+	 ctr += 1;
+	 //alert(datalists);
+	 //var plotdata = google.visualization.arrayToDataTable(datalists);
+      //alert(datacurr);
+      lctr = 0;
+      for(i=0; i < currlist.length; i++){
+	//alert(datacurr[i]);
+	datalist = new Array();
+	for(dctr=0; dctr < 3; dctr++){
+	    datalist[dctr] = datacurr[i][dctr];
+	    //alert(datalist[dctr]);
+	}
+	if(datalist.length < 3){
+	    //alert(datalist.length);
+	    if(i == 0){
+		datalist.push(datalist[datalist.length - 1]);
+	    }
+	    else{
+	    	datalist.push(datacurr[i-1][2]); // Populate the missing value with the previous value.
+	    }
+	}
+	else{
+	  while(datalist.length >= 3){
+	    //alert(datalist.length);
+	    datalist.pop();
+	  }
+	}
+	//alert(datalist[0]);
+	
+	datalistparts = String(datalist[0]).split(',');
+	elem = new Array(3);
+	curr = "";
+	date = "";
+	val = "";
+	strdate = "";
+        for(elemctr = 0; elemctr < 3; elemctr++){
+	    if(elemctr == 1){
+		datetimeparts = datalistparts[elemctr].split(" ");
+	        dateparts = datetimeparts[0].split("-");
+		timeparts = datetimeparts[1].split(":");
+		dd = parseInt(dateparts[0]);
+		mm = parseInt(dateparts[1]);
+		yyyy = parseInt(dateparts[2]);
+		hh = parseInt(timeparts[0]);
+		mn = parseInt(timeparts[1]);
+		strdate = yyyy + "-" + mm + "-" + dd + " " + hh + ":" + mn;
+		
+		elem[elemctr] = new Date(yyyy, mm, dd, hh,mn);
+		//elem[elemctr] = datalistparts[elemctr]
+		//alert(elem[elemctr]);
+		date = elem[elemctr];
+	    }
+	    else if(elemctr == 2){
+	    	elem[elemctr] = parseFloat(datalistparts[elemctr]);
+		//alert(elem[elemctr]);
+		val = elem[elemctr];
+	    }
+	    else{
+		elem[elemctr] = datalistparts[elemctr];
+		//alert(elem[elemctr]);
+		curr = elem[elemctr];
+	    }
+	}
+	ddict = elements[curr];
+	dtlist = ddict['datetime'];
+	//dtlist.push(date);
+	vals = ddict['values'];
+	//vals.push(val);
+	elements[curr]['datetime'] = dtlist;
+	elements[curr]['values'] = vals;
+	try{
+	  for (cname in listedcurrencies){
+	    if(listedcurrencies[cname].toUpperCase() != curr.toUpperCase()){
+		continue;
+	    }
+	    currindex = cname;
+	    drow = new Array();
+	    //alert(date);
+	    //drow.push(date);
+	    if(lctr < listctr){
+	        newstrdate = strdatelist[lctr];
+		lctr++;
+	    }
+	    drow.push(newstrdate);
+	    prevvalues = new Array(listedcurrencies.length);
+	    for(f=0;f < listedcurrencies.length;f++){
+		prevvalues[f] = 0.0;
+	    }
+	    for(cnctr=0;cnctr < listedcurrencies.length; cnctr += 1){
+		if(currindex != cnctr){
+		    //alert(newstrdate + " is strdate");
+		    //alert(currencydatetimedict[listedcurrencies[cname].toUpperCase()]);
+		    if(currencydatetimedict[listedcurrencies[cname].toUpperCase()] && currencydatetimedict[listedcurrencies[cname].toUpperCase()][newstrdate] && currencydatetimedict[listedcurrencies[cname].toUpperCase()][newstrdate] > 0.0 && drow.length < listedcurrencies.length){
+			prevvalues[cnctr] = currencydatetimedict[listedcurrencies[cname].toUpperCase()][newstrdate];
+			drow.push(parseFloat(currencydatetimedict[listedcurrencies[cname].toUpperCase()][newstrdate]));
+			//alert(currencydatetimedict[listedcurrencies[cname].toUpperCase()][newstrdate] + " is value of " + listedcurrencies[cname]);
+		    }
+		    else{
+			drow.push(parseFloat(prevvalues[cnctr]));
+		   	//alert(newstrdate + " is strdate");
+		    }
+		}
+		else{
+		    drow.push(parseFloat(val));
+		    prevvalues[cnctr] = val;
+		    //alert(val.toString() + " is val value");
+		}
+	    }
+	  }
+	  plotdata.addRow(drow);
+	  //alert(plotdata.length.toString() + " is plotdata length");
+	}
+	catch(err){
+	  alert("Could not add in plotdata - " + err + " - " + String(elements.length));
+	}
+	//color = colors[i];
+        //alert(color);
+	//alert(plotdata);
+        var options = {
+  	title: plotname + " -- " + currlist.join(", "),
+  	curveType: "function",
+  	legend: { position: "bottom" },
+	colors: colors,
+	width: 900,
+        height: 500,
+        hAxis: {
+	    viewWindow: {
+            min: new Date(2019, 0, 01, 30),
+            max: maxdate
+            },
+	    format: 'dd-MM-yyyy hh:mm',
+            gridlines: {count: 15}
+        },
+        vAxis: {
+            gridlines: {color: 'blue'},
+            minValue: 0
+        }
+      };
+      //alert(elements[2]);
+      //var chart = new google.visualization.LineChart(document.getElementById("plotimage"));
+      var chart = new google.charts.Line(document.getElementById("plotimage"));
+      }
+      					
+      try{
+	chart.draw(plotdata, options);
+      //  chart.draw(plotdata, google.charts.Line.convertOptions(options));
+      }
+      catch(err){ // Some data will be invalid, you can't do a fuck with it.
+        alert("NOT PLOTTING - " + err);
+      }
+      }
+    }
+
 
 function drawChart(data){
       dataparsed = JSON.parse(data);

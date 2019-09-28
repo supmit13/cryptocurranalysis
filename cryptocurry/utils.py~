@@ -273,5 +273,3 @@ def generatesessionid(username, csrftoken, userip, ts):
     return hashstr
 
 
-
-

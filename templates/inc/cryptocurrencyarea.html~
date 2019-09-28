@@ -1,0 +1,76 @@
+<!-- ##### Currency Area Start ##### -->
+    <section class="currency-calculator-area section-padding-100 bg-img bg-overlay" style="background-image: url(static/iface_resource/img/bg-img/bg-2.jpg);">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="section-heading text-center white mx-auto">
+                        <h3 class="mb-4">Cryptocurrency Calculator</h3>
+                        <h5 class="mb-2">Cras vitae turpis lacinia, lacinia lacus non, fermentum nisi. Donec et sollicitudin est, in euismod erat. Ut at erat et arcu pulvinar cursus a eget nisl.</h5>
+                        <p>Cras vitae turpis lacinia, lacinia lacus non, fermentum nisi. Donec et sollicitudin est, in euismod erat. Ut at erat et arcu pulvinar cursus a eget nisl. Cras vitae turpis lacinia, lacinia lacus non, fermentum nisi.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="currency-calculator mb-15 clearfix">
+                        <form action="#" method="post" class="d-flex align-items-center justify-content-center">
+                            <!-- Calculator Part -->
+                            <div class="calculator-first-part d-flex align-items-center">
+                                <input type="text" name="inputNumber" placeholder="1">
+                                <select>
+                                    <option>BTC</option>
+                                    <option>USD</option>
+                                    <option>INR</option>
+                                    <option>BDT</option>
+                                </select>
+                            </div>
+
+                            <!-- Equal Sign -->
+                            <div class="equal-sign">=</div>
+
+                            <!-- Calculator Part -->
+                            <div class="calculator-sec-part d-flex align-items-center">
+                                <input type="text" name="inputNumber" placeholder="940045">
+                                <select>
+                                    <option>EUR</option>
+                                    <option>USD</option>
+                                    <option>INR</option>
+                                    <option>BDT</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="currency-calculator mb-15">
+                        <form action="#" method="post" class="d-flex align-items-center justify-content-center">
+                            <!-- Calculator Part -->
+                            <div class="calculator-first-part d-flex align-items-center">
+                                <input type="text" name="inputNumber" placeholder="10400">
+                                <select>
+                                    <option>USD</option>
+                                    <option>BTC</option>
+                                    <option>INR</option>
+                                    <option>BDT</option>
+                                </select>
+                            </div>
+
+                            <!-- Equal Sign -->
+                            <div class="equal-sign">=</div>
+
+                            <!-- Calculator Part -->
+                            <div class="calculator-sec-part d-flex align-items-center">
+                                <input type="text" name="inputNumber" placeholder="1.02">
+                                <select>
+                                    <option>BTC</option>
+                                    <option>USD</option>
+                                    <option>INR</option>
+                                    <option>BDT</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- ##### Currency Area End ##### -->

@@ -291,7 +291,7 @@ def visualize_investdb_marketcap(request):
     colors = utils.randomcolorgenerator(currencynames.__len__())
     ifacedict['colors'] = colors
     ifacedict = json.dumps(ifacedict)
-    #print (ifacedict + "\n***************************************\n")
+    print (ifacedict + "\n***************************************\n")
     response = HttpResponse(ifacedict)
     return response
 
