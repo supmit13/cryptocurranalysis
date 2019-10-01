@@ -2,7 +2,9 @@
 2. Eliminate 'usertype' cookie and add 'userid' cookie for cryptocurry [Done]
 3. Check why csrftoken cookie is not being sent by javascript requests from the site. [Done]
 4. Eliminate "main thread is not in main loop" error while trying to plot more than one plot consecutively.
-5. Convert plotting to use google charts (refer to https://developers.google.com/chart/interactive/docs/gallery/linechart)
+5. Convert plotting to use google charts (refer to https://developers.google.com/chart/interactive/docs/gallery/linechart) [Done]
 6. Implement cryptocurry on Apache web server (httpd)
 7. Implement SSL for https on cryptocurry.
 8. Implement all other types of plots identified and put on the webpage.
+9. Implement interpolation of values on plots for InvestDB "Volume 24 HRS", "change 24 HRS", and some other plots that *require* this.
+10. Work on the CSS and the layout of the page such that the legend, the title and the entire plot is visible and responsive.

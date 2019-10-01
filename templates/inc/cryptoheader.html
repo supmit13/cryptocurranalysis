@@ -68,10 +68,7 @@ function drawChart(data){
       maxdate = new Date("01-01-1970 00:00");
       ctr = 0;
       var plotdata = new google.visualization.DataTable();
-      ////plotdata.addColumn('string', 'Currency');
-      //plotdata.addColumn('datetime', 'Datetime');
       plotdata.addColumn('string', 'Datetime');
-      ////plotdata.addColumn('number', 'Value');
       listedcurrencies = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO");
       plotdata.addColumn('number', "EOS");
       plotdata.addColumn('number', "BITCOIN");
@@ -133,7 +130,7 @@ function drawChart(data){
 	var options = {
   	title: plotname + " -- " + listedcurrencies.join(", "),
   	curveType: "function",
-  	legend: { position: "bottom" },
+  	legend: { position: "top" },
 	colors: colors,
 	width: 900,
         height: 500,

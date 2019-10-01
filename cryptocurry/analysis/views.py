@@ -183,18 +183,6 @@ def visualize_investdb_currencyprice(request):
     datarecs = []
     currlist = []
     currencynames = []
-    """
-    fig1, ax1 = mlt.subplots()
-    for currname in currency_vals.keys():
-        currlist.append(currname)
-        datarecs.append(currency_vals[currname])
-        xrangelist = []
-        for dt in currency_times[currname]:
-            xrangelist.append(datetime.datetime.strptime(dt, "%Y-%m-%d %H:%M"))
-        xs = mdates.date2num(xrangelist)
-        ax1.plot(xs, currency_vals[currname])
-        currencynames.append(currname)
-    """
     datelists = []
     datadict = {}
     paramsdict = {}
@@ -218,29 +206,14 @@ def visualize_investdb_currencyprice(request):
     #for currencyname in datadict.keys():
     #    print "\n\n\n", currencyname, " === ", datadict[currencyname], " \nddd###################################\n "
     ifacedict['datadict'] = datadict
-    ifacedict['plotname'] = "Invest DB Currency Price";
+    ifacedict['plotname'] = "Invest DB Currency Price (Figures in USD)";
     ifacedict['currencynames'] = currencynames
     ifacedict['datetimeslist'] = alldatetimes # ALL DISTINCT DATETIMES OF ALL CURRENCIES ARE CONSIDERED.
     colors = utils.randomcolorgenerator(currencynames.__len__())
     ifacedict['colors'] = colors
     ifacedict = json.dumps(ifacedict)
-    #print (ifacedict + "\n***************************************\n")
     response = HttpResponse(ifacedict)
     return response
-
-
-    """
-    mlt.gca().legend(tuple(currencynames))
-    mlt.xlabel("Time")
-    mlt.ylabel("Currency Price")
-    mlt.suptitle("Currency Price vs Time")
-    mlt.tick_params(axis='both', labelrotation=90)
-    ax1.xaxis_date() # interpret the x-axis values as dates
-    fig1.autofmt_xdate()
-    #ax.set_ylabel('Currency Price', va='bottom', labelpad=10)
-    mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/investdata_currprice.png')
-    return HttpResponse("media/investdata_currprice.png")
-    """
 
 
 @ensure_csrf_cookie
@@ -316,16 +289,345 @@ def visualize_investdb_marketcap(request):
                 datadict[currname] = [{datelists[i] : datarecs[i]}, ]
     for d in range(alldatetimes.__len__()):
         alldatetimes[d] = alldatetimes[d].replace('&#39;', utils.hexcodecharmap['&#39;'])
-    #for currencyname in datadict.keys():
-    #    print "\n\n\n", currencyname, " === ", datadict[currencyname], " \nddd###################################\n "
     ifacedict['datadict'] = datadict
-    ifacedict['plotname'] = "Invest DB Market Capitalization";
+    ifacedict['plotname'] = "Invest DB Market Capitalization (Figures in Billion USD)";
     ifacedict['currencynames'] = currencynames
     ifacedict['datetimeslist'] = alldatetimes # ALL DISTINCT DATETIMES OF ALL CURRENCIES ARE CONSIDERED.
     colors = utils.randomcolorgenerator(currencynames.__len__())
     ifacedict['colors'] = colors
     ifacedict = json.dumps(ifacedict)
-    #print (ifacedict + "\n***************************************\n")
+    response = HttpResponse(ifacedict)
+    return response
+
+
+@ensure_csrf_cookie
+@csrf_protect
+def visualize_investdb_vol24hrs(request):
+    message = ''
+    if request.method != 'POST': # Illegal bad request... 
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    # Access the mongo db with pymongo
+    db = utils.get_mongo_client()
+    data = db.investdata.find()
+    record = []
+    ddict = {}
+    alldatetimes = []
+    for rec in data:
+        record.append(rec)
+    ddict['investdata'] = record
+    currency_vals = {}
+    currency_times = {}
+    max_rows = 0
+    for valdict in ddict['investdata']:
+        currname = valdict['currency_name']
+        for k in utils.hexcodecharmap.keys():
+            currname = currname.replace(k, utils.hexcodecharmap[k])
+        val = valdict['volume_24hr']
+        val = re.sub('[^0-9\.]', '', val)
+        datetimeentry = valdict['entrydatetime'] # Need to ensure datetime are sorted
+        datetimeentry = re.sub('\:\d+\.\d+$', '', datetimeentry)
+        if currency_vals.has_key(currname):
+            data = list([])
+            data = currency_vals[currname]
+            #print "CURRNAME: ", currname,"\n"
+            data.append(val)
+            #print "DATA: ", data, "\n"
+            currency_vals[currname] = data
+            dtlist = list([])
+            if currency_times.has_key(currname):
+                dtlist = currency_times[currname]
+            else:
+                currency_times[currname] = dtlist
+            dtlist.append(datetimeentry)
+            alldatetimes.append(datetimeentry)
+            currency_times[currname] = dtlist
+            l = data.__len__()
+            if l > max_rows:
+                max_rows = l
+        else:
+            currency_vals[currname] = [val,]
+            currency_times[currname] = [datetimeentry, ]
+            alldatetimes.append(datetimeentry)
+            max_rows = 1
+    datarecs = []
+    currencynames = []
+    datelists = []
+    datadict = {}
+    paramsdict = {}
+    ifacedict = {}
+    for currname in currency_vals.keys():
+        currname = currname.replace('&#39;', utils.hexcodecharmap['&#39;'])
+        datarecs = currency_vals[currname]
+        datelists = currency_times[currname]
+        currencynames.append(currname)
+        for i in range(datarecs.__len__()):
+            if datadict.has_key(currname):
+                datelists[i] = datelists[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datarecs[i] = datarecs[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datadict[currname].append({datelists[i] : datarecs[i]})
+            else:
+                datelists[i] = datelists[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datarecs[i] = datarecs[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datadict[currname] = [{datelists[i] : datarecs[i]}, ]
+    for d in range(alldatetimes.__len__()):
+        alldatetimes[d] = alldatetimes[d].replace('&#39;', utils.hexcodecharmap['&#39;'])
+    ifacedict['datadict'] = datadict
+    ifacedict['plotname'] = "Volume 24 Hours (Figures in Billion USD)";
+    ifacedict['currencynames'] = currencynames
+    ifacedict['datetimeslist'] = alldatetimes # ALL DISTINCT DATETIMES OF ALL CURRENCIES ARE CONSIDERED.
+    colors = utils.randomcolorgenerator(currencynames.__len__())
+    ifacedict['colors'] = colors
+    ifacedict = json.dumps(ifacedict)
+    response = HttpResponse(ifacedict)
+    return response
+
+
+@ensure_csrf_cookie
+@csrf_protect
+def visualize_investdb_change24hrs(request):
+    message = ''
+    if request.method != 'POST': # Illegal bad request... 
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    # Access the mongo db with pymongo
+    db = utils.get_mongo_client()
+    data = db.investdata.find()
+    record = []
+    ddict = {}
+    alldatetimes = []
+    for rec in data:
+        record.append(rec)
+    ddict['investdata'] = record
+    currency_vals = {}
+    currency_times = {}
+    max_rows = 0
+    for valdict in ddict['investdata']:
+        currname = valdict['currency_name']
+        for k in utils.hexcodecharmap.keys():
+            currname = currname.replace(k, utils.hexcodecharmap[k])
+        val = valdict['change_24hr']
+        val = re.sub('[^0-9\.\-]', '', val)
+        datetimeentry = valdict['entrydatetime'] # Need to ensure datetime are sorted
+        datetimeentry = re.sub('\:\d+\.\d+$', '', datetimeentry)
+        if currency_vals.has_key(currname):
+            data = list([])
+            data = currency_vals[currname]
+            #print "CURRNAME: ", currname,"\n"
+            data.append(val)
+            #print "DATA: ", data, "\n"
+            currency_vals[currname] = data
+            dtlist = list([])
+            if currency_times.has_key(currname):
+                dtlist = currency_times[currname]
+            else:
+                currency_times[currname] = dtlist
+            dtlist.append(datetimeentry)
+            alldatetimes.append(datetimeentry)
+            currency_times[currname] = dtlist
+            l = data.__len__()
+            if l > max_rows:
+                max_rows = l
+        else:
+            currency_vals[currname] = [val,]
+            currency_times[currname] = [datetimeentry, ]
+            alldatetimes.append(datetimeentry)
+            max_rows = 1
+    datarecs = []
+    currencynames = []
+    datelists = []
+    datadict = {}
+    paramsdict = {}
+    ifacedict = {}
+    for currname in currency_vals.keys():
+        currname = currname.replace('&#39;', utils.hexcodecharmap['&#39;'])
+        datarecs = currency_vals[currname]
+        datelists = currency_times[currname]
+        currencynames.append(currname)
+        for i in range(datarecs.__len__()):
+            if datadict.has_key(currname):
+                datelists[i] = datelists[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datarecs[i] = datarecs[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datadict[currname].append({datelists[i] : datarecs[i]})
+            else:
+                datelists[i] = datelists[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datarecs[i] = datarecs[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datadict[currname] = [{datelists[i] : datarecs[i]}, ]
+    for d in range(alldatetimes.__len__()):
+        alldatetimes[d] = alldatetimes[d].replace('&#39;', utils.hexcodecharmap['&#39;'])
+    ifacedict['datadict'] = datadict
+    ifacedict['plotname'] = "Change 24 Hours (Percentage)";
+    ifacedict['currencynames'] = currencynames
+    ifacedict['datetimeslist'] = alldatetimes # ALL DISTINCT DATETIMES OF ALL CURRENCIES ARE CONSIDERED.
+    colors = utils.randomcolorgenerator(currencynames.__len__())
+    ifacedict['colors'] = colors
+    ifacedict = json.dumps(ifacedict)
+    response = HttpResponse(ifacedict)
+    return response
+
+
+@ensure_csrf_cookie
+@csrf_protect
+def visualize_investdb_change7days(request):
+    message = ''
+    if request.method != 'POST': # Illegal bad request... 
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    # Access the mongo db with pymongo
+    db = utils.get_mongo_client()
+    data = db.investdata.find()
+    record = []
+    ddict = {}
+    alldatetimes = []
+    for rec in data:
+        record.append(rec)
+    ddict['investdata'] = record
+    currency_vals = {}
+    currency_times = {}
+    max_rows = 0
+    for valdict in ddict['investdata']:
+        currname = valdict['currency_name']
+        for k in utils.hexcodecharmap.keys():
+            currname = currname.replace(k, utils.hexcodecharmap[k])
+        val = valdict['change_7days']
+        val = re.sub('[^0-9\.\-]', '', val)
+        datetimeentry = valdict['entrydatetime'] # Need to ensure datetime are sorted
+        datetimeentry = re.sub('\:\d+\.\d+$', '', datetimeentry)
+        if currency_vals.has_key(currname):
+            data = list([])
+            data = currency_vals[currname]
+            data.append(val)
+            currency_vals[currname] = data
+            dtlist = list([])
+            if currency_times.has_key(currname):
+                dtlist = currency_times[currname]
+            else:
+                currency_times[currname] = dtlist
+            dtlist.append(datetimeentry)
+            alldatetimes.append(datetimeentry)
+            currency_times[currname] = dtlist
+            l = data.__len__()
+            if l > max_rows:
+                max_rows = l
+        else:
+            currency_vals[currname] = [val,]
+            currency_times[currname] = [datetimeentry, ]
+            alldatetimes.append(datetimeentry)
+            max_rows = 1
+    datarecs = []
+    currencynames = []
+    datelists = []
+    datadict = {}
+    paramsdict = {}
+    ifacedict = {}
+    for currname in currency_vals.keys():
+        currname = currname.replace('&#39;', utils.hexcodecharmap['&#39;'])
+        datarecs = currency_vals[currname]
+        datelists = currency_times[currname]
+        currencynames.append(currname)
+        for i in range(datarecs.__len__()):
+            if datadict.has_key(currname):
+                datelists[i] = datelists[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datarecs[i] = datarecs[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datadict[currname].append({datelists[i] : datarecs[i]})
+            else:
+                datelists[i] = datelists[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datarecs[i] = datarecs[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datadict[currname] = [{datelists[i] : datarecs[i]}, ]
+    for d in range(alldatetimes.__len__()):
+        alldatetimes[d] = alldatetimes[d].replace('&#39;', utils.hexcodecharmap['&#39;'])
+    ifacedict['datadict'] = datadict
+    ifacedict['plotname'] = "Change 7 Days (Percentage)";
+    ifacedict['currencynames'] = currencynames
+    ifacedict['datetimeslist'] = alldatetimes # ALL DISTINCT DATETIMES OF ALL CURRENCIES ARE CONSIDERED.
+    colors = utils.randomcolorgenerator(currencynames.__len__())
+    ifacedict['colors'] = colors
+    ifacedict = json.dumps(ifacedict)
+    response = HttpResponse(ifacedict)
+    return response
+
+
+@ensure_csrf_cookie
+@csrf_protect
+def visualize_investdb_totalvolume(request):
+    message = ''
+    if request.method != 'POST': # Illegal bad request... 
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    # Access the mongo db with pymongo
+    db = utils.get_mongo_client()
+    data = db.investdata.find()
+    record = []
+    ddict = {}
+    alldatetimes = []
+    for rec in data:
+        record.append(rec)
+    ddict['investdata'] = record
+    currency_vals = {}
+    currency_times = {}
+    max_rows = 0
+    for valdict in ddict['investdata']:
+        currname = valdict['currency_name']
+        for k in utils.hexcodecharmap.keys():
+            currname = currname.replace(k, utils.hexcodecharmap[k])
+        val = valdict['total_volume']
+        val = re.sub('[^0-9\.\-]', '', val)
+        datetimeentry = valdict['entrydatetime'] # Need to ensure datetime are sorted
+        datetimeentry = re.sub('\:\d+\.\d+$', '', datetimeentry)
+        if currency_vals.has_key(currname):
+            data = list([])
+            data = currency_vals[currname]
+            data.append(val)
+            currency_vals[currname] = data
+            dtlist = list([])
+            if currency_times.has_key(currname):
+                dtlist = currency_times[currname]
+            else:
+                currency_times[currname] = dtlist
+            dtlist.append(datetimeentry)
+            alldatetimes.append(datetimeentry)
+            currency_times[currname] = dtlist
+            l = data.__len__()
+            if l > max_rows:
+                max_rows = l
+        else:
+            currency_vals[currname] = [val,]
+            currency_times[currname] = [datetimeentry, ]
+            alldatetimes.append(datetimeentry)
+            max_rows = 1
+    datarecs = []
+    currencynames = []
+    datelists = []
+    datadict = {}
+    paramsdict = {}
+    ifacedict = {}
+    for currname in currency_vals.keys():
+        currname = currname.replace('&#39;', utils.hexcodecharmap['&#39;'])
+        datarecs = currency_vals[currname]
+        datelists = currency_times[currname]
+        currencynames.append(currname)
+        for i in range(datarecs.__len__()):
+            if datadict.has_key(currname):
+                datelists[i] = datelists[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datarecs[i] = datarecs[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datadict[currname].append({datelists[i] : datarecs[i]})
+            else:
+                datelists[i] = datelists[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datarecs[i] = datarecs[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datadict[currname] = [{datelists[i] : datarecs[i]}, ]
+    for d in range(alldatetimes.__len__()):
+        alldatetimes[d] = alldatetimes[d].replace('&#39;', utils.hexcodecharmap['&#39;'])
+    ifacedict['datadict'] = datadict
+    ifacedict['plotname'] = "Total Volume (Percentage)";
+    ifacedict['currencynames'] = currencynames
+    ifacedict['datetimeslist'] = alldatetimes # ALL DISTINCT DATETIMES OF ALL CURRENCIES ARE CONSIDERED.
+    colors = utils.randomcolorgenerator(currencynames.__len__())
+    ifacedict['colors'] = colors
+    ifacedict = json.dumps(ifacedict)
     response = HttpResponse(ifacedict)
     return response
 
@@ -347,7 +649,7 @@ def visualize_ohlcv_voltraded(request):
     time_series = []
     volume_traded = []
     currency_names = []
-    register_matplotlib_converters()
+    #register_matplotlib_converters()
     for currency_grp in by_currency_name:
         currency_name_ps = currency_grp[1]['currency_name']
         for currname in currency_name_ps:
@@ -359,7 +661,7 @@ def visualize_ohlcv_voltraded(request):
             time_all = []
             ctr = 0
             for ts_open in ts_open_all:
-                print "\n******************* ", ts_open, " ### ", list(currency_grp[1]['volume_traded'])[ctr], " **********************\n"
+                #print "\n******************* ", ts_open, " ### ", list(currency_grp[1]['volume_traded'])[ctr], " **********************\n"
                 ts_open = re.sub('(\:\d{2}\.\d+)Z$', '', str(ts_open))
                 ts_open = re.sub('\d+\s+', '', str(ts_open))
                 ts_open = re.sub('T', ' ', str(ts_open))
@@ -370,7 +672,19 @@ def visualize_ohlcv_voltraded(request):
             volume_traded.append(currency_grp[1]['volume_traded'])
         except:
             pass
+    datarecs = []
+    currencynames = []
+    datelists = []
+    datadict = {}
+    paramsdict = {}
+    ifacedict = {}
+
+
+
+
+
     # Now start the plotting for plots!
+    """
     fig1, ax1 = mlt.subplots()
     #print time_series.__len__()
     #print volume_traded.__len__()
@@ -388,7 +702,7 @@ def visualize_ohlcv_voltraded(request):
     fig1.autofmt_xdate()
     mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/ohlcv_voltraded.png')
     return HttpResponse("media/ohlcv_voltraded.png")
-
+    """
 
 @ensure_csrf_cookie
 @csrf_protect

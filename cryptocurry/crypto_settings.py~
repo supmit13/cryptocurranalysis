@@ -14,7 +14,7 @@ STANDARD_METRICS = ['volume_total', 'volume_24hr', 'supply', 'percent_1hr', 'per
 
 METRICS_COINMARKETCAPDATA = ['volume', 'percent7d', 'percent24hr', 'marketcap', 'supply', 'currency_price', 'percent1hr']
 METRICS_COINMARKETDATA = ['percent_change_7days', 'last_updated', 'percent_change_24hr', 'volume_24hr', 'percent_change_1hr', 'currency_price' ]
-METRICS_INVESTDATA = ['volume_24hr', 'market_cap', 'change_24hr', 'change_7days', 'currency_price', 'total_volume' ]
+METRICS_INVESTDATA = ['volume_24hrs', 'market_cap', 'change_24hrs', 'change_7days', 'currency_price', 'total_volume' ]
 METRICS_OHLCVDATA = ['trades_count', 'volume_traded', 'price_close', 'price_high', 'price_open', 'price_low' ]
 METRICS_COINBASE = [] # Not needed as it is directly shown from the website.
 
