@@ -132,21 +132,12 @@ def visualize_investdb_currencyprice(request):
         xs = mdates.date2num(xrangelist)
         ax1.plot(xs, currency_vals[currname])
         currencynames.append(currname)
-    mlt.gca().legend(tuple(currencynames))
-    mlt.xlabel("Time")
-    mlt.ylabel("Currency Price")
-    mlt.suptitle("Currency Price vs Time")
-    mlt.tick_params(axis='both', labelrotation=90)
-    ax1.xaxis_date() # interpret the x-axis values as dates
-    fig1.autofmt_xdate()
-    #ax.set_ylabel('Currency Price', va='bottom', labelpad=10)
-    mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/investdata_currprice.png')
-    return HttpResponse("media/investdata_currprice.png")
+    return HttpResponse("")
 
-"""
+
 @ensure_csrf_cookie
 @csrf_protect
-def visualize_investdb_marketcap(request):
+def visualize_investdb_currencyprice(request):
     message = ''
     if request.method != 'POST': # Illegal bad request... 
         message = err.ERR_INCORRECT_HTTP_METHOD
@@ -156,18 +147,21 @@ def visualize_investdb_marketcap(request):
     db = utils.get_mongo_client()
     data = db.investdata.find()
     record = []
-    datadict = {}
+    ddict = {}
+    alldatetimes = []
     for rec in data:
         record.append(rec)
-    datadict['investdata'] = record
+    ddict['investdata'] = record
+    # Some variables that have been used in HTML, but not processed here.
+    ddict['prevk'] = 0
     currency_vals = {}
     currency_times = {}
     max_cols = 0
-    register_matplotlib_converters()
-    for valdict in datadict['investdata']:
+    #register_matplotlib_converters()
+    for valdict in ddict['investdata']:
         currname = valdict['currency_name']
-        val = valdict['market_cap']
-        val = re.sub('[^0-9]', '', val)
+        val = valdict['currency_price']
+        val = re.sub('[^0-9\.]', '', val)
         datetimeentry = valdict['entrydatetime'] # Need to ensure datetime are sorted
         datetimeentry = re.sub('\:\d+\.\d+$', '', datetimeentry)
         if currency_vals.has_key(currname):
@@ -176,6 +170,7 @@ def visualize_investdb_marketcap(request):
             currency_vals[currname] = data
             dtlist = currency_times[currname]
             dtlist.append(datetimeentry)
+            alldatetimes.append(datetimeentry)
             currency_times[currname] = dtlist
             l = data.__len__()
             if l > max_cols:
@@ -183,10 +178,12 @@ def visualize_investdb_marketcap(request):
         else:
             currency_vals[currname] = [val,]
             currency_times[currname] = [datetimeentry, ]
+            alldatetimes.append(datetimeentry)
             max_cols = 1
     datarecs = []
     currlist = []
     currencynames = []
+    """
     fig1, ax1 = mlt.subplots()
     for currname in currency_vals.keys():
         currlist.append(currname)
@@ -197,17 +194,54 @@ def visualize_investdb_marketcap(request):
         xs = mdates.date2num(xrangelist)
         ax1.plot(xs, currency_vals[currname])
         currencynames.append(currname)
+    """
+    datelists = []
+    datadict = {}
+    paramsdict = {}
+    ifacedict = {}
+    for currname in currency_vals.keys():
+        currname = currname.replace('&#39;', utils.hexcodecharmap['&#39;'])
+        datarecs = currency_vals[currname]
+        datelists = currency_times[currname]
+        currencynames.append(currname)
+        for i in range(datarecs.__len__()):
+            if datadict.has_key(currname):
+                datelists[i] = datelists[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datarecs[i] = datarecs[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datadict[currname].append({datelists[i] : datarecs[i]})
+            else:
+                datelists[i] = datelists[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datarecs[i] = datarecs[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datadict[currname] = [{datelists[i] : datarecs[i]}, ]
+    for d in range(alldatetimes.__len__()):
+        alldatetimes[d] = alldatetimes[d].replace('&#39;', utils.hexcodecharmap['&#39;'])
+    #for currencyname in datadict.keys():
+    #    print "\n\n\n", currencyname, " === ", datadict[currencyname], " \nddd###################################\n "
+    ifacedict['datadict'] = datadict
+    ifacedict['plotname'] = "Invest DB Currency Price";
+    ifacedict['currencynames'] = currencynames
+    ifacedict['datetimeslist'] = alldatetimes # ALL DISTINCT DATETIMES OF ALL CURRENCIES ARE CONSIDERED.
+    colors = utils.randomcolorgenerator(currencynames.__len__())
+    ifacedict['colors'] = colors
+    ifacedict = json.dumps(ifacedict)
+    #print (ifacedict + "\n***************************************\n")
+    response = HttpResponse(ifacedict)
+    return response
+
+
+    """
     mlt.gca().legend(tuple(currencynames))
     mlt.xlabel("Time")
-    mlt.ylabel("Market Capitalization")
-    mlt.suptitle("Market Capitalization vs Time")
+    mlt.ylabel("Currency Price")
+    mlt.suptitle("Currency Price vs Time")
     mlt.tick_params(axis='both', labelrotation=90)
-    ax1.xaxis_date()     # interpret the x-axis values as dates
+    ax1.xaxis_date() # interpret the x-axis values as dates
     fig1.autofmt_xdate()
     #ax.set_ylabel('Currency Price', va='bottom', labelpad=10)
-    mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/investdata_marketcap.png')
-    return HttpResponse("media/investdata_marketcap.png")
-"""
+    mlt.savefig('/home/supriyo/work/cryptocurranalysis/cryptocurranalysis/userdata/investdata_currprice.png')
+    return HttpResponse("media/investdata_currprice.png")
+    """
+
 
 @ensure_csrf_cookie
 @csrf_protect
@@ -291,7 +325,7 @@ def visualize_investdb_marketcap(request):
     colors = utils.randomcolorgenerator(currencynames.__len__())
     ifacedict['colors'] = colors
     ifacedict = json.dumps(ifacedict)
-    print (ifacedict + "\n***************************************\n")
+    #print (ifacedict + "\n***************************************\n")
     response = HttpResponse(ifacedict)
     return response
 

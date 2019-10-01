@@ -13,7 +13,7 @@ PROJECT_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 ADMINS = (
-    ('Supriyo Mitra', 'supmit@gmail.com'),
+    ('Supriyo Mitra', '*******@****.***'),
 )
 
 MANAGERS = ADMINS

@@ -58,15 +58,12 @@ function drawChart(data){
       colors = dataparsed["colors"];
       datetimeslist = dataparsed["datetimeslist"];
       plotareadiv = document.getElementById('plotnamearea');
-      plotareadiv.innerHTML = ""; // Remove if something was written previously.
-      plotareadiv.innerHTML = plotname;
       currencynames = dataparsed["currencynames"];
       var keys = Object.keys(datadict);
       datalists = [];
       datacurr = [];
       currlist = new Array();
-      pltarea = document.getElementById("plotimage");
-      pltarea.innerHTML = "It might take a little while to plot your chart. Please be patient.";
+      plotareadiv.innerHTML = "It might take a little while to plot your chart. Please be patient.";
       headers = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO"];
       maxdate = new Date("01-01-1970 00:00");
       ctr = 0;
@@ -149,12 +146,13 @@ function drawChart(data){
             gridlines: {count: 15}
         },
         vAxis: {
-            gridlines: {color: 'blue'},
+            gridlines: {color: 'blue',  count : 15},
             minValue: 0
         }
       };
       //var chart = new google.visualization.LineChart(document.getElementById("plotimage"));
-      pltarea.innerHTML = "";
+      plotareadiv.innerHTML = ""; // Remove if something was written previously.
+      plotareadiv.innerHTML = plotname;
       var chart = new google.charts.Line(document.getElementById("plotimage"));
       try{
 	  chart.draw(plotdata, options);
