@@ -31,6 +31,10 @@ Count of above data:
 ---------------------
 db.ohlcvdata.distinct("currency_name").length
 
+Display Collection Data:
+-------------------------
+db.collection.find()
+
 
 Create Collection for users:
 -----------------------------

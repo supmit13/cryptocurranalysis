@@ -20,25 +20,25 @@
 				{% for elem in metricsdict.metrics.coinmarketcapdata %}
 				<option value="{{elem}}">{{elem}}</option>
 				{% endfor %}
-				</select>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#plotarea' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}");'>View&nbsp;&nbsp;Plot</a>
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#plotarea' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}", "coinmarketcapdata");'>View&nbsp;&nbsp;Plot</a>
 				{% elif index == "coinmarketdata" %}
 				<p>Select Metric to Analyze from the Dropdown: <select name="{{index}}" id="{{index}}">
 				{% for elem in metricsdict.metrics.coinmarketdata %}
 				<option value="{{elem}}">{{elem}}</option>
 				{% endfor %}
-				</select>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#plotarea' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}");'>View&nbsp;&nbsp;Plot</a>
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#plotarea' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}", "coinmarketdata");'>View&nbsp;&nbsp;Plot</a>
 				{% elif index == "investdata" %}
 				<p>Select Metric to Analyze from the Dropdown: <select name="{{index}}" id="{{index}}">
 				{% for elem in metricsdict.metrics.investdata %}
 				<option value="{{elem}}">{{elem}}</option>
 				{% endfor %}
-				</select>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#plotarea' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}");'>View&nbsp;&nbsp;Plot</a>
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#plotarea' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}", "investdb");'>View&nbsp;&nbsp;Plot</a>
 				{% elif index == "ohlcvdata" %}
 				<p>Select Metric to Analyze from the Dropdown: <select name="{{index}}" id="{{index}}">
 				{% for elem in metricsdict.metrics.ohlcvdata %}
 				<option value="{{elem}}">{{elem}}</option>
 				{% endfor %}
-				</select>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#plotarea' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}");'>View&nbsp;&nbsp;Plot</a>
+				</select>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#plotarea' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}", "ohlcv");'>View&nbsp;&nbsp;Plot</a>
 				{% elif index == "coinbase" %}
 				<a href='#/' onClick='javascript:showcoinbase();'>Coinbase</a>
 				{% endif %}

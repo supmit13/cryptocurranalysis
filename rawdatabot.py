@@ -210,7 +210,7 @@ def coinmarketcap():
         if float(marketcap) > 0.0:
             print "MARKET CAP = %s\n"%marketcap
         """
-        valdict = {'currency_name' : currencyname, 'currency_symbol' : symbol, 'marketcap' : marketcap, 'currency_price' : price, 'supply' : supply, 'volume' : volume, 'percent1hr' : percent1hr, 'percent24hr' : percent24hr, 'percent7d' : percent7d}
+        valdict = {'currency_name' : currencyname, 'currency_symbol' : symbol, 'marketcap' : marketcap, 'currency_price' : price, 'supply' : supply, 'volume' : volume, 'percent1hr' : percent1hr, 'percent24hr' : percent24hr, 'percent7d' : percent7d, 'entrydatetime' : str(datetime.datetime.now())}
         infolist.append(valdict)
         try:
             result = db.coinmarketcapdata.insert_one(valdict)

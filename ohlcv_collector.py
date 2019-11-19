@@ -4,6 +4,7 @@ import pymongo
 import conf.config as config
 from StringIO import StringIO
 import urllib, urllib2
+import datetime
 
 """
 This script is to be run once every day,
@@ -26,7 +27,7 @@ if __name__ == "__main__":
             continue
         currencyname = cpreclist[0]['currency_name']
         url = "https://rest.coinapi.io/v1/ohlcv/%s/USD/latest?period_id=1HRS&limit=%s"%(currsymbol, str(config.OHLCV_LIMIT).strip())
-        #print url, "*****************\n"
+        print url, "*****************\n"
         #print http_headers
         ohlcv_request = urllib2.Request(url, None, http_headers)
         ohlcv_response = None
@@ -39,6 +40,7 @@ if __name__ == "__main__":
         for ohlcv_dict in ohlcv_list:
             ohlcv_dict['currency_name'] = currencyname
             ohlcv_dict['currency_symbol'] = currsymbol
+            ohlcv_dict['entrydatetime'] = str(datetime.datetime.now())
             try:
                 result = db.ohlcvdata.insert_one(ohlcv_dict)
             except:

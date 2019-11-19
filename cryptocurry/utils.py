@@ -6,6 +6,7 @@ import uuid, glob
 from passlib.hash import pbkdf2_sha256 # To create hash of passwords
 import matplotlib.pyplot as plt
 import random
+import simplejson as json
 
 from cryptocurry.crypto_settings import * 
 import cryptocurry.errors as err
@@ -39,6 +40,8 @@ hexcodecharmap = { \
         '&#93;' : ']', \
         '&#39;' : '"',\
     }
+
+billionpattern = re.compile("B$", re.IGNORECASE)
 
 
 def get_mongo_client():
@@ -245,6 +248,17 @@ def generate_random_string():
     tstr = str(int(time.time() * 1000))
     random = random + tstr
     return random
+
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj,'to_dict'):
+            return obj.to_dict()
+        return json.JSONEncoder.default(self, obj)
+
+
+def default_handler(obj):
+    return obj.__str__()
 
 
 def make_password(password):
