@@ -50,6 +50,12 @@ urlpatterns += patterns('',
     url(r'cryptocurry/analyze/visual/ohlcvdata/price_close/$', 'cryptocurry.analysis.views.visualize_ohlcv_priceclose', name='visualize_ohlcv_priceclose'),
     url(r'cryptocurry/analyze/visual/ohlcvdata/price_open/$', 'cryptocurry.analysis.views.visualize_ohlcv_priceopen', name='visualize_ohlcv_priceopen'),
     url(r'cryptocurry/analyze/visual/ohlcvdata/trades_count/$', 'cryptocurry.analysis.views.visualize_ohlcv_tradescount', name='visualize_ohlcv_tradescount'),
+    url(r'cryptocurry/analyze/visual/coinmarketdata/currency_price/$', 'cryptocurry.analysis.views.coinmarket_currency_price', name='visualize_coinmarket_currency_price'),
+    url(r'cryptocurry/analyze/visual/coinmarketdata/percent_change_24hr/$', 'cryptocurry.analysis.views.coinmarket_percent_change_24hr', name='visualize_coinmarket_percent_change_24hr'),
+    url(r'cryptocurry/analyze/visual/coinmarketdata/percent_change_1hr/$', 'cryptocurry.analysis.views.coinmarket_percent_change_1hr', name='visualize_coinmarket_percent_change_1hr	'),
+    url(r'cryptocurry/analyze/visual/coinmarketdata/volume_24hr/$', 'cryptocurry.analysis.views.coinmarket_volume_24hr', name='visualize_coinmarket_volume_24hr'),
+    url(r'cryptocurry/analyze/visual/coinmarketdata/last_updated/$', 'cryptocurry.analysis.views.coinmarket_last_updated', name='visualize_coinmarket_last_updated'),
+    url(r'cryptocurry/analyze/visual/coinmarketdata/percent_change_7days/$', 'cryptocurry.analysis.views.coinmarket_percent_change_7days', name='visualize_coinmarket_percent_change_7days'),
 )
 
 

@@ -98,7 +98,7 @@ def visualize_investdb_currencyprice(request):
     currency_vals = {}
     currency_times = {}
     max_cols = 0
-    register_matplotlib_converters()
+    #register_matplotlib_converters()
     for valdict in datadict['investdata']:
         currname = valdict['currency_name']
         val = valdict['currency_price']
@@ -1444,6 +1444,132 @@ def cmcd_percentchange1hr(request):
 @ensure_csrf_cookie
 @csrf_protect
 def cmcd_currencyprice(request):
+    pass
+
+
+@ensure_csrf_cookie
+@csrf_protect
+def coinmarket_currency_price(request):
+    message = ''
+    if request.method != 'POST': # Illegal bad request... 
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    # Access the mongo db with pymongo
+    db = utils.get_mongo_client()
+    data = db.coinmarketdata.find()
+    record = []
+    ddict = {}
+    alldatetimes = []
+    for rec in data:
+        record.append(rec)
+    ddict['coinmarket'] = record
+    currency_vals = {}
+    currency_times = {}
+    max_rows = 0
+    target_currencies = ("EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "DIGIBYTE", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "COSMOS", "DASH")
+    collected_target_currname = {}
+    for valdict in ddict['coinmarket']:
+        currname = valdict['currency_name']
+        print currname, "\n"
+        if currname.upper() not in target_currencies:
+            print "Curency named '%s' not found"%currname.upper()
+            continue
+        for k in utils.hexcodecharmap.keys():
+            currname = currname.replace(k, utils.hexcodecharmap[k])
+        val = valdict["currency_price"]
+        val = re.sub('[^0-9\.\-e]', '', str(val))
+        patval = re.compile("(\d+\.?\d*)e?\-?(\d*)")
+        patmatchobj = patval.search(val)
+        if val == '':
+            val = 0.0
+        if patmatchobj and patmatchobj.groups().__len__() > 1 and patmatchobj.groups()[1] != '':
+            val = re.sub(patval, str(float(patmatchobj.groups()[0])/10 ** int(patmatchobj.groups()[1])), val)
+        else:
+            val = re.sub(patval, str(float(patmatchobj.groups()[0])), val)
+        datetimeentry = valdict['last_updated'] # Need to ensure datetime are sorted. I am putting time_period_end since the exact time at which the lowest price occurred is not specified. The 'time_period_end' is a better candidate for this than time_period_start. (or so I think). Suggestions are welcome.
+        datetimeentry = re.sub('\:\d+\.\d+$', '', datetimeentry)
+        if currency_vals.has_key(currname):
+            data = list([])
+            data = currency_vals[currname]
+            data.append(float(val))
+            currency_vals[currname] = data
+            dtlist = list([])
+            if currency_times.has_key(currname):
+                dtlist = currency_times[currname]
+                dtlist.append(datetimeentry)
+            else:
+                dtlist.append(datetimeentry)
+            alldatetimes.append(datetimeentry)
+            currency_times[currname] = dtlist
+            l = data.__len__()
+            if l > max_rows:
+                max_rows = l
+        else:
+            currency_vals[currname] = [val,]
+            currency_times[currname] = [datetimeentry, ]
+            alldatetimes.append(datetimeentry)
+            max_rows = 1
+    datarecs = []
+    currencynames = []
+    datelists = []
+    datadict = {}
+    paramsdict = {}
+    ifacedict = {}
+    for currname in currency_vals.keys():
+        currname = currname.replace('&#39;', utils.hexcodecharmap['&#39;'])
+        datarecs = currency_vals[currname]
+        datelists = currency_times[currname]
+        currencynames.append(currname)
+        for i in range(datarecs.__len__()):
+            if datadict.has_key(currname):
+                datelists[i] = datelists[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datarecs[i] = str(datarecs[i]).replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datadict[currname].append({datelists[i] : float(datarecs[i])})
+            else:
+                datelists[i] = datelists[i].replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datarecs[i] = str(datarecs[i]).replace('&#39;', utils.hexcodecharmap['&#39;'])
+                datadict[currname] = [{datelists[i] : float(datarecs[i])}, ]
+    for d in range(alldatetimes.__len__()):
+        alldatetimes[d] = alldatetimes[d].replace('&#39;', utils.hexcodecharmap['&#39;'])
+    ifacedict['datadict'] = datadict
+    ifacedict['plotname'] = "Currency Price ";
+    ifacedict['currencynames'] = currencynames
+    ifacedict['datetimeslist'] = alldatetimes # ALL DISTINCT DATETIMES OF ALL CURRENCIES ARE CONSIDERED.
+    colors = utils.randomcolorgenerator(currencynames.__len__())
+    ifacedict['colors'] = colors
+    ifacedict = json.dumps(ifacedict)
+    response = HttpResponse(ifacedict)
+    return response
+
+
+@ensure_csrf_cookie
+@csrf_protect
+def coinmarket_percent_change_24hr(request):
+    pass
+
+
+@ensure_csrf_cookie
+@csrf_protect
+def coinmarket_percent_change_1hr(request):
+    pass
+
+
+@ensure_csrf_cookie
+@csrf_protect
+def coinmarket_volume_24hr(request):
+    pass
+
+
+@ensure_csrf_cookie
+@csrf_protect
+def coinmarket_last_updated(request):
+    pass
+
+
+@ensure_csrf_cookie
+@csrf_protect
+def coinmarket_percent_change_7days(request):
     pass
 
 
