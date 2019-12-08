@@ -69,8 +69,11 @@ function drawChart(data, source="investdb"){
       colors = dataparsed["colors"];
       datetimeslist = dataparsed["datetimeslist"];
       plotareadiv = document.getElementById('plotnamearea');
+      plotimgdiv = document.getElementById('plotimage')
       currencynames = dataparsed["currencynames"];
       var keys = Object.keys(datadict);
+      plotimgdiv.style.display = "block";
+      alert("The data has been received by your browser. However, the browser will take some time to plot the graph using the data. Please be patient. The time taken to plot the data is directly proportional to the amount of data that has been served by the server.");
       //alert(keys);
       datalists = [];
       datacurr = [];
@@ -84,7 +87,7 @@ function drawChart(data, source="investdb"){
 	  headers_ohlcv = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "ETHEREUM CLASSIC", "COSMOS"];
       }
       else if(source == "coinmarketdata"){
-	  headers_coinmarketdata = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NICASH"];
+	  headers_coinmarketdata = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "DIGIBYTE", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "COSMOS", "DASH"];
       }
       else if(source == "coinmarketcapdata"){
 	  headers_coinmarketcapdata = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NICASH"];
@@ -103,7 +106,7 @@ function drawChart(data, source="investdb"){
 	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "ETHEREUM CLASSIC" : 0};
       }
       else if(source == "coinmarketdata"){
-	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NICASH" : 0};
+	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "LITECOIN" : 0, "XRP" : 0, "DIGIBYTE" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "COSMOS" : 0, "DASH" : 0};
       }
       else if(source == "coinmarketcapdata"){
 	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NICASH" : 0};
@@ -126,7 +129,7 @@ function drawChart(data, source="investdb"){
 	  listedcurrencies_ohlcv = new Array("EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "ETHEREUM CLASSIC", "COSMOS");
       }
       else if(source == "coinmarketdata"){
-	  listedcurrencies_coinmarketdata = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NICASH");
+	  listedcurrencies_coinmarketdata = new Array("EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "DIGIBYTE", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "COSMOS", "DASH");
       }  
       else if(source == "coinmarketcapdata"){
 	  listedcurrencies_coinmarketcapdata = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NICASH");
@@ -164,8 +167,31 @@ function drawChart(data, source="investdb"){
 	      plotdata.addColumn('number', "ETHEREUM CLASSIC");
       }
       else if(source == "coinmarketdata"){
+	      plotdata.addColumn('number', "EOS");
+	      plotdata.addColumn('number', "BITCOIN");
+	      plotdata.addColumn('number', "BINANCE COIN");
+	      plotdata.addColumn('number', "LITECOIN");
+	      plotdata.addColumn('number', "XRP");
+	      plotdata.addColumn('number', "DIGIBYTE");
+	      plotdata.addColumn('number', "STELLAR");
+	      plotdata.addColumn('number', "BITCOIN CASH");
+	      plotdata.addColumn('number', "ETHEREUM");
+	      plotdata.addColumn('number', "MONERO");
+	      plotdata.addColumn('number', "COSMOS");
+    	      plotdata.addColumn('number', "DASH");
       }  
       else if(source == "coinmarketcapdata"){
+              plotdata.addColumn('number', "EOS");
+	      plotdata.addColumn('number', "BITCOIN");
+	      plotdata.addColumn('number', "BINANCE COIN");
+	      plotdata.addColumn('number', "BITCOIN SV");
+	      plotdata.addColumn('number', "XRP");
+	      plotdata.addColumn('number', "TETHER");
+	      plotdata.addColumn('number', "STELLAR");
+	      plotdata.addColumn('number', "BITCOIN CASH");
+	      plotdata.addColumn('number', "ETHEREUM");
+	      plotdata.addColumn('number', "MONERO");
+	      plotdata.addColumn('number', "NICASH");
       }
       else if(source == "coinbase"){
       }
@@ -244,16 +270,24 @@ function drawChart(data, source="investdb"){
 		    }
 	    }
 	}
+	datalength_inconsistency_flag = 0
+	//alert(datetimeslist);
         for(datetimeval in datetimeslist){
 	    datar = datastack[datetimeslist[datetimeval]]
 	    //alert(datar);
-	    if(datar.length != keys.length){
+	    if(datar && datar.length != keys.length){
 		//console.log(datar.length);
 		//alert(datar.length);
+		//alert(datar);
 		//alert(keys.length);
+		//alert(keys);
+		datalength_inconsistency_flag = 1
 		continue;
 	    }
 	    plotdata.addRow(datar);
+	}
+	if(datalength_inconsistency_flag == 1){
+	    alert("There were inconsistencies in your data. However, this doesn't make your data faulty.");
 	}
 	subtitlestr = "in Millions of USD";
 	var options = {
@@ -280,12 +314,15 @@ function drawChart(data, source="investdb"){
         }
       };
       //var chart = new google.visualization.LineChart(document.getElementById("plotimage"));
+      
+      var chart = new google.charts.Line(document.getElementById("plotimage"));
+      plotimgdiv.innerHTML = "";
       plotareadiv.innerHTML = ""; // Remove if something was written previously.
       plotareadiv.innerHTML = plotname;
-      var chart = new google.charts.Line(document.getElementById("plotimage"));
       try{
-          chart.draw(plotdata, options);
-      //  chart.draw(plotdata, google.charts.Line.convertOptions(options));
+        chart.draw(plotdata, options);
+        
+        //chart.draw(plotdata, google.charts.Line.convertOptions(options));
       }
       catch(err){ // Some data will be invalid, you can't do a fuck with it. 
         //(Ummmmm.... please excuse my language, sometimes I behave that way, especially when I am irritated).
@@ -327,10 +364,13 @@ function displayplots(indexval, urlprefix, source){
           	drawChart(data, source);
 	    }
 	    else if(source == "coinmarketdata"){
+		drawChart(data, source);
 	    }  
 	    else if(source == "coinmarketcapdata"){
+		drawChart(data, source)
 	    }
 	    else if(source == "coinbase"){
+		drawChart(data, source)
 	    }
 	    else{
 	      alert("Unrecognized Source.");
