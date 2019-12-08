@@ -9,6 +9,9 @@ import datetime
 import pandas as pd
 import pymongo
 import conf.config as config
+from cryptocurry.crypto_settings import *
+from requests import Request, Session
+from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
 
 sleeptime = config.SLEEPTIME
 
@@ -137,89 +140,89 @@ def getDataFromCoinMarket():
     return curr_data_map
 
 
+"""
+This uses the coinmarketcap API - Basic Plan (Free).
+"""
 def coinmarketcap():
-    url = "https://coinmarketcap.com/all/views/all/"
-    opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), NoRedirectHandler())
-    http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : 'coinmarketcap.com', 'Referer' : 'https://www.google.com' }
-    marketcap_request = urllib2.Request(url, None, http_headers)
-    marketcap_response = None
+    url = COIN_MARKET_CAP_DOMAIN + '/v1/cryptocurrency/listings/latest'
+    parameters = {
+      'start':'1',
+      'limit':'100',
+      'convert':'USD'
+    }
+    headers = {
+      'Accepts': 'application/json',
+      'X-CMC_PRO_API_KEY': COIN_MARKET_CAP_API_KEY,
+    }
+    session = Session()
+    session.headers.update(headers)
     try:
-        marketcap_response = opener.open(marketcap_request)
-    except:
-        print "Could not get the raw cryptocurrency data - Error: %s\n"%sys.exc_info()[1].__str__()
-        return False
-    content = decodeGzippedContent(marketcap_response.read())
-    soup = BeautifulSoup(content)
-    if soup is None:
-        print "Soup is empty."
-        return False
+        response = session.get(url, params=parameters)
+        data = json.loads(response.text)
+    except (ConnectionError, Timeout, TooManyRedirects) as e:
+        print(e)
+        print "Could not collect data from CoinMarketCap. Returning."
+        return 0
     infolist = []
     mongoconn = pymongo.MongoClient("mongodb://%s:%s@localhost:%s/cryptocurrency"%(config.MONGO_USER, config.MONGO_PASSWD, config.MONGO_PORT))
     db = mongoconn.cryptocurrency
-    currencytdlist = soup.findAll("a", {'class' : 'currency-name-container link-secondary'})
-    for currencysoup in currencytdlist:
-        currencyname = currencysoup.getText()
-        symboltd = currencysoup.findNext("td", {'class' : 'text-left col-symbol'})
-        symbol = symboltd.getText()
-        marketcaptd = symboltd.findNext("td", {'class' : 'no-wrap market-cap text-right'})
-        marketcap = marketcaptd.getText()
-        marketcap = marketcap.replace("$", "")
-        marketcap = marketcap.replace(",", "")
-        if marketcap == "?":
-            marketcap = 0.0
-        priceanchor = marketcaptd.findNext("a", {'class' : 'price'})
-        price = priceanchor.getText()
-        price = price.replace("$", "")
-        price = price.replace(",", "")
-        if price == "?":
-            price = 0.0
-        supplyspan = priceanchor.findNext("span")
-        supply = supplyspan.getText()
-        supply = supply.replace("$", "")
-        supply = supply.replace(",", "")
-        if supply == "?":
-            supply = 0.0
-        volumeanchor = supplyspan.findNext("a", {'class' : 'volume'})
-        volume = volumeanchor.getText()
-        volume = volume.replace("$", "")
-        volume = volume.replace(",", "")
-        if volume == "?":
-            volume = 0.0
-        percent1hrtd = volumeanchor.findNext("td")
-        percent1hr = percent1hrtd.getText()
-        percent1hr = percent1hr.replace("$", "")
-        percent1hr = percent1hr.replace(",", "")
-        percent1hr = percent1hr.replace("%", "")
-        if percent1hr == "?":
-            percent1hr = 0.0
-        percent24hrtd = percent1hrtd.findNext("td")
-        percent24hr = percent24hrtd.getText()
-        percent24hr = percent24hr.replace("$", "")
-        percent24hr = percent24hr.replace(",", "")
-        percent24hr = percent24hr.replace("%", "")
-        if percent24hr == "?":
-            percent24hr = 0.0
-        percent7dtd = percent24hrtd.findNext("td")
-        percent7d = percent7dtd.getText()
-        percent7d = percent7d.replace("$", "")
-        percent7d = percent7d.replace(",", "")
-        percent7d = percent7d.replace("%", "")
-        if percent7d == "?":
-            percent7d = 0.0
-        """
-        if float(marketcap) > 0.0:
-            print "MARKET CAP = %s\n"%marketcap
-        """
-        valdict = {'currency_name' : currencyname, 'currency_symbol' : symbol, 'marketcap' : marketcap, 'currency_price' : price, 'supply' : supply, 'volume' : volume, 'percent1hr' : percent1hr, 'percent24hr' : percent24hr, 'percent7d' : percent7d, 'entrydatetime' : str(datetime.datetime.now())}
+    cryptocurrencydatalist = data[u'data']
+    infolist = []
+    mongoconn = pymongo.MongoClient("mongodb://%s:%s@localhost:%s/cryptocurrency"%(config.MONGO_USER, config.MONGO_PASSWD, config.MONGO_PORT))
+    for cryptodict in cryptocurrencydatalist:
+        last_updated, entrydatetime, cryptocurrname, cryptosymbol, marketcap,price, supply, volume, percent_change_1h, percent_change_24h, percent_change_7d = "", "", "", "", "", "", "", "", "", "", "" 
+        entrydatetime = str(datetime.datetime.now())
+        if cryptodict.has_key('last_updated'):
+            last_updated = cryptodict['last_updated']
+        else:
+            last_updated = entrydatetime
+        if cryptodict.has_key(u'name'):
+            cryptocurrname = cryptodict[u'name']
+        else:
+            continue # If no name is found, then it is not of much use to us.
+        if cryptodict.has_key(u'symbol'):
+            cryptosymbol = cryptodict[u'symbol']
+        else:
+            cryptosymbol = cryptocurrname
+        if cryptodict.has_key(u'quote') and cryptodict[u'quote'].has_key('USD') and cryptodict[u'quote'][u'USD'].has_key(u'market_cap'):
+            marketcap = cryptodict[u'quote'][u'USD'][u'market_cap']
+        else:
+            marketcap = 0.00
+        if cryptodict.has_key(u'quote') and cryptodict[u'quote'].has_key('USD') and cryptodict[u'quote'][u'USD'].has_key(u'price'):
+            price = cryptodict[u'quote'][u'USD'][u'price']
+        else:
+            price = 0.00
+        if cryptodict.has_key(u'total_supply'):
+            supply = cryptodict['total_supply']
+        else:
+            supply = 0
+        if cryptodict.has_key(u'quote') and cryptodict[u'quote'].has_key('USD') and cryptodict[u'quote'][u'USD'].has_key(u'volume_24h'):
+            volume = cryptodict[u'quote'][u'USD'][u'volume_24h']
+        else:
+            volume = 0.00
+        if cryptodict.has_key(u'quote') and cryptodict[u'quote'].has_key('USD') and cryptodict[u'quote'][u'USD'].has_key(u'percent_change_1h'):
+            percent_change_1h = cryptodict[u'quote'][u'USD'][u'percent_change_1h']
+        else:
+            percent_change_1h = 0.00
+        if cryptodict.has_key(u'quote') and cryptodict[u'quote'].has_key('USD') and cryptodict[u'quote'][u'USD'].has_key(u'percent_change_24h'):
+            percent_change_24h = cryptodict[u'quote'][u'USD'][u'percent_change_24h']
+        else:
+            percent_change_24h = 0.00
+        if cryptodict.has_key(u'quote') and cryptodict[u'quote'].has_key('USD') and cryptodict[u'quote'][u'USD'].has_key(u'percent_change_7d'):
+            percent_change_7d = cryptodict[u'quote'][u'USD'][u'percent_change_7d']
+        else:
+            percent_change_7d = 0.00
+        valdict = {'currency_name' : cryptocurrname, 'currency_symbol' : cryptosymbol, 'marketcap' : marketcap, 'currency_price' : price, 'supply' : supply, 'volume' : volume, 'percent1hr' : percent_change_1h, 'percent24hr' : percent_change_24h, 'percent7d' : percent_change_7d, 'entrydatetime' : str(last_updated)}
         infolist.append(valdict)
         try:
             result = db.coinmarketcapdata.insert_one(valdict)
+            #print valdict,"\n\n"
         except:
             print "Could not enter data in mongo db. Error: %s\n"%sys.exc_info()[1].__str__()
     print "Collected data from coinmarketcap website.\n"
     return infolist
-
-
+        
+        
 """
 This is an index for 30 cryptocurrencies combined on some mathematical basis. This
 information is useful to those who want to invest in cryptocurrencies and hedge
@@ -301,6 +304,7 @@ def collectionEventLoop(scraper_functions_list):
 
 if __name__ == "__main__":
     scraperslist = [scrapeFromInvest, getDataFromCoinMarket, coinmarketcap, cci30index,] # Add scraper functions here.
+    # scraperslist = [scrapeFromInvest, getDataFromCoinMarket, cci30index,] # Add scraper functions here.
     collectionEventLoop(scraperslist)
 
 
