@@ -1,5 +1,6 @@
-
-
+{% include "inc/cryptoheader.html" %}
+{% include "inc/cryptonavbartail.html" %}
+{% include "inc/cryptostartarea.html" %}
 <nav>
   <ul>
     <li id="login">
@@ -25,4 +26,8 @@
     </li>
   </ul>
 </nav>
+{% include "inc/cryptocoursestartarea.html" %}
+{% include "inc/cryptocurrencyarea.html" %}
+{% include "inc/cryptoblogarea.html" %}
+{% include "inc/cryptofooterarea.html" %}
 

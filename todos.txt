@@ -9,5 +9,5 @@
 9. Implement interpolation of values on plots for InvestDB "Volume 24 HRS", "change 24 HRS", and some other plots that *require* this.
 10. Work on the CSS and the layout of the page such that the legend, the title and the entire plot is visible and responsive.
 11. Set the Y-axis to percetage in InvestData so that the data may be interpreted correctly.
-12. Plot of last 'X' hours/days should plot for last 'X' time unit only.
-13. Plot of OHLCV metrics should have the javascript error resolved.
+12. Plot of last 'X' hours/days should plot for last 'X' time unit only. [Won't Fix as the figures at each point shows the volume at the specified stretch of time.]
+13. Plot of OHLCV metrics should have the javascript error resolved.[Done]

@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-from crypto_settings import *
+from .crypto_settings import *
 
 # Django settings for cryptocurry project.
 

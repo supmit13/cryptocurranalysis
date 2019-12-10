@@ -46,3 +46,13 @@ Create a collection for sessions:
 db.sessions.insert([ { 'sessionid' : '', 'userid' : '', 'sessionstarttime' : '', 'sessionactive' : false, 'sessionendtime' : '', 'sourceip' : '', 'useragent' : '' },] )
 db.sessions.insert([ { 'sessionid' : '$pbkdf2-sha256$200$OwcgxLgXglCKkRKCkJIypg$khJTb/nVrflrdizdqFx.vgxlGbi/WbN1tgkJsEdkeY81556193964', 'userid' : '4f9ce9ed39cb414e8641bf2338f14bf21566062133366', 'sessionstarttime' : '1566064578.401682', 'sessionactive' : true, 'sessionendtime' : '', 'sourceip' : '', 'useragent' : 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36 OPR/56.0.3051.31' },] )
 
+
+Displaying Last N records in a collection:
+------------------------------------------
+ db.coinmarketcapdata.find().sort({$natural : -1}).limit(10)
+
+NOTE: Here in the above command, N is 10. '$natural' stands for natural sequencing, which means the sequence in which the records were
+inserted, and the value '-1' means the display should be in reverse order.
+
+
+

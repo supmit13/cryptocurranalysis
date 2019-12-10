@@ -1,6 +1,7 @@
 import os, sys, re, time
 import urllib, urllib2
 from BeautifulSoup import BeautifulSoup
+#import beautifulsoup4
 import gzip
 from StringIO import StringIO
 import MySQLdb
@@ -8,6 +9,7 @@ import simplejson as json
 import datetime
 import pandas as pd
 import pymongo
+#from cassandra.cluster import Cluster
 import conf.config as config
 from cryptocurry.crypto_settings import *
 from requests import Request, Session
