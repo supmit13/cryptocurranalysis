@@ -56,7 +56,11 @@ Sunday, September 29, 2019, 03:03 HRS.
 1. git add --all
 
 =========================================
-
-
+Saturday, December 14, 2019, 04:05 HRS.
+-----------------------------------------
+1. git add cryptocurry/analysis/views.py
+2. git add cryptocurry/urls.py
+3. git add files_to_commit.txt
+-----------------------------------------
 
 

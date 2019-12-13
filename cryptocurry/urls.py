@@ -57,12 +57,12 @@ urlpatterns += patterns('',
     url(r'cryptocurry/analyze/visual/coinmarketdata/last_updated/$', 'cryptocurry.analysis.views.coinmarket_last_updated', name='visualize_coinmarket_last_updated'),
     url(r'cryptocurry/analyze/visual/coinmarketdata/percent_change_7days/$', 'cryptocurry.analysis.views.coinmarket_percent_change_7days', name='visualize_coinmarket_percent_change_7days'),
     url(r'cryptocurry/analyze/visual/coinmarketcapdata/percent7d/$', 'cryptocurry.analysis.views.cmcd_percent07day', name='cmcd_percent07day'),
-    url(r'cryptocurry/analyze/visual/coinmarketcapdata/cmcd_percent24hr/$', 'cryptocurry.analysis.views.cmcd_percent24hr', name='cmcd_percent24hr'),
-    url(r'cryptocurry/analyze/visual/coinmarketcapdata/volume24hrs/$', 'cryptocurry.analysis.views.cmcd_vol24hrs', name='cmcd_vol24hrs'),
-    url(r'cryptocurry/analyze/visual/coinmarketcapdata/percent_change_1hr/$', 'cryptocurry.analysis.views.cmcd_percentchange1hr', name='cmcd_percentchange1hr'),
-    url(r'cryptocurry/analyze/visual/coinmarketcapdata/cmcd_currencyprice/$', 'cryptocurry.analysis.views.cmcd_currencyprice', name='cmcd_currencyprice'),
-    url(r'cryptocurry/analyze/visual/coinmarketcapdata/cmcd_supply/$', 'cryptocurry.analysis.views.cmcd_supply', name='cmcd_supply'),
-    url(r'cryptocurry/analyze/visual/coinmarketcapdata/cmcd_volume/$', 'cryptocurry.analysis.views.cmcd_volume', name='cmcd_volume'),    
+    url(r'cryptocurry/analyze/visual/coinmarketcapdata/percent24hr/$', 'cryptocurry.analysis.views.cmcd_percent24hr', name='cmcd_percent24hr'),
+    url(r'cryptocurry/analyze/visual/coinmarketcapdata/marketcap/$', 'cryptocurry.analysis.views.cmcd_marketcap', name='cmcd_marketcap'),
+    url(r'cryptocurry/analyze/visual/coinmarketcapdata/percent1hr/$', 'cryptocurry.analysis.views.cmcd_percentchange1hr', name='cmcd_percentchange1hr'),
+    url(r'cryptocurry/analyze/visual/coinmarketcapdata/currency_price/$', 'cryptocurry.analysis.views.cmcd_currencyprice', name='cmcd_currencyprice'),
+    url(r'cryptocurry/analyze/visual/coinmarketcapdata/supply/$', 'cryptocurry.analysis.views.cmcd_supply', name='cmcd_supply'),
+    url(r'cryptocurry/analyze/visual/coinmarketcapdata/volume/$', 'cryptocurry.analysis.views.cmcd_volume', name='cmcd_volume'),    
 
 )
 
