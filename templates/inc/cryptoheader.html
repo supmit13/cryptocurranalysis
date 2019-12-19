@@ -12,6 +12,7 @@
     <meta http-equiv="CACHE-CONTROL" content="NO-CACHE">
     <meta http-equiv="PRAGMA" content="NO-CACHE">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script language='JavaScript' type="text/javascript" src='static/scripts/pageutils.js'></script>
     <!-- Title -->
     <title>CryptoCurry - Cryptocurrency Analysis &amp; Trading Platform</title>
 
@@ -46,6 +47,7 @@
     <!-- <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1.1','packages':['line']}]}"></script> -->
     <script type='text/javascript'>
         google.charts.load('current', {'packages':['line']});
+	google.charts.load('current', {'packages':['corechart', 'bar']});
         //google.charts.setOnLoadCallback(drawChart);
 
 
@@ -69,17 +71,15 @@ function drawChart(data, source="investdb"){
       colors = dataparsed["colors"];
       datetimeslist = dataparsed["datetimeslist"];
       plotareadiv = document.getElementById('plotnamearea');
-      plotimgdiv = document.getElementById('plotimage')
+      plotimgdiv = document.getElementById('plotimage');
       currencynames = dataparsed["currencynames"];
       var keys = Object.keys(datadict);
-      //alert(keys);
       plotimgdiv.style.display = "block";
-      alert("The data has been received by your browser. However, the browser will take some time to plot the graph using the data. Please be patient. The time taken to plot the data is directly proportional to the amount of data that has been served by the server.");
+      alert("The data has been received by your browser. However, the browser will take some time to plot the graph using the data. Please be patient. The time taken to plot the data is directly proportional to the amount of data that has been served by the server. It might take quite a few minutes depending on the size of your dataset and the configuration of your own computer.");
       datalists = [];
       datacurr = [];
       currlist = new Array();
       plotareadiv.innerHTML = "It might take a little while to plot your chart. Please be patient.";
-      //alert(source);
       if(source == "investdb"){
           headers_investdb = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "LITECOIN", "MONERO", "NICASH"];
       }
@@ -92,9 +92,9 @@ function drawChart(data, source="investdb"){
       else if(source == "coinmarketcapdata"){
 	  headers_coinmarketcapdata = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO", "COSMOS"];
       }
-      else if(source == "coinbase"){
-	  headers_coinbase = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NICASH"];
-      }
+      //else if(source == "coinlayer"){
+      //  headers_coinlayer = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO"];
+      //}
       else{
 	alert("Unrecognized Source.");
       }
@@ -111,9 +111,9 @@ function drawChart(data, source="investdb"){
       else if(source == "coinmarketcapdata"){
 	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "BITCOIN SV" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NEO" : 0, "COSMOS" : 0};
       }
-      else if(source == "coinbase"){
-	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NICASH" : 0};
-      }
+      //else if(source == "coinlayer"){
+      //  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NEO" : 0};
+      //}
       else{
 	alert("Unrecognized Source.");
       }
@@ -134,9 +134,9 @@ function drawChart(data, source="investdb"){
       else if(source == "coinmarketcapdata"){
 	  listedcurrencies_coinmarketcapdata = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO", "COSMOS");
       }
-      else if(source == "coinbase"){
-	  listedcurrencies_coinbase = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NICASH");
-      }
+      //else if(source == "coinlayer"){
+      //  listedcurrencies_coinlayer = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO");
+      //}
       else{
 	alert("Unrecognized Source.");
       }
@@ -195,8 +195,6 @@ function drawChart(data, source="investdb"){
 	      plotdata.addColumn('number', "NEO");
 	      plotdata.addColumn('number', "COSMOS");
       }
-      else if(source == "coinbase"){
-      }
       else{
 	alert("Unrecognized Source.");
       }
@@ -215,9 +213,9 @@ function drawChart(data, source="investdb"){
 	else if(source == "coinmarketcapdata"){
 	    listedcurrencies = listedcurrencies_coinmarketcapdata;
 	}
-	else if(source == "coinbase"){
-	    listedcurrencies = listedcurrencies_coinbase;
-	}
+	//else if(source == "coinlayer"){
+	//    listedcurrencies = listedcurrencies_coinlayer;
+	//}
         for(currencyindex in currencyindices){
 	    currencyname = currencyindices[currencyindex];
             if(source == "investdb" && listedcurrencies_investdb.indexOf(currencyname.toUpperCase()) == -1){
@@ -232,10 +230,9 @@ function drawChart(data, source="investdb"){
 	    if(source == "coinmarketcapdata" && listedcurrencies_coinmarketcapdata.indexOf(currencyname.toUpperCase()) == -1){
 		continue;
             }
-	    if(source == "coinbase" && listedcurrencies_coinbase.indexOf(currencyname.toUpperCase()) == -1){
-		continue;
-            }
-	    //alert(currencyname.toUpperCase());
+	    //if(source == "coinlayer" && listedcurrencies_coinlayer.indexOf(currencyname.toUpperCase()) == -1){
+	    //	continue;
+            //}
 	    currflagobj[currencyname.toUpperCase()] = 1;
 	    curvalslist = datadict[currencyname];
 	    rec_ctr = 0;
@@ -273,20 +270,12 @@ function drawChart(data, source="investdb"){
 	    }
 	}
 	datalength_inconsistency_flag = 0
-	//alert(datetimeslist);
         for(datetimeval in datetimeslist){
 	    datar = datastack[datetimeslist[datetimeval]]
-	    //alert(datar);
 	    if(datar && datar.length != keys.length){
-		//console.log(datar.length);
-		//alert(datar.length);
-		//alert(datar);
-		//alert(keys.length);
-		//alert(keys);
 		datalength_inconsistency_flag = 1
 		continue;
 	    }
-	    //alert(datar.length);
 	    plotdata.addRow(datar);
 	}
 	if(datalength_inconsistency_flag == 1){
@@ -334,6 +323,50 @@ function drawChart(data, source="investdb"){
 }
 
 
+function drawBarChart(datajson){
+    google.charts.load('current', {'packages':['bar']});
+    data = JSON.parse(datajson)
+    datetimekeys = Object.keys(data);
+    headerslist = Array();
+    headers = [];
+    firstpass = 1;
+    datalist = Array();
+    for (datetimeindx in datetimekeys){
+	datetime = datetimekeys[datetimeindx];
+	currdict = data[datetime];
+        if(firstpass){
+	    headers.push("datetime");
+	}
+	currkeys = Array();
+ 	currkeys = Object.keys(currdict);
+        currvals = Array();
+	currvals.push(datetime);
+        for (currkeyindx in currkeys){
+	    currkey = currkeys[currkeyindx];
+	    if(firstpass){
+		headers.push(currkey);
+	    }
+	    currvals.push(parseFloat(currdict[currkey]));
+	}
+	if(firstpass){
+	    datalist.push(headers);
+	    firstpass = 0;
+	}
+	datalist.push(currvals);
+    }
+    var dataset = google.visualization.arrayToDataTable(datalist);
+    var options = {
+          chart: {
+            title: 'Exchange Rates',
+            subtitle: 'Exchange Rates for selected cryptocurrencies',
+          },
+          bars: 'vertical'
+        };
+        var chart = new google.charts.Bar(document.getElementById('plotimage'));
+        chart.draw(dataset, google.charts.Bar.convertOptions(options));
+}
+
+
 function displayplots(indexval, urlprefix, source){
     selectbox = document.getElementById(indexval);
     selectedvalue = selectbox.value;
@@ -346,7 +379,6 @@ function displayplots(indexval, urlprefix, source){
     else{
         xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
     }
-
     xmlhttp.onreadystatechange = function(){
         if(xmlhttp.readyState == 4 && xmlhttp.status==200){
 	    plotdiv.style.display = "block";
@@ -368,10 +400,7 @@ function displayplots(indexval, urlprefix, source){
 		drawChart(data, source);
 	    }  
 	    else if(source == "coinmarketcapdata"){
-		drawChart(data, source)
-	    }
-	    else if(source == "coinbase"){
-		drawChart(data, source)
+		drawChart(data, source);
 	    }
 	    else{
 	      alert("Unrecognized Source.");
@@ -393,6 +422,77 @@ function displayplots(indexval, urlprefix, source){
     xmlhttp.send(postdata);
 }
 
+
+function showcoinlayer(){
+    postdata = "csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
+    plotdiv = document.getElementById('plotimage');
+    data = "";
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+        if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    plotdiv.style.display = "block";
+	    data = xmlhttp.responseText;
+	    drawBarChart(data);
+        }
+    }
+    posturl = "/cryptocurry/coinlayer_api/request/";
+    alert("This operation might take a while, depending on the volume of available data on the server. Please be patient.");
+    xmlhttp.open('POST', posturl, true);
+    xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xmlhttp.setRequestHeader("X-CSRFToken", document.cryptoanalysis.csrfmiddlewaretoken.value);
+    xmlhttp.send(postdata);
+}
+
+
+// Authentication routines - Should not be considered as a part/extension of plotting data.
+function dologin(urlprefix){
+    username = document.loginform.username.value;
+    password = document.loginform.password.value;
+    csrfoken = document.loginform.csrfmiddlewaretoken.value;
+    if(document.loginform.keepmesignedin.checked == true){
+        keepmesignedin = 1;
+    }
+    else{
+        keepmesignedin = 0;
+    }
+    postdata = "csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
+    postdata += "&username=" + username + "&password=" + password + "&keepmesignedin=" + keepmesignedin;
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+        if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    plotdiv.style.display = "block";
+	    data = xmlhttp.responseText;
+	    // Display data in table in appropriate manner
+	    alert(data);
+        }
+    }
+    posturl = urlprefix + "/cryptocurry/auth/login/";
+    xmlhttp.open('POST', posturl, true);
+    xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xmlhttp.setRequestHeader("X-CSRFToken", document.cryptoanalysis.csrfmiddlewaretoken.value);
+    xmlhttp.send(postdata);
+}
+
+
+function signup(urlprefix){
+    target_url = "cryptocurry/auth/register/";
+}
+
+function forgotpasswd(urlprefix){
+    target_url = "cryptocurry/auth/forgotpasswd/"
+}
     </script>
 
 </head>
@@ -416,13 +516,23 @@ function displayplots(indexval, urlprefix, source){
                             <div class="top-headline">
                                 <p>Welcome to <span>CryptoCurry</span></p>
                             </div>
-                            <!-- Top Login & Faq & Earn Monery btn -->
+                            <!-- Top Login & Faq & Earn Money btn -->
                             <div class="login-faq-earn-money">
-                                <a href="#" onClick='javascript:showloginscreen("{{urlprefix}}");'>Login&nbsp;&nbsp;</a> | <a href="#" onClick='javascript:showregisterscreen("{{urlprefix}}");'>Register<br /></a>
-                                <a href="#">FAQ</a>
-                                <a href="#" class="active">Trade</a>
-				<div id='logindiv' class='semitrans' style='display:none'></div>
-				<div id='registerdiv' class='semitrans' style='display:none'></div>
+				Login: <form method='POST' name='loginform'>
+	  {% csrf_token %}
+          <fieldset id="inputs">
+            <input id="username" type="text" name="username" placeholder="Username" value='' required>   
+            <input id="password" type="password" name="password" placeholder="Password" value='' required>
+            <input type="button" id="submit1" name="submit1" value="Log in" onClick='javascript:dologin("{{urlprefix}}");'>
+	    <label><input type="checkbox" name='keepmesignedin' checked="checked"> Keep me signed in</label>
+          	|
+	    <a href="#" onClick='javascript:signup("{{urlprefix}}");'>Sign up FREE</a>
+		|
+            <a href="#" onClick='javascript:forgotpasswd("{{urlprefix}}");'>Forgot Password</a>
+        </fieldset>
+	</form>
+                                <!-- <a href="#" class="active">FAQ</a> -->
+				
                             </div>
 			    <div id='plotnamearea'></div> 
                         </div>

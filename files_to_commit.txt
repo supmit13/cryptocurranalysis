@@ -60,6 +60,15 @@ Saturday, December 14, 2019, 04:05 HRS.
 -----------------------------------------
 1. git add cryptocurry/analysis/views.py
 2. git add cryptocurry/urls.py
+3. git add templates/inc/cryptoheader.html
+3. git add files_to_commit.txt
+-----------------------------------------
+
+=========================================
+Thursday, December 19, 2019, 23:18 HRS.
+-----------------------------------------
+1. git add templates/inc/cryptocoursestartarea.html
+2. git add templates/inc/cryptoheader.html
 3. git add files_to_commit.txt
 -----------------------------------------
 
