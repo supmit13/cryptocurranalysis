@@ -84,41 +84,57 @@ def isloggedin(request):
         return False
     if not request.COOKIES.has_key('userid'):
         if DEBUG:
-            print "Invalid session code.\n"
+            print "Invalid user Id.\n"
         return False
     sesscode = request.COOKIES['sessioncode']
     userid = request.COOKIES['userid']
     ua = request.META['HTTP_USER_AGENT']
     db = get_mongo_client()
+    if DEBUG:
+        print("userid: " + userid + "\nsesscode: " + sesscode + "\n")
     rec = db['sessions'].find({'sessionid' : sesscode })
     if not rec:
         destroy_conn(db)
+        if DEBUG:
+            print "Couldn't find a matching session Id"
         return False
     else: # The session id may or may not be valid. If invalid, an exception will be thrown.
         try:
-            r = rec.next()
-            if l.__len__() > 0 and r['sessionactive'] == True: # user is logged in
-                t = float(r['sessionstarttime'])
+            if rec and rec[0]['sessionactive'] == True: # user is logged in
+                if DEBUG:
+                    print("user is logged in...\n")
+                for r in rec:
+                    t = float(r['sessionstarttime'])
+                    break
                 tnow = time.time()
-                if tnow - t > MAX_SESSION_VALID:
-                    sesscode = r['sessionid']
-                    user_id = r['userid']
-                    clientip = r['clientip']
-                    rec.update({'sessionid' : sesscode}, {'userid' : user_id, 'sessionstarttime' : t, 'sessionendtime' : str(tnow), 'active' : False, 'sessionid' : sesscode, 'useragent' : ua, 'clientip' : clientip})
+                if tnow - t > SESSION_EXPIRY_LIMIT:
+                    for r in rec:
+                        sesscode = r['sessionid']
+                        user_id = r['userid']
+                        clientip = r['clientip']
+                        r.update({'sessionid' : sesscode}, {'userid' : user_id, 'sessionstarttime' : t, 'sessionendtime' : str(tnow), 'active' : False, 'sessionid' : sesscode, 'useragent' : ua, 'clientip' : clientip})
+                        break
                     destroy_conn(db)
+                    if DEBUG:
+                        print("... but the session has expired. Needs to login again.\n")
                     return False # surpassed the maximum time for which the session was valid
                 return True
             else:
+                if DEBUG:
+                    print("User is not logged in. Needs to login.\n")
                 t = float(r['sessionstarttime'])
-                sesscode = r['sessionid']
-                user_id = r['userid']
-                tnow = time.time()
-                active = False
-                clientip = r['clientip']
-                rec.update({'sessionid' : sesscode}, {'userid' : user_id, 'sessionstarttime' : t, 'sessionendtime' : str(tnow), 'active' : active, 'sessionid' : sesscode, 'useragent' : ua, 'clientip' : clientip})
+                for r in rec:
+                    sesscode = r['sessionid']
+                    user_id = r['userid']
+                    tnow = time.time()
+                    active = False
+                    clientip = r['clientip']
+                    r.update({'sessionid' : sesscode}, {'userid' : user_id, 'sessionstarttime' : t, 'sessionendtime' : str(tnow), 'active' : active, 'sessionid' : sesscode, 'useragent' : ua, 'clientip' : clientip})
+                    break
                 destroy_conn(db)
                 return False
         except:
+            print("Exception occurred: " + sys.exc_info()[1].__str__() + "\n")
             return False
 
 
@@ -185,7 +201,7 @@ def checksession(request):
     to the login page if session is invalid.
     """
     if not isloggedin(request):
-        message = error_msg('1006')
+        message = err.error_msg('1006')
         return HttpResponseRedirect(gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
     else: # Return the request
         return request
@@ -197,7 +213,9 @@ def is_session_valid(func):
     """
     def sessioncheck(request):
         if not isloggedin(request):
-            message = error_msg('1006')
+            message = err.error_msg('1006')
+            if DEBUG:
+                print(message + "\n")
             response = HttpResponseRedirect(gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
         else: # Return the request
             response = func(request)
@@ -214,23 +232,26 @@ def session_location_match(func):
         userid = request.COOKIES['userid']
         clientIP_fromheader = request.META['REMOTE_ADDR']
         user_id = ""
+        clientip = ""
         # Check to see if the values for this session stored in DB are identical to those we extracted from the headers just now.
         db = get_mongo_client()
         try:
             rec = db['sessions'].find({'sessionid' : sesscode })
-            r = rec.next()
-            clientip = r['clientip']
+            clientip = rec[0]['sourceip']
+            user_id = rec[0]['userid']
             if not rec:
                 destroy_conn(db)
             else: # The session id may or may not be valid. If invalid, an exception will be thrown.
-                message = error_msg('1006')
+                message = err.error_msg('1006')
                 destroy_conn(db)
         except:
-            message = error_msg('1006')
+            message = err.error_msg('1006')
             # Create response with redirect to login page and this message as GET arg. Return that response
             response = HttpResponseRedirect(gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
         if userid != user_id or clientip != clientIP_fromheader:
-            message = error_msg('1007')
+            if DEBUG:
+                print("userid = " + userid + "\nuser_id= " + user_id + "\nclientip = " + clientip + "\nclientIP_fromheader = " + clientIP_fromheader + "\n")
+            message = err.error_msg('1007')
             # Create response with redirect to login page and this message as GET arg. Return that response
             response = HttpResponseRedirect(gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
         else:
@@ -287,5 +308,6 @@ def generatesessionid(username, csrftoken, userip, ts):
     return hashstr
 
 
-
+def sendemail(user, subject, message, fromaddr):
+    pass
 

@@ -61,8 +61,8 @@ def datasourceentryiface(request):
             m[indxkey] = METRICS_INVESTDATA
         elif element == "ohlcvdata":
             m[indxkey] = METRICS_OHLCVDATA
-        elif element == "coinbase":
-            m[indxkey] = METRICS_COINBASE
+        elif element == "coinlayer":
+            m[indxkey] = METRICS_COINLAYER
         else:
             pass # We don't consider any other currency now.
     metricsdict['metrics'] = m
@@ -2408,12 +2408,97 @@ def coinmarket_percent_change_7days(request):
 
 @ensure_csrf_cookie
 @csrf_protect
-def coinbaseindexdisplay(request):
-    if request.METHOD != "POST":
+def coinlayer_data(request):
+    if request.method != "POST":
+        print "method not post"
         message = err.ERR_INCORRECT_HTTP_METHOD
         response = HttpResponseBadRequest(message)
         return response
-    return HttpResponse("<img src='https://index-am.coinbase.com/oembed.json?url=https://index-am.coinbase.com/widget/index&maxwidth=500&maxheight=200'>")
+    # Access the mongo db with pymongo
+    db = utils.get_mongo_client()
+    data = db.coinlayer.find()
+    record = []
+    ddict = {}
+    alldatetimes = []
+    for rec in data:
+        record.append(rec)
+    ddict['coinlayer'] = record
+    currency_vals = {}
+    currency_times = {}
+    max_rows = 0
+    target_currencies_list = ["BNB","BTC","EOS","LTC","XRP","ETH","BCH","ETC","XMR","XLM","BTG","NEO"]
+    ctr = 0
+    layerdatetimestr_last = "01-01-1970 00:00:00"
+    layerdatetimeobj_last = datetime.datetime.strptime(layerdatetimestr_last, "%d-%m-%Y %H:%M:%S")
+    latest3datetimes = []
+    for i in range(COINLAYER_NUM_DATETIMES):
+        latest3datetimes.append(layerdatetimeobj_last)
+    alldatetimeslist = []
+    while ctr < record.__len__():
+        layerdatetimestr = str(record[ctr]['currdatetime'])
+        layerdatetimestr_parts = layerdatetimestr.split(".")
+        layerdatetimeobj = datetime.datetime.strptime(layerdatetimestr_parts[0], "%Y-%m-%d %H:%M:%S")
+        alldatetimeslist.append(layerdatetimeobj)
+        ctr += 1
+    alldatetimeslist.sort()
+    docdict = {}
+    for dtime in alldatetimeslist[:3]:
+        dtimestr = dtime.strftime("%Y-%m-%d %H:%M:%S")
+        pat = re.compile("^\d{4}\-\d{2}\-\d{2}\s+\d{2}:\d{2}:\d{2}")
+        doccursor = db.coinlayer.find({'currdatetime' : {'$regex' : pat}})
+        currdict = {}
+        cursorlist = []
+        for docres in doccursor:
+            cursorlist.append(docres)
+        for doc in cursorlist:
+            for dockey in doc.keys():
+                if doc.has_key('BTC'):
+                    currdict['Bitcoin'] = str(doc['BTC'])
+                if doc.has_key('NEO'):
+                    currdict['NEO'] = str(doc['NEO'])
+                if doc.has_key('XLM'):
+                    currdict['Stellar'] = str(doc['XLM'])
+                if doc.has_key('BCH'):
+                    currdict['Bitcoin Cash'] = str(doc['BCH'])
+                if doc.has_key('EOS'):
+                    currdict['EOS'] = str(doc['EOS'])
+                if doc.has_key('ETH'):
+                    currdict['Ethereum'] = str(doc['ETH'])
+                if doc.has_key('XRP'):
+                    currdict['Ripple'] = str(doc['XRP'])
+                if doc.has_key('BTG'):
+                    currdict['Bitcoin Gold'] = str(doc['BTG'])
+                if doc.has_key('LTC'):
+                    currdict['Litecoin'] = str(doc['LTC'])
+                if doc.has_key('BNB'):
+                    currdict['Binance Coin'] = str(doc['BNB'])
+                if doc.has_key('XMR'):
+                    currdict['Monero'] = str(doc['XMR'])
+                if doc.has_key('ETC'):
+                    currdict['Ethereum Classic'] = str(doc['ETC'])
+                else:
+                    pass # Unrecognized currency in this scheme.
+        docdict[dtimestr] = currdict
+        print docdict,"\n"
+        docdictjson = json.dumps(docdict)
+    return HttpResponse(docdictjson)
 
+
+@ensure_csrf_cookie
+@csrf_protect
+@utils.is_session_valid
+@utils.session_location_match
+def operations(request):
+    if request.method != "GET":
+        print "method not get"
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    """
+    Provide the user to operate on a dashboard for transactions, analysis, research, etc.
+    """
+    if DEBUG:
+        print("In operations....\n")
+    return HttpResponse("You are logged in successfully!")
 
 

@@ -11,3 +11,12 @@
 11. Set the Y-axis to percetage in InvestData so that the data may be interpreted correctly.
 12. Plot of last 'X' hours/days should plot for last 'X' time unit only. [Won't Fix as the figures at each point shows the volume at the specified stretch of time.]
 13. Plot of OHLCV metrics should have the javascript error resolved.[Done]
+
+Expected Functionalities:
+--------------------------
+1. User can visually monitor the cryptocurrency (supported by us)
+2. User can buy/sell cryptocurrency from/to another user. This requires both users to be registered on the website and logged in to perform the transaction.
+3. Users can create and maintain a "Blockchain" wallet. This could be used in the transactions mentioned above.
+4. An user can request to see a specific transaction or an enitre block. User should provide the IDs in both cases.
+5. From certain countries where cryptocurrency is recognized as a valid for of currency, users would be able to pay for goods purchased online. This would be done using live market rates for the specific cryptocurrency in terms of USD and EURO.
+

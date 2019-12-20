@@ -382,13 +382,8 @@ function displayplots(indexval, urlprefix, source){
     xmlhttp.onreadystatechange = function(){
         if(xmlhttp.readyState == 4 && xmlhttp.status==200){
 	    plotdiv.style.display = "block";
-	    //plotdiv.innerHTML = "";
 	    waittag = document.getElementById('waitprocess');
  	    waittag.parentNode.removeChild(waittag);
-	    //imgtag = document.createElement('img');
-	    //imgtag.setAttribute('src', xmlhttp.responseText);
-	    //plotdiv.appendChild(imgtag);
-	    //alert("calling drawchart");
 	    data = xmlhttp.responseText;
             if(source == "investdb"){
 	        drawChart(data, source);
@@ -493,7 +488,8 @@ function signup(urlprefix){
 function forgotpasswd(urlprefix){
     target_url = "cryptocurry/auth/forgotpasswd/"
 }
-    </script>
+
+</script>
 
 </head>
 
@@ -524,11 +520,11 @@ function forgotpasswd(urlprefix){
             <input id="username" type="text" name="username" placeholder="Username" value='' required>   
             <input id="password" type="password" name="password" placeholder="Password" value='' required>
             <input type="button" id="submit1" name="submit1" value="Log in" onClick='javascript:dologin("{{urlprefix}}");'>
-	    <label><input type="checkbox" name='keepmesignedin' checked="checked"> Keep me signed in</label>
+	    <label style="color:#FFFFFF"><input type="checkbox" name='keepmesignedin' checked="checked"> Keep me signed in</label>
           	|
 	    <a href="#" onClick='javascript:signup("{{urlprefix}}");'>Sign up FREE</a>
-		|
-            <a href="#" onClick='javascript:forgotpasswd("{{urlprefix}}");'>Forgot Password</a>
+		<br>
+            <a href="#" onClick='javascript:forgotpasswd("{{urlprefix}}");' style='color:#FFFFFF'>Forgot Password</a>
         </fieldset>
 	</form>
                                 <!-- <a href="#" class="active">FAQ</a> -->

@@ -35,8 +35,9 @@ urlpatterns += patterns('',
 
     # Uncomment the next line to enable the admin:
     # url(r'^admin/', include(admin.site.urls)),
-    url(r'cryptocurry/auth/showlogin/$', 'cryptocurry.auth.views.display_login_screen', name='display_login_screen'),
+    #url(r'cryptocurry/auth/showlogin/$', 'cryptocurry.auth.views.display_login_screen', name='display_login_screen'),
     url(r'cryptocurry/auth/login/$', 'cryptocurry.auth.views.login', name='login'),
+    url(r'cryptocurry/auth/register/$', 'cryptocurry.auth.views.register', name='register'),
     url(r'cryptocurry/analyze/visual/dsentryiface/$', 'cryptocurry.analysis.views.datasourceentryiface', name='datasourceentryiface'),
     url(r'cryptocurry/analyze/visual/investdata/currency_price/$', 'cryptocurry.analysis.views.visualize_investdb_currencyprice', name='visualize_investdb_currencyprice'),
     url(r'cryptocurry/analyze/visual/investdata/market_cap/$', 'cryptocurry.analysis.views.visualize_investdb_marketcap', name='visualize_investdb_marketcap'),
@@ -63,7 +64,8 @@ urlpatterns += patterns('',
     url(r'cryptocurry/analyze/visual/coinmarketcapdata/currency_price/$', 'cryptocurry.analysis.views.cmcd_currencyprice', name='cmcd_currencyprice'),
     url(r'cryptocurry/analyze/visual/coinmarketcapdata/supply/$', 'cryptocurry.analysis.views.cmcd_supply', name='cmcd_supply'),
     url(r'cryptocurry/analyze/visual/coinmarketcapdata/volume/$', 'cryptocurry.analysis.views.cmcd_volume', name='cmcd_volume'),    
-
+    url(r'cryptocurry/coinlayer_api/request/$', 'cryptocurry.analysis.views.coinlayer_data', name='coinlayer_data'),
+    url(r'cryptocurry/analyze/visual/operations/$', 'cryptocurry.analysis.views.operations', name='coinlayer_data')
 )
 
 
