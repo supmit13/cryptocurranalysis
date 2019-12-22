@@ -445,8 +445,10 @@ function showcoinlayer(){
 }
 
 
+
 // Authentication routines - Should not be considered as a part/extension of plotting data.
-function dologin(urlprefix){
+function dologin(){
+    urlprefix = "{{urlprefix}}";
     username = document.loginform.username.value;
     password = document.loginform.password.value;
     csrfoken = document.loginform.csrfmiddlewaretoken.value;
@@ -465,12 +467,15 @@ function dologin(urlprefix){
     else{
         xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
     }
+    plotdiv = document.getElementById('plotimage');
     xmlhttp.onreadystatechange = function(){
         if(xmlhttp.readyState == 4 && xmlhttp.status==200){
 	    plotdiv.style.display = "block";
 	    data = xmlhttp.responseText;
 	    // Display data in table in appropriate manner
-	    alert(data);
+	    //alert(data);
+	    inputsarea = document.getElementById("inputs");
+	    inputsarea.innerHTML = "<label style='color:#FFFFFF'>" + data + " |</label> <a href='#/' onClick='javascript:signout(\"{{ userid }}\");'>Sign Out</a>" ;
         }
     }
     posturl = urlprefix + "/cryptocurry/auth/login/";
@@ -516,16 +521,25 @@ function forgotpasswd(urlprefix){
                             <div class="login-faq-earn-money">
 				Login: <form method='POST' name='loginform'>
 	  {% csrf_token %}
+	  {{cxt.loggedin}}
+	  {{username}}
+	  {% if cxt.loggedin == 0 or username == '' %}
+	  
           <fieldset id="inputs">
             <input id="username" type="text" name="username" placeholder="Username" value='' required>   
             <input id="password" type="password" name="password" placeholder="Password" value='' required>
-            <input type="button" id="submit1" name="submit1" value="Log in" onClick='javascript:dologin("{{urlprefix}}");'>
-	    <label style="color:#FFFFFF"><input type="checkbox" name='keepmesignedin' checked="checked"> Keep me signed in</label>
+            <input type="button" id="submit1" name="submit1" value="Log in" onClick='javascript:dologin();'>
+	    <label style="color:#FFFFFF"><input type="checkbox" name='keepmesignedin'> Keep me signed in</label>
           	|
 	    <a href="#" onClick='javascript:signup("{{urlprefix}}");'>Sign up FREE</a>
 		<br>
             <a href="#" onClick='javascript:forgotpasswd("{{urlprefix}}");' style='color:#FFFFFF'>Forgot Password</a>
         </fieldset>
+	{% else %}
+	<fieldset id="inputs">
+	<label style='color:#FFFFFF'>You are signed in as {{username}} |</label> <a href='#/' onClick='javascript:signout("{{ userid }}", "{{urlprefix}}")'>Sign Out</a>
+	</fieldset>
+        {% endif %}
 	</form>
                                 <!-- <a href="#" class="active">FAQ</a> -->
 				

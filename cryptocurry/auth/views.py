@@ -78,7 +78,7 @@ def login(request):
             sessendtime = ''
             timestamp = time.time()
             useragent = request.META['HTTP_USER_AGENT']
-            insertd = {'sessionid' : sessionid, 'userid' : sessionuser, 'sessionstarttime' : timestamp, 'sessionendtime' : sessendtime, 'sourceip' : clientip, 'useragent' : useragent, 'sessionactive' : True}
+            insertd = {'sessionid' : sessionid, 'userid' : sessionuser, 'sessionstarttime' : timestamp, 'sessionendtime' : sessendtime, 'sourceip' : clientip, 'useragent' : useragent, 'sessionactive' : True, 'keeploggedin' : keeploggedin}
             db.sessions.insert_one(insertd)
             response = HttpResponseRedirect(utils.gethosturl(request) + "/" + OPERATIONS_URL)
             response.set_cookie('sessioncode', sessionid)
@@ -104,6 +104,44 @@ def display_login_screen(request):
     cxt = RequestContext(request, cxtdict)
     rtr = render_to_response("loginform.html", cxtdict, context_instance=cxt)
     return HttpResponse(rtr)
+
+
+@ensure_csrf_cookie
+@csrf_protect
+@never_cache
+def logout(request):
+    if request.method != 'POST': # Illegal bad request... 
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    
+    if request.POST.has_key('userid'):
+        userid = request.POST['userid']
+    else:
+        response = HttpResponse("2")
+        response.set_cookie('userid', "")
+        return response
+    if request.COOKIES.has_key('sessioncode'):
+        sessionid = request.COOKIES['sessioncode']
+    else:
+        response = HttpResponse("2")
+        response.set_cookie('userid', "")
+        return response
+    db = utils.get_mongo_client()
+    tbl = db["sessions"]
+    try:
+        timenow = datetime.datetime.now()
+        dtimestr = timenow.strftime("%Y-%m-%d %H:%M:%S")
+        if DEBUG:
+            print "UserId: " + userid + "\nSessionId: " + sessionid + "\nDatetimestring: " + dtimestr + "\n\n"
+        tbl.update_one({'userid' : userid, 'sessionid' : sessionid}, {"$set":{'sessionactive' : 0, 'sessionendtime' : dtimestr, 'keeploggedin' : 0},  "$currentDate":{"lastModified":True}})
+        response = HttpResponse("1")
+        response.set_cookie('userid', "")
+        return response
+    except:
+        response = HttpResponse("0")
+        response.set_cookie('userid', "")
+        return response
 
 
 @csrf_protect

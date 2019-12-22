@@ -7,6 +7,7 @@ from passlib.hash import pbkdf2_sha256 # To create hash of passwords
 import matplotlib.pyplot as plt
 import random
 import simplejson as json
+from datetime import datetime
 
 from cryptocurry.crypto_settings import * 
 import cryptocurry.errors as err
@@ -100,7 +101,7 @@ def isloggedin(request):
         return False
     else: # The session id may or may not be valid. If invalid, an exception will be thrown.
         try:
-            if rec and rec[0]['sessionactive'] == True: # user is logged in
+            if rec and rec[0]['sessionactive'] == 1: # user is logged in
                 if DEBUG:
                     print("user is logged in...\n")
                 for r in rec:
@@ -112,24 +113,28 @@ def isloggedin(request):
                         sesscode = r['sessionid']
                         user_id = r['userid']
                         clientip = r['clientip']
-                        r.update({'sessionid' : sesscode}, {'userid' : user_id, 'sessionstarttime' : t, 'sessionendtime' : str(tnow), 'active' : False, 'sessionid' : sesscode, 'useragent' : ua, 'clientip' : clientip})
+                        keeploggedin = r['keeploggedin']
+                        #r.update({'sessionid' : sesscode}, {'userid' : user_id, 'sessionstarttime' : t, 'sessionendtime' : str(tnow), 'sessionactive' : 0, 'sessionid' : sesscode, 'useragent' : ua, 'clientip' : clientip})
                         break
-                    destroy_conn(db)
-                    if DEBUG:
-                        print("... but the session has expired. Needs to login again.\n")
-                    return False # surpassed the maximum time for which the session was valid
+                    if not keeploggedin:
+                        destroy_conn(db)
+                        if DEBUG:
+                            print("... but the session has expired. Needs to login again.\n")
+                        return False # surpassed the maximum time for which the session was valid
                 return True
             else:
                 if DEBUG:
                     print("User is not logged in. Needs to login.\n")
-                t = float(r['sessionstarttime'])
                 for r in rec:
+                    t = float(r['sessionstarttime'])
                     sesscode = r['sessionid']
                     user_id = r['userid']
-                    tnow = time.time()
-                    active = False
+                    tnow = datetime.now()
+                    dtimestr = tnow.strftime("%Y-%m-%d %H:%M:%S")
+                    active = 0
                     clientip = r['clientip']
-                    r.update({'sessionid' : sesscode}, {'userid' : user_id, 'sessionstarttime' : t, 'sessionendtime' : str(tnow), 'active' : active, 'sessionid' : sesscode, 'useragent' : ua, 'clientip' : clientip})
+                    keeploggedin = r['keeploggedin']
+                    #r.update_one({'sessionid' : sesscode}, {"$set" : {'userid' : user_id, 'sessionstarttime' : t, 'sessionendtime' : dtimestr, 'sessionactive' : active, 'sessionid' : sesscode, 'useragent' : ua, 'clientip' : clientip}})
                     break
                 destroy_conn(db)
                 return False
@@ -310,4 +315,18 @@ def generatesessionid(username, csrftoken, userip, ts):
 
 def sendemail(user, subject, message, fromaddr):
     pass
+
+
+def getusernamefromuserid(userid):
+    db = get_mongo_client()
+    usrrec = db.users.find({'userid' : userid})
+    username = ""
+    if usrrec:
+        try:
+            username = usrrec[0]['username']
+        except:
+            username = ""
+    return username
+
+
 

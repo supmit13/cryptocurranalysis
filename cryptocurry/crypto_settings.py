@@ -4,13 +4,13 @@ import pandas as pd
 
 DB_NAME = "cryptocurrency"
 DB_USER = "supmit"
-DB_PASS = "spmprx"
+DB_PASS = "******"
 DB_PORT = 27017
 DB_HOST = "localhost"
 
-DEBUG = 0
+DEBUG = 1
 
-COLLECTIONS = ['coinmarketcapdata', 'coinmarketdata', 'investdata', 'ohlcvdata', 'coinbase']
+COLLECTIONS = ['coinmarketcapdata', 'coinmarketdata', 'investdata', 'ohlcvdata', 'coinlayer']
 
 STANDARD_METRICS = ['volume_total', 'volume_24hr', 'supply', 'percent_1hr', 'percent_24hr', 'percent_7d', 'curr_price', 'marketcap', ]
 
@@ -18,7 +18,8 @@ METRICS_COINMARKETCAPDATA = ['volume', 'percent7d', 'percent24hr', 'marketcap', 
 METRICS_COINMARKETDATA = ['percent_change_7days', 'percent_change_24hr', 'volume_24hr', 'percent_change_1hr', 'currency_price' ]
 METRICS_INVESTDATA = ['volume_24hrs', 'market_cap', 'change_24hrs', 'change_7days', 'currency_price', 'total_volume' ]
 METRICS_OHLCVDATA = ['trades_count', 'volume_traded', 'price_close', 'price_high', 'price_open', 'price_low' ]
-METRICS_COINBASE = [] # Not needed as it is directly shown from the website.
+#METRICS_COINBASE = [] # Not needed as it is directly shown from the website.
+METRICS_COINLAYER = []
 
 HEXCODE_CHAR_MAP = { \
         '%20' : " ", \
@@ -69,8 +70,9 @@ INV_HTML_ENTITIES_CHAR_MAP = { \
 
 URL_PROTOCOL = "http://"
 APP_URL_PREFIX = "http://cryptocurry.me:8002/"
-LOGIN_URL = "cryptocurry/auth/showlogin/"
+LOGIN_URL = "cryptocurry/analyze/visual/dsentryiface/"
 LOGIN_REDIRECT_URL = "cryptocurry/analyze/visual/dsentryiface/"
+OPERATIONS_URL = "cryptocurry/analyze/visual/operations/"
 
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
@@ -80,9 +82,25 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE=True
 SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = 31536000 
 
-COIN_MARKET_CAP_API_KEY = "145e691a-b447-4ea0-9294-1f5b21065db2"
+COIN_MARKET_CAP_API_KEY = "************************"
 COIN_MARKET_CAP_DOMAIN = "https://pro-api.coinmarketcap.com"
 
-MAX_SESSION_VALID = 86400
+BLOCKCHAIN_API_KEY = "***************************"
+
+COINLAYER_ID = "cryptocurry.me@gmail.com"
+COINLAYER_PASSWD = "*********"
+COINLAYER_COMPANY_NAME = "CryptoCurry Pvt. Ltd."
+COINLAYER_API_KEY = "*****************************"
+COINLAYER_LIVE_RATES_API_ENDPOINT = "http://api.coinlayer.com/api/live"
+SELECTED_COINLAYER_CRYPTO_CODES = "BNB,BTC,EOS,LTC,XRP,ETH,BCH,ETC,XMR,XLM,BTG,NEO"
+POLL_FREQUENCY = 2 # in hours. So there would be 12 calls per day, which means 360 calls a month.
+# The current plan has a max limit of 500 calls per month.
+# The codes are listed below with the names of the currencies:
+# BNB : Binance Coin, BTC : Bitcoin, EOS : EOS, LTC : LiteCoin, XRP : Ripple, ETH : Ethereum, BCH : Bitcoin Cash, ETC : Ethereum Classic
+# XMR : Monero, XLM : Stellar, BTG : Bitcoin Gold, NEO : NEO.
+COINLAYER_NUM_DATETIMES = 3 # We want to see the last 3 date records only. Modify it to suit your needs.
+
+SESSION_EXPIRY_LIMIT = 86400
+
 
 

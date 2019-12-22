@@ -46,6 +46,20 @@ def datasourceentryiface(request):
     dsentrydict = {}
     ifacedict = {}
     colllist = []
+    userid = None
+    ifacedict['userid'] = ""
+    ifacedict['username'] = 'Anonymous'
+    if request.COOKIES.has_key('userid'):
+        userid = request.COOKIES['userid']
+    ifacedict['userid'] = userid
+    db = utils.get_mongo_client()
+    username = utils.getusernamefromuserid(userid)
+    ifacedict['username'] = username
+    ifacedict['loggedin'] = '0'
+    if utils.isloggedin(request):
+        ifacedict['loggedin'] = '1'
+    if DEBUG:
+        print("IsLoggedIn: " + ifacedict['loggedin'] + "\n")
     for element in COLLECTIONS:
         colllist.append(element)
     ifacedict['indexes'] = colllist
@@ -2479,7 +2493,8 @@ def coinlayer_data(request):
                 else:
                     pass # Unrecognized currency in this scheme.
         docdict[dtimestr] = currdict
-        print docdict,"\n"
+        if DEBUG:
+            print docdict,"\n"
         docdictjson = json.dumps(docdict)
     return HttpResponse(docdictjson)
 
@@ -2499,6 +2514,13 @@ def operations(request):
     """
     if DEBUG:
         print("In operations....\n")
-    return HttpResponse("You are logged in successfully!")
+    userid = request.COOKIES["userid"]
+    db = utils.get_mongo_client()
+    rec = db["users"].find({'userid' : userid})
+    if rec:
+        username = rec[0]['username']
+    else:
+        username = "Anonymous"
+    return HttpResponse("You are logged in successfully as '%s'!"%username)
 
 
