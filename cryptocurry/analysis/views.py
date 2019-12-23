@@ -37,6 +37,8 @@ from django.middleware.csrf import get_token
 
 ifacedict = {}
 
+
+
 def datasourceentryiface(request):
     message = ''
     if request.method != 'GET': # Illegal bad request... 
@@ -45,6 +47,7 @@ def datasourceentryiface(request):
         return response
     dsentrydict = {}
     ifacedict = {}
+    ifacedict = utils.populate_ifacedict_basic(request)
     colllist = []
     userid = None
     ifacedict['userid'] = ""

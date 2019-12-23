@@ -4,7 +4,7 @@ import pandas as pd
 
 DB_NAME = "cryptocurrency"
 DB_USER = "supmit"
-DB_PASS = "******"
+DB_PASS = "spmprx"
 DB_PORT = 27017
 DB_HOST = "localhost"
 
@@ -73,6 +73,25 @@ APP_URL_PREFIX = "http://cryptocurry.me:8002/"
 LOGIN_URL = "cryptocurry/analyze/visual/dsentryiface/"
 LOGIN_REDIRECT_URL = "cryptocurry/analyze/visual/dsentryiface/"
 OPERATIONS_URL = "cryptocurry/analyze/visual/operations/"
+REGISTER_URL = "cryptocurry/auth/register/"
+LOGIN_URL = "cryptocurry/auth/login/"
+
+"""
+Passwords should have atleast this grade in a scale of 1 to 5.
+Password strength is gauged by "check_passwd_strength()" function
+(in static/pageutils.js) in frontend and by "check_password_strength()"
+function (in cryptocurry/utils.py) in backend.
+"""
+MIN_ALLOWABLE_PASSWD_STRENGTH = 3
+
+# Some application related variables:
+PROFILE_PHOTO_NAME = "curryprofilepic"
+PROFILE_PHOTO_EXT = ( "gif", "jpg", "jpeg", "png", "tiff", "tif" )
+PROFILE_PHOTO_HEIGHT = 102 # in pixels
+PROFILE_PHOTO_WIDTH = 102 # in pixels
+
+# Max size of file that may be uploaded by user
+MAX_FILE_SIZE_ALLOWED = 10000000
 
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
@@ -82,15 +101,15 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE=True
 SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = 31536000 
 
-COIN_MARKET_CAP_API_KEY = "************************"
+COIN_MARKET_CAP_API_KEY = "145e691a-b447-4ea0-9294-1f5b21065db2"
 COIN_MARKET_CAP_DOMAIN = "https://pro-api.coinmarketcap.com"
 
-BLOCKCHAIN_API_KEY = "***************************"
+BLOCKCHAIN_API_KEY = "b72ce716-ada9-4eb0-8821-40f7a06e7689"
 
 COINLAYER_ID = "cryptocurry.me@gmail.com"
-COINLAYER_PASSWD = "*********"
+COINLAYER_PASSWD = "spmprx13"
 COINLAYER_COMPANY_NAME = "CryptoCurry Pvt. Ltd."
-COINLAYER_API_KEY = "*****************************"
+COINLAYER_API_KEY = "5b4f776026b18344a3bda68c2f8acd10"
 COINLAYER_LIVE_RATES_API_ENDPOINT = "http://api.coinlayer.com/api/live"
 SELECTED_COINLAYER_CRYPTO_CODES = "BNB,BTC,EOS,LTC,XRP,ETH,BCH,ETC,XMR,XLM,BTG,NEO"
 POLL_FREQUENCY = 2 # in hours. So there would be 12 calls per day, which means 360 calls a month.

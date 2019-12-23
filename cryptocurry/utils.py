@@ -43,7 +43,7 @@ hexcodecharmap = { \
     }
 
 billionpattern = re.compile("B$", re.IGNORECASE)
-
+AVAILABILITY_URL = "auth/username/availability/"
 
 def get_mongo_client():
     client = pymongo.MongoClient(DB_HOST, DB_PORT)
@@ -327,6 +327,18 @@ def getusernamefromuserid(userid):
         except:
             username = ""
     return username
+
+
+def populate_ifacedict_basic(request):
+    curdate = datetime.now()
+    (username, password, password2, email, firstname, middlename, lastname, mobilenum) = ("", "", "", "", "", "", "", "")
+    c = {'curdate' : curdate, 'login_url' : gethosturl(request) + "/" + LOGIN_URL, 'hosturl' : gethosturl(request),\
+             'register_url' : gethosturl(request) + "/" + REGISTER_URL,\
+             'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
+                 'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
+             'hosturl' : gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH, 'availabilityURL' : AVAILABILITY_URL }
+    return c
+
 
 
 

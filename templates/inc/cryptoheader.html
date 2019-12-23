@@ -28,7 +28,7 @@
 	  opacity: 0.9;
 	  -moz-opacity: .90; 
 	  -khtml-opacity: 0.9;
-	  background-color:#669999;
+	  background-color:#ff6600;
 	  color:#FFFFFF;
 	  position:absolute; top:250px; left:100px; width:80%; height:150%; text-align:left; vertical-align:middle;padding-left:25px;padding-top:35px;padding-right:50px;
 	}
@@ -39,7 +39,7 @@
 	  opacity: 0.9;
 	  -moz-opacity: .90; 
 	  -khtml-opacity: 0.9;
-	  background-color:#669999;
+	  background-color:#ff751a;
 	  color:#FFFFFF;
 	  position:absolute; top:250px; left:100px; width:80%; height:25%; text-align:left; vertical-align:middle;padding-left:25px;padding-top:35px;padding-right:50px;
 	}
@@ -486,9 +486,70 @@ function dologin(){
 }
 
 
-function signup(urlprefix){
+function showsignupform(urlprefix){
+    //alert(urlprefix);
     target_url = "cryptocurry/auth/register/";
+    abs_url = urlprefix + "/" + target_url;
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    formdiv = document.getElementById('transscreens');
+    xmlhttp.onreadystatechange = function(){
+        if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    formdiv.style.display = "block";
+	    form = xmlhttp.responseText;
+	    // Display data in table in appropriate manner
+	    //alert(data);
+	    formdiv.innerHTML = form;
+        }
+    }
+    xmlhttp.open('GET', target_url, true);
+    xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xmlhttp.setRequestHeader("X-CSRFToken", document.cryptoanalysis.csrfmiddlewaretoken.value);
+    xmlhttp.send(); 
 }
+
+function checkavailability(){
+    var username = document.registerform.username.value.trim();
+    if(username == ""){
+	alert("Username cannot be empty");
+	document.registerform.username.value = "";
+	document.registerform.username.focus();
+	return (0);
+    }
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    // Register the handler
+    xmlhttp.onreadystatechange = function(){
+    if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+       if(xmlhttp.responseText == '0'){
+	//alert("The chosen username is not available");
+	document.getElementById('checkuser').innerHTML = "<font color='#DD0000' size=-2>This username is already taken. Please choose another one.</font>";
+	document.registerform.username.focus();
+	document.registerform.username.selected = true;
+       }
+       else{
+	//alert("The chosen username is available");
+	document.getElementById('checkuser').innerHTML = "<font color='#0000DD' size=-2>Available for use.</font>";
+       }
+    }
+    };
+    var availabilityURL = "{{hosturl}}/{{ availabilityURL }}?username=" + username;
+    //alert(availabilityURL);
+    xmlhttp.open("GET",availabilityURL,true); // Make it an ajax call.
+    xmlhttp.send();
+}
+
+
 
 function forgotpasswd(urlprefix){
     target_url = "cryptocurry/auth/forgotpasswd/"
@@ -529,11 +590,9 @@ function forgotpasswd(urlprefix){
             <input id="username" type="text" name="username" placeholder="Username" value='' required>   
             <input id="password" type="password" name="password" placeholder="Password" value='' required>
             <input type="button" id="submit1" name="submit1" value="Log in" onClick='javascript:dologin();'>
-	    <label style="color:#FFFFFF"><input type="checkbox" name='keepmesignedin'> Keep me signed in</label>
-          	|
-	    <a href="#" onClick='javascript:signup("{{urlprefix}}");'>Sign up FREE</a>
-		<br>
-            <a href="#" onClick='javascript:forgotpasswd("{{urlprefix}}");' style='color:#FFFFFF'>Forgot Password</a>
+	    <label style="color:#FFFFFF"><input type="checkbox" name='keepmesignedin' checked='checked'> Keep me signed in
+          	|<a href='#/' onClick='javascript:forgotpasswd("{{urlprefix}}");'>Forgot Password</a> | </label>
+	    <a href="#" onClick='javascript:showsignupform("{{urlprefix}}");'>Sign up FREE</a>
         </fieldset>
 	{% else %}
 	<fieldset id="inputs">
@@ -544,6 +603,7 @@ function forgotpasswd(urlprefix){
                                 <!-- <a href="#" class="active">FAQ</a> -->
 				
                             </div>
+			    <div style='display:none;' id="transscreens" class="semitrans"></div>
 			    <div id='plotnamearea'></div> 
                         </div>
                     </div>

@@ -66,7 +66,8 @@ urlpatterns += patterns('',
     url(r'cryptocurry/analyze/visual/coinmarketcapdata/supply/$', 'cryptocurry.analysis.views.cmcd_supply', name='cmcd_supply'),
     url(r'cryptocurry/analyze/visual/coinmarketcapdata/volume/$', 'cryptocurry.analysis.views.cmcd_volume', name='cmcd_volume'),    
     url(r'cryptocurry/coinlayer_api/request/$', 'cryptocurry.analysis.views.coinlayer_data', name='coinlayer_data'),
-    url(r'cryptocurry/analyze/visual/operations/$', 'cryptocurry.analysis.views.operations', name='coinlayer_data')
+    url(r'cryptocurry/analyze/visual/operations/$', 'cryptocurry.analysis.views.operations', name='coinlayer_data'),
+    url(r'auth/username/availability/$', 'cryptocurry.auth.views.checkavailability', name='checkavailability'),
 )
 
 

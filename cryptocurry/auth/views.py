@@ -147,35 +147,24 @@ def logout(request):
 @csrf_protect
 @never_cache
 def register(request):
-    privs = Privilege.objects.all()
-    privileges = {}
-    for p in privs:
-        privileges[p.privname] = p.privdesc
     if request.method == "GET": # display the registration form
-        msg = ''
-        if request.META.has_key('QUERY_STRING'):
-            msg = request.META.get('QUERY_STRING', '')
-        if msg is not None and msg != '':
-            var, msg = msg.split("=")
-            for hexkey in mysettings.HEXCODE_CHAR_MAP.keys():
-                msg = msg.replace(hexkey, mysettings.HEXCODE_CHAR_MAP[hexkey])
-            msg = "<p style=\"color:#FF0000;font-size:14;font-face:'helvetica neue';font-style:bold;\">%s</p>"%msg
-        else:
-            msg = ""
-        curdate = datetime.datetime.now()
-        (username, password, password2, email, firstname, middlename, lastname, mobilenum) = ("", "", "", "", "", "", "", "")
-        tmpl = get_template("authentication/newuser.html")
-        #c = {'curdate' : curdate, 'msg' : msg, 'login_url' : utils.gethosturl(request) + "/" + mysettings.LOGIN_URL, 'register_url' : utils.gethosturl(request) + "/" + mysettings.REGISTER_URL, 'privileges' : privileges, 'min_passwd_strength' : mysettings.MIN_ALLOWABLE_PASSWD_STRENGTH, }
-        c = {'curdate' : curdate, 'msg' : msg, 'login_url' : utils.gethosturl(request) + "/" + mysettings.LOGIN_URL, 'hosturl' : utils.gethosturl(request),\
-             'register_url' : utils.gethosturl(request) + "/" + mysettings.REGISTER_URL,\
-             'min_passwd_strength' : mysettings.MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
+        #curdate = datetime.datetime.now()
+        #(username, password, password2, email, firstname, middlename, lastname, mobilenum) = ("", "", "", "", "", "", "", "")
+        tmpl = get_template("auth/regform.html")
+        #tmpl = get_template("inc/cryptoheader.html")
+        """
+        c = {'curdate' : curdate, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL, 'hosturl' : utils.gethosturl(request),\
+             'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL,\
+             'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
-             'availabilityURL' :  mysettings.availabilityURL, 'hosturl' : utils.gethosturl(request), 'profpicheight' : mysettings.PROFILE_PHOTO_HEIGHT, 'profpicwidth' : mysettings.PROFILE_PHOTO_WIDTH }
+             'hosturl' : utils.gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH, 'availabilityURL' : utils.AVAILABILITY_URL }
         c.update(csrf(request))
+        """
+        c = {}
         cxt = Context(c)
         registerhtml = tmpl.render(cxt)
-        for htmlkey in mysettings.HTML_ENTITIES_CHAR_MAP.keys():
-            registerhtml = registerhtml.replace(htmlkey, mysettings.HTML_ENTITIES_CHAR_MAP[htmlkey])
+        for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+            registerhtml = registerhtml.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
         return HttpResponse(registerhtml)
     elif request.method == "POST": # Process registration form data
         username = request.POST['username']
@@ -195,40 +184,40 @@ def register(request):
         # Validate the collected data...
         if password != password2:
             message = error_msg('1011')
-        elif mysettings.MULTIPLE_WS_PATTERN.search(username):
+        elif MULTIPLE_WS_PATTERN.search(username):
             message =  error_msg('1012')
-        elif not mysettings.EMAIL_PATTERN.search(email):
+        elif not EMAIL_PATTERN.search(email):
             message =  error_msg('1013')
-        elif mobilenum != "" and not mysettings.PHONENUM_PATTERN.search(mobilenum):
+        elif mobilenum != "" and not PHONENUM_PATTERN.search(mobilenum):
             message = error_msg('1014')
         elif sex not in ('m', 'f', 'u'):
             message = error_msg('1015')
         elif usertype not in ('CORP', 'CONS', 'ACAD', 'CERT'):
             message = error_msg('1016')
-        elif not mysettings.REALNAME_PATTERN.search(firstname) or not mysettings.REALNAME_PATTERN.search(lastname) or not mysettings.REALNAME_PATTERN.search(middlename):
+        elif not REALNAME_PATTERN.search(firstname) or not REALNAME_PATTERN.search(lastname) or not REALNAME_PATTERN.search(middlename):
             message = error_msg('1017')
         #elif userprivilege not in privileges:
         #    message = error_msg('1018')
-        elif utils.check_password_strength(password) < mysettings.MIN_ALLOWABLE_PASSWD_STRENGTH:
+        elif utils.check_password_strength(password) < MIN_ALLOWABLE_PASSWD_STRENGTH:
             message = error_msg('1019')
         if request.FILES.has_key('profpic'):
-            fpath, message, profpic = utils.handleuploadedfile(request.FILES['profpic'], mysettings.MEDIA_ROOT + os.path.sep + username + os.path.sep + "images")
+            fpath, message, profpic = utils.handleuploadedfile(request.FILES['profpic'], MEDIA_ROOT + os.path.sep + username + os.path.sep + "images")
             # User's images will be stored in "MEDIA_ROOT/<Username>/images/".
-        if message != "" and mysettings.DEBUG:
+        if message != "" and DEBUG:
             print message + "\n"
         if message != "":
             curdate = datetime.datetime.now()
             tmpl = get_template("auth/newuser.html")
-            c = {'curdate' : curdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + mysettings.LOGIN_URL,\
-                 'register_url' : utils.gethosturl(request) + "/" + mysettings.REGISTER_URL, \
-                 'min_passwd_strength' : mysettings.MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
+            c = {'curdate' : curdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
+                 'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL, \
+                 'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
-                 'availabilityURL' :  mysettings.availabilityURL, 'hosturl' : utils.gethosturl(request), 'profpicheight' : mysettings.PROFILE_PHOTO_HEIGHT, 'profpicwidth' : mysettings.PROFILE_PHOTO_WIDTH }
+                 'availabilityURL' :  availabilityURL, 'hosturl' : utils.gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH }
             c.update(csrf(request))
             cxt = Context(c)
             registerhtml = tmpl.render(cxt)
-            for htmlkey in mysettings.HTML_ENTITIES_CHAR_MAP.keys():
-                registerhtml = registerhtml.replace(htmlkey, mysettings.HTML_ENTITIES_CHAR_MAP[htmlkey])
+            for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+                registerhtml = registerhtml.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
             return HttpResponse(registerhtml)
         else: # Create the user and redirect to the dashboard page with a status message.
             user = User()
@@ -255,11 +244,11 @@ def register(request):
                 message = sys.exc_info()[1].__str__()
                 tmpl = get_template("auth/newuser.html")
                 curdate = datetime.datetime.now()
-                c = {'curdate' : curdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + mysettings.LOGIN_URL,\
-                 'register_url' : utils.gethosturl(request) + "/" + mysettings.REGISTER_URL, \
-                 'min_passwd_strength' : mysettings.MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
+                c = {'curdate' : curdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
+                 'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL, \
+                 'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
-                'availabilityURL' :  mysettings.availabilityURL, 'hosturl' : utils.gethosturl(request), 'profpicheight' : mysettings.PROFILE_PHOTO_HEIGHT, 'profpicwidth' : mysettings.PROFILE_PHOTO_WIDTH }
+                'availabilityURL' :  availabilityURL, 'hosturl' : utils.gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH }
                 c.update(csrf(request))
                 cxt = Context(c)
                 reghtml = tmpl.render(cxt)
@@ -283,7 +272,7 @@ def register(request):
                 Thanks and Regards,
                 %s, CEO, TestYard.
                 
-            """%(user.displayname, utils.gethosturl(request), mysettings.ACCTACTIVATION_URL, emailvalidkey.vkey, mysettings.MAILSENDER)
+            """%(user.displayname, utils.gethosturl(request), ACCTACTIVATION_URL, emailvalidkey.vkey, MAILSENDER)
             fromaddr = "register@testyard.com"
             utils.sendemail(user, subject, message, fromaddr)
             # Print a success message and ask user to validate email. The current screen is
@@ -294,18 +283,18 @@ def register(request):
             support center staff would only be too glad to help you out. Happy testing... </font>"%username
             tmpl = get_template("user/profile.html")
             curdate = datetime.datetime.now()
-            c = {'curdate' : curdate, 'msg' : message, 'login_url' : utils.gethosturl(request) + "/" + mysettings.LOGIN_URL, 'csrftoken' : csrftoken}
+            c = {'curdate' : curdate, 'msg' : message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL, 'csrftoken' : csrftoken}
             c.update(csrf(request))
             cxt = Context(c)
             profile = tmpl.render(cxt)
-            for htmlkey in mysettings.HTML_ENTITIES_CHAR_MAP.keys():
-                profile = profile.replace(htmlkey, mysettings.HTML_ENTITIES_CHAR_MAP[htmlkey])
+            for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+                profile = profile.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
             return HttpResponse(profile)
     else: # Process this as erroneous request
         message = error_msg('1004')
-        if mysettings.DEBUG:
+        if DEBUG:
             print "Unhandled method call during registration.\n"
-        return HttpResponseBadRequest(utils.gethosturl(request) + "/" + mysettings.REGISTER_URL + "?msg=%s"%message)
+        return HttpResponseBadRequest(utils.gethosturl(request) + "/" + REGISTER_URL + "?msg=%s"%message)
 
 
 
@@ -316,8 +305,9 @@ def checkavailability(request):
     username = ""
     if request.GET.has_key('username'):
         username = request.GET['username']
-    user = User.objects.filter(displayname=username)
-    if user.__len__() > 0: # Not available
+    db = utils.get_mongo_client()
+    rec = db.users.find({'username' : username})
+    if rec.count() > 0: # Not available
         return HttpResponse('0')
     else: # Available
         return HttpResponse('1')
@@ -395,7 +385,7 @@ def mobile_verifypassword(request):
         csrftoken = argdict['csrfmiddlewaretoken']
     else:
         return HttpResponse("")
-    if mysettings.DEBUG:
+    if DEBUG:
         print "USERNAME = " + username
         print "PASSWORD = " + password
     userobj = authenticate(username, password)
@@ -415,12 +405,12 @@ def mobile_verifypassword(request):
         response = HttpResponse("sesscode=" + sesscode)
         response.set_cookie('sessioncode', sesscode)
         response.set_cookie('usertype', userobj.usertype)
-        if mysettings.DEBUG:
+        if DEBUG:
             print "SESSION CODE = " + sesscode
         return response
     else:
         message = "Error: %s"%error_msg('1003')
-        return HttpResponseRedirect(utils.gethosturl(request) + "/" + mysettings.LOGIN_URL + "?msg=" + message)
+        return HttpResponseRedirect(utils.gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
 
 
 

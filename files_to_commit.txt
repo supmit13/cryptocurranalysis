@@ -100,3 +100,19 @@ Friday, December 20, 2019, 23:25 HRS.
 10. git add files_to_commit.txt
 -----------------------------------------
 
+=========================================
+Monday, December 23, 2019, 22:18 HRS.
+-----------------------------------------
+1. git add cryptocurry/utils.py
+2. git add templates/inc/cryptoheader.html
+3. git add cryptocurry/analysis/views.py
+4. git add cryptocurry/urls.py
+5. git add cryptocurry/auth/views.py
+6. git add cryptocurry/auth/models.py
+7. git add static/scripts/pageutils.js
+8. git add templates/inc/cryptonavbar.html
+9. git add cryptocurry/crypto_settings.py
+10.git add templates/auth/regform.html
+11.git add files_to_commit.txt
+-----------------------------------------
+

@@ -57,7 +57,7 @@
                                             <ul class="single-mega cn-col-4">
                                                 <li><a href="#">- Check Wallet</a></li>
                                                 <li><a href="#">- Buy/Sell</a></li>
-                                                <li><a href="#">- Exchange/Convert to Physical Currency</a></li>
+                                                <li><a href="#">- Exchange/Convert</a></li>
 						<li><a href="#">- Currencies</a></li>
                                                 <!-- <li><a href="#">- Testimonials</a></li>
                                                 <li><a href="#">- News</a></li>
@@ -96,8 +96,13 @@
                                 <div class="header-newsletter-form">
                                     <form action="#" method="post">
                                         <input type="email" name="email" id="email" placeholder="Newsletter">
+					{% csrf_token%}
                                         <button type="submit">Subscribe</button>
                                     </form>
+				    <form name='profilepic' method='POST' action='#'>
+				        [Location of Profile Image]
+					{%csrf_token %}
+			 	    </form>
                                 </div>
 
                             </div>
