@@ -1,6 +1,8 @@
 import os, sys, re
-
-SLEEPTIME = 3600
+"""
+This file provides configuration for the CoinLayer to function appropriately.
+"""
+SLEEPTIME = 7200 # This is necessary for coinlayer to function properly.
 
 MONGO_HOST = "localhost"
 MONGO_PORT = 27017

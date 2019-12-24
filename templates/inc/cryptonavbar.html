@@ -25,33 +25,7 @@
                             <div class="classynav">
                                 <ul>
                                     <li><a href="/cryptocurry/dsentry.html">Home</a></li>
-                                    <!-- <li><a href="#">Pages</a>
-                                        <ul class="dropdown">
-                                            <li><a href="index.html">Home</a></li>
-                                            <li><a href="about-us.html">About Us</a></li>
-                                            <li><a href="blog.html">Articles</a></li>
-                                            <li><a href="contact.html">Contact</a></li>
-                                            <li><a href="elements.html">Elements</a></li>
-                                            <li><a href="#">Dropdown</a>
-                                                <ul class="dropdown">
-                                                    <li><a href="index.html">Home</a></li>
-                                                    <li><a href="about-us.html">About Us</a></li>
-                                                    <li><a href="blog.html">Articles</a></li>
-                                                    <li><a href="contact.html">Contact</a></li>
-                                                    <li><a href="elements.html">Elements</a></li>
-                                                    <li><a href="#">Dropdown</a>
-                                                        <ul class="dropdown">
-                                                            <li><a href="index.html">Home</a></li>
-                                                            <li><a href="about-us.html">About Us</a></li>
-                                                            <li><a href="blog.html">Articles</a></li>
-                                                            <li><a href="contact.html">Contact</a></li>
-                                                            <li><a href="elements.html">Elements</a></li>
-                                                        </ul>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </li> -->
+                                    
                                     <li><a href="#">Operations</a>
                                         <div class="megamenu">
                                             <ul class="single-mega cn-col-4">
@@ -59,26 +33,8 @@
                                                 <li><a href="#">- Buy/Sell</a></li>
                                                 <li><a href="#">- Exchange/Convert</a></li>
 						<li><a href="#">- Currencies</a></li>
-                                                <!-- <li><a href="#">- Testimonials</a></li>
-                                                <li><a href="#">- News</a></li>
-                                                <li><a href="#">- About us</a></li> -->
                                             </ul>
-                                            <!-- <ul class="single-mega cn-col-4">
-                                                <li><a href="#">- Contact</a></li>
-                                                <li><a href="#">- Faq</a></li>
-                                                <li><a href="#">- Terms &amp; Conditions</a></li>
-                                                <li><a href="#">- Careers</a></li>
-                                                <li><a href="#">- Newsletter &amp; Exchange</a></li>
-                                                <li><a href="#">- Terms &amp; Conditions</a></li>
-                                            </ul> -->
-                                            <!-- <ul class="single-mega cn-col-4">
-                                                <li><a href="#">- About us</a></li>
-                                                <li><a href="#">- Testimonials</a></li>
-                                                <li><a href="#">- Contact</a></li>
-                                                <li><a href="#">- Terms &amp; Conditions</a></li>
-                                                <li><a href="#">- Newsletter &amp; Exchange</a></li>
-                                                <li><a href="#">- Contact</a></li>
-                                            </ul> -->
+                                            
                                             <div class="single-mega cn-col-4">
                                                 <div class="megamenu-slides owl-carousel">
                                                     <img src="static/iface_resources/img/bg-img/bg-1.jpg" alt="">
@@ -92,15 +48,11 @@
                                     <li><a href="contact.html">Contact</a></li>
                                 </ul>
 
-                                <!-- Newsletter Form -->
-                                <div class="header-newsletter-form">
-                                    <form action="#" method="post">
-                                        <input type="email" name="email" id="email" placeholder="Newsletter">
-					{% csrf_token%}
-                                        <button type="submit">Subscribe</button>
-                                    </form>
+
+                                <div class="header-profilepic-form">
+                                    
 				    <form name='profilepic' method='POST' action='#'>
-				        [Location of Profile Image]
+				        {{ profile_image_tag }}
 					{%csrf_token %}
 			 	    </form>
                                 </div>

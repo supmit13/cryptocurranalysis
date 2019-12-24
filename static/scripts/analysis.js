@@ -2,8 +2,6 @@ function showcoinbase(){
 }
 
 
-
-
 function showloginscreen(urlprefix){
     logindiv = document.getElementById('logindiv');
     var xmlhttp;

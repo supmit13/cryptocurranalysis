@@ -51,7 +51,6 @@
         //google.charts.setOnLoadCallback(drawChart);
 
 
-
 function sanitizedataforjs(data){
     // Remove python unicode notation - u''
     upat = /(u\')/g;
@@ -445,7 +444,6 @@ function showcoinlayer(){
 }
 
 
-
 // Authentication routines - Should not be considered as a part/extension of plotting data.
 function dologin(){
     urlprefix = "{{urlprefix}}";
@@ -518,7 +516,7 @@ function checkavailability(){
     if(username == ""){
 	alert("Username cannot be empty");
 	document.registerform.username.value = "";
-	document.registerform.username.focus();
+	//document.registerform.username.focus();
 	return (0);
     }
     var xmlhttp;
@@ -549,6 +547,93 @@ function checkavailability(){
     xmlhttp.send();
 }
 
+function validate_regdata(){
+  if(document.registerform.username.value.trim() == ""){
+    alert("Username cannot be empty.");
+    //document.registerform.username.focus();
+    return false;
+  }
+  if(document.registerform.password.value.trim() == "" || document.registerform.password2.value.trim() == ""){
+    alert("Password fields cannot be empty.");
+    //document.registerform.password.focus();
+    return false;
+  }
+  if(document.registerform.password.value.trim() != document.registerform.password2.value.trim()){
+    alert("Mismatch in the 2 password fields.");
+    //document.registerform.password2.focus();
+    return false;
+  }
+  if(document.registerform.email.value.trim() == ""){
+    alert("Email cannot be empty.");
+    //document.registerform.email.focus();
+    return false;
+  }
+  if(!validate_email(document.registerform.email.value.trim())){
+    alert("Please enter a valid email Id.");
+    //document.registerform.email.focus();
+    return false;
+  }
+  if(document.registerform.firstname.value.trim() != "" && !check_name(document.registerform.firstname.value.trim())){
+    alert("Names may contain alphabets only. Numbers and special characters not allowed.");
+    //document.registerform.firstname.focus();
+    return false;
+  }
+  if(document.registerform.lastname.value.trim() != "" && !check_name(document.registerform.lastname.value.trim())){
+    alert("Names may contain alphabets only. Numbers and special characters not allowed.");
+    //document.registerform.lastname.focus();
+    return false;
+  }
+  if(document.registerform.middlename.value.trim() != "" && !check_name(document.registerform.middlename.value.trim())){
+    alert("Names may contain alphabets only. Numbers and special characters not allowed.");
+    //document.registerform.middlename.focus();
+    return false;
+  }
+  if(document.registerform.mobilenum.value.trim() != "" && !validate_phonenum(document.registerform.mobilenum.value.trim())){
+    alert("Mobile number may contain digits only.");
+    //document.registerform.mobilenum.focus();
+    return false;
+  }
+  return true;
+}
+
+function process_register(){
+  var val = validate_regdata();
+  if(!val){
+    return false;
+  }
+  document.registerform.username.value = document.registerform.username.value.trim();
+  document.registerform.password.value = document.registerform.password.value.trim();
+  document.registerform.password2.value = document.registerform.password2.value.trim();
+  document.registerform.email.value = document.registerform.email.value.trim();
+  document.registerform.firstname.value = document.registerform.firstname.value.trim();
+  document.registerform.lastname.value = document.registerform.lastname.value.trim();
+  document.registerform.middlename.value = document.registerform.middlename.value.trim();
+  document.registerform.mobilenum.value = document.registerform.mobilenum.value.trim();
+  if(check_passwd_strength(document.registerform.password.value) < {{ min_passwd_strength }}){
+    return false;
+  }
+  document.registerform.submit();
+  return true; // will never come to this line.
+}
+
+
+function clear_all(){
+    yn = confirm("Clicking OK will clear all fields. Do you want to continue?");
+    if(yn){
+        document.registerform.username.value = "";
+        document.registerform.password.value = "";
+        document.registerform.password2.value = "";
+        document.registerform.email.value = "";
+        document.registerform.firstname.value = "";
+        document.registerform.lastname.value = "";
+        document.registerform.middlename.value = "";
+        document.registerform.mobilenum.value = "";
+        return true;
+    }
+    else{
+	return false;
+    }
+}
 
 
 function forgotpasswd(urlprefix){

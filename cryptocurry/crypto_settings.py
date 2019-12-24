@@ -4,7 +4,7 @@ import pandas as pd
 
 DB_NAME = "cryptocurrency"
 DB_USER = "supmit"
-DB_PASS = "spmprx"
+DB_PASS = "*******"
 DB_PORT = 27017
 DB_HOST = "localhost"
 
@@ -76,6 +76,17 @@ OPERATIONS_URL = "cryptocurry/analyze/visual/operations/"
 REGISTER_URL = "cryptocurry/auth/register/"
 LOGIN_URL = "cryptocurry/auth/login/"
 
+PROFIMG_CHANGE_URL = "/cryptocurranalysis/changeimg/"
+ACCTACTIVATION_URL = "cryptocurry/activate/"
+
+"""
+Patterns to be handled
+"""
+EMAIL_PATTERN = re.compile("[\w\.]*\@[\w\.]*", re.MULTILINE|re.DOTALL)
+MULTIPLE_WS_PATTERN = re.compile(r"^\s*$", re.MULTILINE | re.DOTALL)
+PHONENUM_PATTERN = re.compile(r"^\d+$", re.MULTILINE | re.DOTALL)
+REALNAME_PATTERN = re.compile(r"^([a-zA-Z\s]*)$", re.MULTILINE | re.DOTALL)
+
 """
 Passwords should have atleast this grade in a scale of 1 to 5.
 Password strength is gauged by "check_passwd_strength()" function
@@ -93,6 +104,8 @@ PROFILE_PHOTO_WIDTH = 102 # in pixels
 # Max size of file that may be uploaded by user
 MAX_FILE_SIZE_ALLOWED = 10000000
 
+MAILSENDER = "admin@cryptocurry.me"
+
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 # The above 2 config params should be turned on (True) once we start using https.
@@ -101,15 +114,15 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE=True
 SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = 31536000 
 
-COIN_MARKET_CAP_API_KEY = "145e691a-b447-4ea0-9294-1f5b21065db2"
+COIN_MARKET_CAP_API_KEY = "*****************************"
 COIN_MARKET_CAP_DOMAIN = "https://pro-api.coinmarketcap.com"
 
-BLOCKCHAIN_API_KEY = "b72ce716-ada9-4eb0-8821-40f7a06e7689"
+BLOCKCHAIN_API_KEY = "*****************************"
 
 COINLAYER_ID = "cryptocurry.me@gmail.com"
-COINLAYER_PASSWD = "spmprx13"
+COINLAYER_PASSWD = "************"
 COINLAYER_COMPANY_NAME = "CryptoCurry Pvt. Ltd."
-COINLAYER_API_KEY = "5b4f776026b18344a3bda68c2f8acd10"
+COINLAYER_API_KEY = "**********************************"
 COINLAYER_LIVE_RATES_API_ENDPOINT = "http://api.coinlayer.com/api/live"
 SELECTED_COINLAYER_CRYPTO_CODES = "BNB,BTC,EOS,LTC,XRP,ETH,BCH,ETC,XMR,XLM,BTG,NEO"
 POLL_FREQUENCY = 2 # in hours. So there would be 12 calls per day, which means 360 calls a month.

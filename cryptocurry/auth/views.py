@@ -29,12 +29,14 @@ from passlib.hash import pbkdf2_sha256 # To create hash of passwords
 import os, sys, re, time, datetime
 import cPickle, urlparse
 import decimal, math, base64
+import sha256
 
 # Application specific libraries...
 from cryptocurry.analysis.views import datasourceentryiface
 import cryptocurry.errors as err
 import cryptocurry.utils as utils
 from cryptocurry.crypto_settings import * 
+import cryptocurry.settings as settings
 
 #******* End of imports **********#
 
@@ -148,19 +150,17 @@ def logout(request):
 @never_cache
 def register(request):
     if request.method == "GET": # display the registration form
-        #curdate = datetime.datetime.now()
-        #(username, password, password2, email, firstname, middlename, lastname, mobilenum) = ("", "", "", "", "", "", "", "")
+        curdate = datetime.datetime.now()
+        (username, password, password2, email, firstname, middlename, lastname, mobilenum) = ("", "", "", "", "", "", "", "")
         tmpl = get_template("auth/regform.html")
-        #tmpl = get_template("inc/cryptoheader.html")
-        """
+        
         c = {'curdate' : curdate, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL, 'hosturl' : utils.gethosturl(request),\
              'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL,\
              'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
              'hosturl' : utils.gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH, 'availabilityURL' : utils.AVAILABILITY_URL }
         c.update(csrf(request))
-        """
-        c = {}
+        
         cxt = Context(c)
         registerhtml = tmpl.render(cxt)
         for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
@@ -175,10 +175,8 @@ def register(request):
         middlename = request.POST['middlename']
         lastname = request.POST['lastname']
         sex = request.POST['sex']
-        usertype = request.POST['usertype']
         mobilenum = request.POST['mobilenum']
         profpic = ""
-        #userprivilege = request.POST['userprivilege']
         csrftoken = request.POST['csrfmiddlewaretoken']
         message = ""
         # Validate the collected data...
@@ -192,8 +190,6 @@ def register(request):
             message = error_msg('1014')
         elif sex not in ('m', 'f', 'u'):
             message = error_msg('1015')
-        elif usertype not in ('CORP', 'CONS', 'ACAD', 'CERT'):
-            message = error_msg('1016')
         elif not REALNAME_PATTERN.search(firstname) or not REALNAME_PATTERN.search(lastname) or not REALNAME_PATTERN.search(middlename):
             message = error_msg('1017')
         #elif userprivilege not in privileges:
@@ -201,13 +197,14 @@ def register(request):
         elif utils.check_password_strength(password) < MIN_ALLOWABLE_PASSWD_STRENGTH:
             message = error_msg('1019')
         if request.FILES.has_key('profpic'):
-            fpath, message, profpic = utils.handleuploadedfile(request.FILES['profpic'], MEDIA_ROOT + os.path.sep + username + os.path.sep + "images")
-            # User's images will be stored in "MEDIA_ROOT/<Username>/images/".
+            fpath, message, profpic = utils.handleuploadedfile2(request.FILES['profpic'], settings.MEDIA_ROOT + os.path.sep + username + os.path.sep + "images")
+            # User's images will be stored in "settings.MEDIA_ROOT/<Username>/images/".
         if message != "" and DEBUG:
             print message + "\n"
         if message != "":
             curdate = datetime.datetime.now()
-            tmpl = get_template("auth/newuser.html")
+            availabilityURL = utils.AVAILABILITY_URL
+            tmpl = get_template("auth/regform.html")
             c = {'curdate' : curdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
                  'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL, \
                  'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
@@ -220,29 +217,54 @@ def register(request):
                 registerhtml = registerhtml.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
             return HttpResponse(registerhtml)
         else: # Create the user and redirect to the dashboard page with a status message.
-            user = User()
-            #usrpriv = UserPrivilege()
-            user.firstname = firstname
-            user.middlename = middlename
-            user.lastname = lastname
-            user.displayname = username
-            user.emailid = email
-            user.password = make_password(password) # Store password as a hash.
-            user.mobileno = mobilenum
-            user.sex = sex
-            user.usertype = usertype
-            user.istest = False
-            user.active = False # Will become active when user verifies email Id.
-            user.userpic = profpic
-            emailvalidkey = EmailValidationKey()
-            emailvalidkey.email = email
-            emailvalidkey.vkey = utils.generate_random_string()
+            db = utils.get_mongo_client()
+            rec = {}
+            rec['firstname'] = firstname
+            rec['middlename'] = middlename
+            rec['lastname'] = lastname
+            rec['username'] = username
+            rec['emailid'] = email
+            rec['password'] = utils.make_password(password) # Store password as a hash.
+            rec['mobileno'] = mobilenum
+            rec['sex'] = sex
+            rec['active'] = False # Will become active when user verifies email Id.
+            rec['userimagepath'] = profpic
+            userid = str(sha256.sha256(str(username)).hexdigest())
+            if DEBUG:
+                print "type of userid is " + str(type(userid)) + "\n"
+            rec['userid'] = userid
+            rec["address"] = {}
+            rec["address"]['country'] = ""
+            rec['address']['State'] = ""
+            rec['address']['block_sector'] = ""
+            rec['address']['house_num'] = ""
+            rec['address']['street_address'] = ""
+            emailvalid = {}
+            emailvalid['email'] = email
+            emailvalid['vkey'] = utils.generate_random_string()
+            r = db.users.find({'username' : username})
+            e = db.emailvalidation.find({'email' : email})
+            if r.count() > 0 or e.count() > 0:
+                message = "Non unique email and/or username found."
+                tmpl = get_template("auth/regform.html")
+                curdate = datetime.datetime.now()
+                availabilityURL = utils.AVAILABILITY_URL
+                c = {'curdate' : curdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
+                 'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL, \
+                 'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
+                 'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
+                'availabilityURL' :  availabilityURL, 'hosturl' : utils.gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH }
+                c.update(csrf(request))
+                cxt = Context(c)
+                reghtml = tmpl.render(cxt)
+                return HttpResponse(reghtml)
             try:
-                user.save() # New user record inserted now. 'joindate' added automatically.
-                emailvalidkey.save()
+                db.users.insert_one(rec)
+                db.emailvalidation.insert_one(emailvalid)
             except:
                 message = sys.exc_info()[1].__str__()
-                tmpl = get_template("auth/newuser.html")
+                tmpl = get_template("auth/regform.html")
+                availabilityURL = utils.AVAILABILITY_URL
                 curdate = datetime.datetime.now()
                 c = {'curdate' : curdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
                  'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL, \
@@ -253,35 +275,32 @@ def register(request):
                 cxt = Context(c)
                 reghtml = tmpl.render(cxt)
                 return HttpResponse(reghtml)
-            #usrpriv.user = user
-            #usrpriv.privilege = userprivilege
-            #usrpriv.status = True
-            #usrpriv.save() # Associated user privilege saved.
-            subject = """ TestYard Registration - Activate your account on TestYard by verifying your email. """
+            
+            subject = """ CryptoCurry Registration - Activate your account on CryptoCurry by verifying your email. """
             message = """
                 Dear %s,
 
-                Thanks for creating your account on TestYard. In order to be able to login and use it, you need
+                Thanks for creating your account on CryptoCurry. In order to be able to login and use it, you need
                 to verify this email address (which you have entered as an input during registration). You can
                 do this by clicking on the hyperlink here: <a href='%s/%s?vkey=%s'>Verify My Account</a>. Once you have ver-
                 ified your account, you would be able to use it.
 
                 If you feel this email has been sent to you in error, please get back to us at the email address
-                mentioned here: support@testyard.com
+                mentioned here: support@cryptocurry.com
 
                 Thanks and Regards,
-                %s, CEO, TestYard.
+                %s, CEO, CryptoCurry.
                 
-            """%(user.displayname, utils.gethosturl(request), ACCTACTIVATION_URL, emailvalidkey.vkey, MAILSENDER)
-            fromaddr = "register@testyard.com"
-            utils.sendemail(user, subject, message, fromaddr)
+            """%(username, utils.gethosturl(request), ACCTACTIVATION_URL, emailvalid['vkey'], MAILSENDER)
+            fromaddr = "register@cryptocurry.com"
+            utils.sendemail(email, subject, message, fromaddr)
             # Print a success message and ask user to validate email. The current screen is
             # only a providential state where the user appears to be logged in but has no right
             # to perform any action.
-            message = "<font color='#0000FF'>Hello %s, welcome on board TestYard(&#8482;). We hope you will have a hassle-free association with us.<br /> \
-            In case of any issues, please feel free to drop us (support@testyard.com) an email regarding the matter. Our 24x7 <br />\
-            support center staff would only be too glad to help you out. Happy testing... </font>"%username
-            tmpl = get_template("user/profile.html")
+            message = "<font color='#0000FF'>Hello %s, welcome on board CryptoCurry(&#8482;). We hope you will have a hassle-free association with us.<br /> \
+            In case of any issues, please feel free to drop us (support@cryptocurry.com) an email regarding the matter. Our 24x7 <br />\
+            support center staff would only be too glad to help you out. Happy transacting at cyptocurry... </font>"%username
+            tmpl = get_template("auth/profile.html")
             curdate = datetime.datetime.now()
             c = {'curdate' : curdate, 'msg' : message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL, 'csrftoken' : csrftoken}
             c.update(csrf(request))
@@ -296,6 +315,9 @@ def register(request):
             print "Unhandled method call during registration.\n"
         return HttpResponseBadRequest(utils.gethosturl(request) + "/" + REGISTER_URL + "?msg=%s"%message)
 
+
+def acctactivate(request):
+    pass
 
 
 """

@@ -288,7 +288,33 @@ Hmmmmm.... your actions route your life.
 def bloombergcryptoindex():
     url = "https://www.bloomberg.com/professional/product/indices/bloomberg-galaxy-crypto-index/"
 
-
+"""
+Get realtime currency data from coinlayer. 
+"""
+def getcoinlayerinfo():
+    api_key = COINLAYER_API_KEY
+    api_endpoint = COINLAYER_LIVE_RATES_API_ENDPOINT
+    target_url = api_endpoint
+    opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), NoRedirectHandler())
+    http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : 'coinlayer.com', 'Referer' : 'https://api.coinlayer.com' }
+    symbols = "BNB,BTC,EOS,LTC,XRP,ETH,BCH,ETC,XMR,XLM,BTG,NEO"
+    target_url += "?access_key=" + api_key + "&symbols=" + symbols
+    coin_layer_request = urllib2.Request(target_url, None, http_headers)
+    coin_layer_response = None
+    try:
+        coin_layer_response = opener.open(coin_layer_request)
+    except:
+        print "Could not get the raw cryptocurrency data - Error: %s\n"%sys.exc_info()[1].__str__()
+        return False
+    jsoncontent = decodeGzippedContent(coin_layer_response.read())
+    content = json.loads(jsoncontent)
+    codesdict = {'BNB' : 'Binance Coin', 'BTC' : 'Bitcoin', 'EOS' : 'EOS', 'LTC' : 'Litecoin', 'XRP' : 'Ripple', 'ETH' : 'Ethereum', 'BCH' : 'Bitcoin Cash', 'ETC' : 'Ethereum Classic', 'XMR' : 'Monero', 'XLM' : 'Stellar', 'BTG' : 'Bitcoin Gold', 'NEO' : 'NEO'}
+    mongoconn = pymongo.MongoClient("mongodb://%s:%s@localhost:%s/cryptocurrency"%(config.MONGO_USER, config.MONGO_PASSWD, config.MONGO_PORT))
+    db = mongoconn.cryptocurrency
+    currdatetime = datetime.datetime.now()
+    content = db.coinlayer.insert_one({'currdatetime' : currdatetime, 'BNB' : content['rates']['BNB'], 'BTC' : content['rates']['BTC'], 'EOS' : content['rates']['EOS'], 'LTC' : content['rates']['LTC'], 'XRP' : content['rates']['XRP'], 'ETH' : content['rates']['ETH'], 'BCH' : content['rates']['BCH'], 'ETC' : content['rates']['ETC'], 'XMR' : content['rates']['XMR'], 'XLM' : content['rates']['XLM'], 'BTG' : content['rates']['BTG'], 'NEO' : content['rates']['NEO']})
+    print "\n\nData added to coinlayer DB\n"
+    return content
 
 
 def collectionEventLoop(scraper_functions_list):
@@ -304,7 +330,7 @@ def collectionEventLoop(scraper_functions_list):
 
 
 if __name__ == "__main__":
-    scraperslist = [scrapeFromInvest, getDataFromCoinMarket, coinmarketcap, cci30index,] # Add scraper functions here.
+    scraperslist = [scrapeFromInvest, getDataFromCoinMarket, coinmarketcap, cci30index, getcoinlayerinfo,] # Add scraper functions here.
     # scraperslist = [scrapeFromInvest, getDataFromCoinMarket, cci30index,] # Add scraper functions here.
     collectionEventLoop(scraperslist)
 

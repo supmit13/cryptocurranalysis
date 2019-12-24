@@ -9,7 +9,8 @@ import random
 import simplejson as json
 from datetime import datetime
 
-from cryptocurry.crypto_settings import * 
+from cryptocurry.crypto_settings import *
+import settings
 import cryptocurry.errors as err
 
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -27,6 +28,8 @@ from django.template import Template, Context
 from django.template.loader import get_template
 from django.contrib.sites.models import get_current_site
 from django.contrib.sessions.backends.db import SessionStore
+
+from django.core.mail import send_mail
 
 
 hextoascii = { '%3C' : '<', '%3E' : '>', '%20' : ' ', '%22' : '"', '%5B' : '[', '%5D' : ']', '%5C' : '\\', '%3A' : ':', '%3B' : ';', '%28' : '(', '%29' : ')', '%2D' : '-', '%2B' : '+', }
@@ -313,8 +316,21 @@ def generatesessionid(username, csrftoken, userip, ts):
     return hashstr
 
 
-def sendemail(user, subject, message, fromaddr):
-    pass
+def sendemail(emailid, subject, message, fromaddr):
+    """
+    Method to send an email to the email id of the user passed in as the argument.
+    Should be done asynchronously - put the email in a queue from where the email
+    handler will pick in batches of (say) 10 emails at a time and send them before
+    running to pick up the next batch.
+    """
+    retval = 0
+    try:
+        retval = send_mail(subject, message, fromaddr, [emailid,], False)
+        return retval
+    except:
+        if mysettings.DEBUG:
+            print "sendemail failed for %s - %s\n"%(emailid, sys.exc_info()[1].__str__())
+        return None
 
 
 def getusernamefromuserid(userid):
@@ -329,16 +345,122 @@ def getusernamefromuserid(userid):
     return username
 
 
+
+def mkdir_p(path):
+    if not os.access(path, os.F_OK):
+        os.makedirs(path)
+        os.chmod(path, 0666)
+
+
+def get_extension(tmpfilepath):
+    """
+    Get the extension of a temporary file created using tempfile.mkstemp
+    """
+    fileparts = tmpfilepath.split(".")
+    if fileparts.__len__() < 2:
+        return ""
+    ext = fileparts[1][0:3]
+    return ext
+
+
+def get_extension2(filename):
+    """
+    Replica of 'get_extension' defined in earlier. In previous version,
+    the file extension is assumed to be 3 chars long only. Hence, in this present
+    scenario, it doesn't work. This version handles that scenario.
+    """
+    extPattern = re.compile("\.(\w{3,4})$")
+    extMatch = extPattern.search(filename)
+    ext = ""
+    if extMatch:
+        ext = extMatch.groups()[0]
+    return ext
+
+
+def handleuploadedfile2(uploaded_file, targetdir, filename=PROFILE_PHOTO_NAME):
+    """
+    Replica of 'handleuploadedfile' defined in earlier. In previous version,
+    the file extension is assumed to be 3 chars long only. Hence, in this present
+    scenario, it doesn't work. This version handles that scenario.
+    """
+    mkdir_p(targetdir)
+    if uploaded_file.size > MAX_FILE_SIZE_ALLOWED:
+        message = error_msg['1005']
+        return [ None, message, '' ]
+    ext = get_extension2(uploaded_file.name)
+    destinationfile = os.path.sep.join([ targetdir, filename + "." + ext, ])
+    with open(destinationfile, 'wb+') as destination:
+        for chunk in uploaded_file.chunks():
+            destination.write(chunk)
+        destination.close()
+        os.chmod(targetdir, 0777)
+        os.chmod(destinationfile, 0777) # Is there a way to club these 'chmod' statements?
+    return [ destinationfile, '', filename + "." + ext ]
+
+
+def getprofileimgtag(request):
+    """
+    Function to form the img tag for profile image based on whether
+    the user has a profile image or not.
+    """
+    db = get_mongo_client()
+    sesscode = request.COOKIES['sessioncode']
+    userid = request.COOKIES['userid']
+    userrec = db.users.find({'userid': userid})
+    if not userrec or userrec.count() < 1:
+        return ""
+    username = userrec[0]['username']
+    profimgfile = userrec[0]['userimagepath'] # Actually, this is the filename
+    csrftoken = ''
+    if request.COOKIES.has_key('csrftoken'):
+        csrftoken = request.COOKIES['csrftoken']
+    profimagepath = os.path.sep.join([ settings.MEDIA_ROOT, username, "images", profimgfile ])
+    profileimgtag = "<img src='media/square.gif' height='102' width='102' alt='Profile Image' id='profileimage'><br /><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;,&quot;%s&quot;);'><font size='-1'>upload profile image</font></a>"%(PROFIMG_CHANGE_URL, csrftoken)
+    if os.path.exists(profimagepath) and profimgfile != "":
+        profileimgtag = "<img src='media/%s/images/%s' height='102' width='102' alt='Profile Image'><br /><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;, &quot;%s&quot;);'><font size='-1'>change profile image</font></a>"%(username, profimgfile, PROFIMG_CHANGE_URL, csrftoken)
+    return profileimgtag
+
+
 def populate_ifacedict_basic(request):
     curdate = datetime.now()
+    #prof_img_tag = getprofileimgtag(request)
+    #prof_img_tag = prof_img_tag.replace('"','')
     (username, password, password2, email, firstname, middlename, lastname, mobilenum) = ("", "", "", "", "", "", "", "")
     c = {'curdate' : curdate, 'login_url' : gethosturl(request) + "/" + LOGIN_URL, 'hosturl' : gethosturl(request),\
              'register_url' : gethosturl(request) + "/" + REGISTER_URL,\
              'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
-             'hosturl' : gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH, 'availabilityURL' : AVAILABILITY_URL }
+             'hosturl' : gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH, 'availabilityURL' : AVAILABILITY_URL, 'register_url' : REGISTER_URL}
+    #'profile_image_tag' :  prof_img_tag
     return c
 
 
-
+def check_password_strength(passwd):
+    if passwd.__len__() == 0:
+        return 0
+    strength = 0
+    if passwd.__len__() > 6:
+        strength += 1
+    contains_digits, contains_special_char, contains_lowercase, contains_uppercase = 0, 0, 0, 0
+    special_characters = "~`!#$%^&*+=-[]\\\';,/{}|\":<>?"
+    i = 0
+    while i < passwd.__len__() - 1:
+        if passwd[i] >= '0' and passwd[i] <= '9':
+            strength += 1
+            i += 1
+            continue
+        if passwd[i] == passwd[i].upper():
+            strength += 1
+            i += 1
+            continue
+        if passwd[i] == passwd[i].lower():
+            strength += 1
+            i += 1
+            continue
+        if passwd[i] in special_characters:
+            strength += 1
+            i += 1
+            continue
+        i += 1
+    return strength
 

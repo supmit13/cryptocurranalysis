@@ -3,7 +3,7 @@
                 <div class="col-12">
                     <div class="section-heading text-center mx-auto">
                         <!-- <h3>Let’s analyze <br><span>the situation</span> now</h3> -->
-                        <p>Please select the options on any of the boxes below and it will graphically display the past and present situation as per the metric chosen.</p>
+                        <!-- <p>Please select the options on any of the boxes below and it will graphically display the past and present situation as per the metric chosen.</p> -->
                     </div>
                 </div>
             </div>
@@ -39,8 +39,8 @@
 				<option value="{{elem}}">{{elem}}</option>
 				{% endfor %}
 				</select>&nbsp;&nbsp;&nbsp;&nbsp;<a href='#plotarea' onClick='javascript:displayplots("{{index}}", "{{urlprefix}}", "ohlcv");'>View&nbsp;&nbsp;Plot</a>
-				{% elif index == "coinbase" %}
-				<a href='#/' onClick='javascript:showcoinbase();'>Coinbase</a>
+				{% elif index == "coinlayer" %}
+				<a href='#/' onClick='javascript:showcoinlayer();'>Coinlayer</a>
 				{% endif %}
 				
 			</p>

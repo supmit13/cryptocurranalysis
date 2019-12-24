@@ -12,6 +12,7 @@
     <meta http-equiv="CACHE-CONTROL" content="NO-CACHE">
     <meta http-equiv="PRAGMA" content="NO-CACHE">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script language='JavaScript' type="text/javascript" src='static/scripts/pageutils.js'></script>
     <!-- Title -->
     <title>CryptoCurry - Cryptocurrency Analysis &amp; Trading Platform</title>
 
@@ -27,7 +28,7 @@
 	  opacity: 0.9;
 	  -moz-opacity: .90; 
 	  -khtml-opacity: 0.9;
-	  background-color:#669999;
+	  background-color:#ff6600;
 	  color:#FFFFFF;
 	  position:absolute; top:250px; left:100px; width:80%; height:150%; text-align:left; vertical-align:middle;padding-left:25px;padding-top:35px;padding-right:50px;
 	}
@@ -38,7 +39,7 @@
 	  opacity: 0.9;
 	  -moz-opacity: .90; 
 	  -khtml-opacity: 0.9;
-	  background-color:#669999;
+	  background-color:#ff751a;
 	  color:#FFFFFF;
 	  position:absolute; top:250px; left:100px; width:80%; height:25%; text-align:left; vertical-align:middle;padding-left:25px;padding-top:35px;padding-right:50px;
 	}
@@ -46,8 +47,8 @@
     <!-- <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1.1','packages':['line']}]}"></script> -->
     <script type='text/javascript'>
         google.charts.load('current', {'packages':['line']});
+	google.charts.load('current', {'packages':['corechart', 'bar']});
         //google.charts.setOnLoadCallback(drawChart);
-
 
 
 function sanitizedataforjs(data){
@@ -69,19 +70,17 @@ function drawChart(data, source="investdb"){
       colors = dataparsed["colors"];
       datetimeslist = dataparsed["datetimeslist"];
       plotareadiv = document.getElementById('plotnamearea');
-      plotimgdiv = document.getElementById('plotimage')
+      plotimgdiv = document.getElementById('plotimage');
       currencynames = dataparsed["currencynames"];
       var keys = Object.keys(datadict);
       plotimgdiv.style.display = "block";
-      alert("The data has been received by your browser. However, the browser will take some time to plot the graph using the data. Please be patient. The time taken to plot the data is directly proportional to the amount of data that has been served by the server.");
-      //alert(keys);
+      alert("The data has been received by your browser. However, the browser will take some time to plot the graph using the data. Please be patient. The time taken to plot the data is directly proportional to the amount of data that has been served by the server. It might take quite a few minutes depending on the size of your dataset and the configuration of your own computer.");
       datalists = [];
       datacurr = [];
       currlist = new Array();
       plotareadiv.innerHTML = "It might take a little while to plot your chart. Please be patient.";
-      //alert(source);
       if(source == "investdb"){
-          headers_investdb = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NICASH"];
+          headers_investdb = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "LITECOIN", "MONERO", "NICASH"];
       }
       else if(source == "ohlcv"){
 	  headers_ohlcv = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "ETHEREUM CLASSIC", "COSMOS"];
@@ -90,17 +89,17 @@ function drawChart(data, source="investdb"){
 	  headers_coinmarketdata = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "DIGIBYTE", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "COSMOS", "DASH"];
       }
       else if(source == "coinmarketcapdata"){
-	  headers_coinmarketcapdata = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NICASH", "COSMOS"];
+	  headers_coinmarketcapdata = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO", "COSMOS"];
       }
-      else if(source == "coinbase"){
-	  headers_coinbase = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NICASH"];
-      }
+      //else if(source == "coinlayer"){
+      //  headers_coinlayer = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO"];
+      //}
       else{
 	alert("Unrecognized Source.");
       }
       //headers_investdb = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO"];
       if(source == "investdb"){
-          currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NICASH" : 0};
+          currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "LITECOIN" : 0, "MONERO" : 0, "NICASH" : 0};
       }
       else if(source == "ohlcv"){
 	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "ETHEREUM CLASSIC" : 0};
@@ -109,11 +108,11 @@ function drawChart(data, source="investdb"){
 	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "LITECOIN" : 0, "XRP" : 0, "DIGIBYTE" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "COSMOS" : 0, "DASH" : 0};
       }
       else if(source == "coinmarketcapdata"){
-	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NICASH" : 0, "COSMOS" : 0};
+	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "BITCOIN SV" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NEO" : 0, "COSMOS" : 0};
       }
-      else if(source == "coinbase"){
-	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NICASH" : 0};
-      }
+      //else if(source == "coinlayer"){
+      //  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NEO" : 0};
+      //}
       else{
 	alert("Unrecognized Source.");
       }
@@ -122,7 +121,7 @@ function drawChart(data, source="investdb"){
       var plotdata = new google.visualization.DataTable();
       plotdata.addColumn('string', 'Datetime');
       if(source == "investdb"){
-          listedcurrencies_investdb = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NICASH");
+          listedcurrencies_investdb = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "LITECOIN", "MONERO", "NICASH");
           //listedcurrencies_investdb = new Array("EOS", "BITCOIN", "BINANCE COIN", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO");
       }
       else if(source == "ohlcv"){
@@ -132,11 +131,11 @@ function drawChart(data, source="investdb"){
 	  listedcurrencies_coinmarketdata = new Array("EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "DIGIBYTE", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "COSMOS", "DASH");
       }  
       else if(source == "coinmarketcapdata"){
-	  listedcurrencies_coinmarketcapdata = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NICASH", "COSMOS");
+	  listedcurrencies_coinmarketcapdata = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO", "COSMOS");
       }
-      else if(source == "coinbase"){
-	  listedcurrencies_coinbase = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NICASH");
-      }
+      //else if(source == "coinlayer"){
+      //  listedcurrencies_coinlayer = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO");
+      //}
       else{
 	alert("Unrecognized Source.");
       }
@@ -150,6 +149,7 @@ function drawChart(data, source="investdb"){
 	      plotdata.addColumn('number', "STELLAR");
 	      plotdata.addColumn('number', "BITCOIN CASH");
 	      plotdata.addColumn('number', "ETHEREUM");
+	      plotdata.addColumn('number', "LITECOIN");
 	      plotdata.addColumn('number', "MONERO");
 	      plotdata.addColumn('number', "NICASH");
       }
@@ -191,10 +191,8 @@ function drawChart(data, source="investdb"){
 	      plotdata.addColumn('number', "BITCOIN CASH");
 	      plotdata.addColumn('number', "ETHEREUM");
 	      plotdata.addColumn('number', "MONERO");
-	      plotdata.addColumn('number', "NICASH");
+	      plotdata.addColumn('number', "NEO");
 	      plotdata.addColumn('number', "COSMOS");
-      }
-      else if(source == "coinbase"){
       }
       else{
 	alert("Unrecognized Source.");
@@ -214,9 +212,9 @@ function drawChart(data, source="investdb"){
 	else if(source == "coinmarketcapdata"){
 	    listedcurrencies = listedcurrencies_coinmarketcapdata;
 	}
-	else if(source == "coinbase"){
-	    listedcurrencies = listedcurrencies_coinbase;
-	}
+	//else if(source == "coinlayer"){
+	//    listedcurrencies = listedcurrencies_coinlayer;
+	//}
         for(currencyindex in currencyindices){
 	    currencyname = currencyindices[currencyindex];
             if(source == "investdb" && listedcurrencies_investdb.indexOf(currencyname.toUpperCase()) == -1){
@@ -231,10 +229,9 @@ function drawChart(data, source="investdb"){
 	    if(source == "coinmarketcapdata" && listedcurrencies_coinmarketcapdata.indexOf(currencyname.toUpperCase()) == -1){
 		continue;
             }
-	    if(source == "coinbase" && listedcurrencies_coinbase.indexOf(currencyname.toUpperCase()) == -1){
-		continue;
-            }
-	    //alert(currencyname.toUpperCase());
+	    //if(source == "coinlayer" && listedcurrencies_coinlayer.indexOf(currencyname.toUpperCase()) == -1){
+	    //	continue;
+            //}
 	    currflagobj[currencyname.toUpperCase()] = 1;
 	    curvalslist = datadict[currencyname];
 	    rec_ctr = 0;
@@ -272,16 +269,9 @@ function drawChart(data, source="investdb"){
 	    }
 	}
 	datalength_inconsistency_flag = 0
-	//alert(datetimeslist);
         for(datetimeval in datetimeslist){
 	    datar = datastack[datetimeslist[datetimeval]]
-	    //alert(datar);
 	    if(datar && datar.length != keys.length){
-		//console.log(datar.length);
-		//alert(datar.length);
-		//alert(datar);
-		//alert(keys.length);
-		//alert(keys);
 		datalength_inconsistency_flag = 1
 		continue;
 	    }
@@ -315,7 +305,7 @@ function drawChart(data, source="investdb"){
         }
       };
       //var chart = new google.visualization.LineChart(document.getElementById("plotimage"));
-      
+      //alert("Plotting the chart");
       var chart = new google.charts.Line(document.getElementById("plotimage"));
       plotimgdiv.innerHTML = "";
       plotareadiv.innerHTML = ""; // Remove if something was written previously.
@@ -332,11 +322,53 @@ function drawChart(data, source="investdb"){
 }
 
 
+function drawBarChart(datajson){
+    google.charts.load('current', {'packages':['bar']});
+    data = JSON.parse(datajson)
+    datetimekeys = Object.keys(data);
+    headerslist = Array();
+    headers = [];
+    firstpass = 1;
+    datalist = Array();
+    for (datetimeindx in datetimekeys){
+	datetime = datetimekeys[datetimeindx];
+	currdict = data[datetime];
+        if(firstpass){
+	    headers.push("datetime");
+	}
+	currkeys = Array();
+ 	currkeys = Object.keys(currdict);
+        currvals = Array();
+	currvals.push(datetime);
+        for (currkeyindx in currkeys){
+	    currkey = currkeys[currkeyindx];
+	    if(firstpass){
+		headers.push(currkey);
+	    }
+	    currvals.push(parseFloat(currdict[currkey]));
+	}
+	if(firstpass){
+	    datalist.push(headers);
+	    firstpass = 0;
+	}
+	datalist.push(currvals);
+    }
+    var dataset = google.visualization.arrayToDataTable(datalist);
+    var options = {
+          chart: {
+            title: 'Exchange Rates',
+            subtitle: 'Exchange Rates for selected cryptocurrencies',
+          },
+          bars: 'vertical'
+        };
+        var chart = new google.charts.Bar(document.getElementById('plotimage'));
+        chart.draw(dataset, google.charts.Bar.convertOptions(options));
+}
+
+
 function displayplots(indexval, urlprefix, source){
     selectbox = document.getElementById(indexval);
     selectedvalue = selectbox.value;
-    //alert(source);
-    //alert(selectedvalue);
     postdata = "csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
     plotdiv = document.getElementById('plotimage');
     var xmlhttp;
@@ -346,17 +378,11 @@ function displayplots(indexval, urlprefix, source){
     else{
         xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
     }
-    //alert(postdata);
     xmlhttp.onreadystatechange = function(){
         if(xmlhttp.readyState == 4 && xmlhttp.status==200){
 	    plotdiv.style.display = "block";
-	    //plotdiv.innerHTML = "";
 	    waittag = document.getElementById('waitprocess');
  	    waittag.parentNode.removeChild(waittag);
-	    //imgtag = document.createElement('img');
-	    //imgtag.setAttribute('src', xmlhttp.responseText);
-	    //plotdiv.appendChild(imgtag);
-	    //alert("calling drawchart");
 	    data = xmlhttp.responseText;
             if(source == "investdb"){
 	        drawChart(data, source);
@@ -368,10 +394,7 @@ function displayplots(indexval, urlprefix, source){
 		drawChart(data, source);
 	    }  
 	    else if(source == "coinmarketcapdata"){
-		drawChart(data, source)
-	    }
-	    else if(source == "coinbase"){
-		drawChart(data, source)
+		drawChart(data, source);
 	    }
 	    else{
 	      alert("Unrecognized Source.");
@@ -383,7 +406,7 @@ function displayplots(indexval, urlprefix, source){
     xmlhttp.open('POST', posturl, true);
     xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
     xmlhttp.setRequestHeader("X-CSRFToken", document.cryptoanalysis.csrfmiddlewaretoken.value);
-    //alert(posturl);
+
     plotdiv.style.display = "block";
     imgtag = document.createElement('img');
     imgtag.setAttribute('src', 'static/images/loading_big.gif');
@@ -393,7 +416,230 @@ function displayplots(indexval, urlprefix, source){
     xmlhttp.send(postdata);
 }
 
-    </script>
+
+function showcoinlayer(){
+    postdata = "csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
+    plotdiv = document.getElementById('plotimage');
+    data = "";
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+        if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    plotdiv.style.display = "block";
+	    data = xmlhttp.responseText;
+	    drawBarChart(data);
+        }
+    }
+    posturl = "/cryptocurry/coinlayer_api/request/";
+    alert("This operation might take a while, depending on the volume of available data on the server. Please be patient.");
+    xmlhttp.open('POST', posturl, true);
+    xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xmlhttp.setRequestHeader("X-CSRFToken", document.cryptoanalysis.csrfmiddlewaretoken.value);
+    xmlhttp.send(postdata);
+}
+
+
+// Authentication routines - Should not be considered as a part/extension of plotting data.
+function dologin(){
+    urlprefix = "{{urlprefix}}";
+    username = document.loginform.username.value;
+    password = document.loginform.password.value;
+    csrfoken = document.loginform.csrfmiddlewaretoken.value;
+    if(document.loginform.keepmesignedin.checked == true){
+        keepmesignedin = 1;
+    }
+    else{
+        keepmesignedin = 0;
+    }
+    postdata = "csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
+    postdata += "&username=" + username + "&password=" + password + "&keepmesignedin=" + keepmesignedin;
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    plotdiv = document.getElementById('plotimage');
+    xmlhttp.onreadystatechange = function(){
+        if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    plotdiv.style.display = "block";
+	    data = xmlhttp.responseText;
+	    // Display data in table in appropriate manner
+	    //alert(data);
+	    inputsarea = document.getElementById("inputs");
+	    inputsarea.innerHTML = "<label style='color:#FFFFFF'>" + data + " |</label> <a href='#/' onClick='javascript:signout(\"{{ userid }}\");'>Sign Out</a>" ;
+        }
+    }
+    posturl = urlprefix + "/cryptocurry/auth/login/";
+    xmlhttp.open('POST', posturl, true);
+    xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xmlhttp.setRequestHeader("X-CSRFToken", document.cryptoanalysis.csrfmiddlewaretoken.value);
+    xmlhttp.send(postdata);
+}
+
+
+function showsignupform(urlprefix){
+    //alert(urlprefix);
+    target_url = "cryptocurry/auth/register/";
+    abs_url = urlprefix + "/" + target_url;
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    formdiv = document.getElementById('transscreens');
+    xmlhttp.onreadystatechange = function(){
+        if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    formdiv.style.display = "block";
+	    form = xmlhttp.responseText;
+	    // Display data in table in appropriate manner
+	    //alert(data);
+	    formdiv.innerHTML = form;
+        }
+    }
+    xmlhttp.open('GET', target_url, true);
+    xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xmlhttp.setRequestHeader("X-CSRFToken", document.cryptoanalysis.csrfmiddlewaretoken.value);
+    xmlhttp.send(); 
+}
+
+function checkavailability(){
+    var username = document.registerform.username.value.trim();
+    if(username == ""){
+	alert("Username cannot be empty");
+	document.registerform.username.value = "";
+	//document.registerform.username.focus();
+	return (0);
+    }
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    // Register the handler
+    xmlhttp.onreadystatechange = function(){
+    if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+       if(xmlhttp.responseText == '0'){
+	//alert("The chosen username is not available");
+	document.getElementById('checkuser').innerHTML = "<font color='#DD0000' size=-2>This username is already taken. Please choose another one.</font>";
+	document.registerform.username.focus();
+	document.registerform.username.selected = true;
+       }
+       else{
+	//alert("The chosen username is available");
+	document.getElementById('checkuser').innerHTML = "<font color='#0000DD' size=-2>Available for use.</font>";
+       }
+    }
+    };
+    var availabilityURL = "{{hosturl}}/{{ availabilityURL }}?username=" + username;
+    //alert(availabilityURL);
+    xmlhttp.open("GET",availabilityURL,true); // Make it an ajax call.
+    xmlhttp.send();
+}
+
+function validate_regdata(){
+  if(document.registerform.username.value.trim() == ""){
+    alert("Username cannot be empty.");
+    //document.registerform.username.focus();
+    return false;
+  }
+  if(document.registerform.password.value.trim() == "" || document.registerform.password2.value.trim() == ""){
+    alert("Password fields cannot be empty.");
+    //document.registerform.password.focus();
+    return false;
+  }
+  if(document.registerform.password.value.trim() != document.registerform.password2.value.trim()){
+    alert("Mismatch in the 2 password fields.");
+    //document.registerform.password2.focus();
+    return false;
+  }
+  if(document.registerform.email.value.trim() == ""){
+    alert("Email cannot be empty.");
+    //document.registerform.email.focus();
+    return false;
+  }
+  if(!validate_email(document.registerform.email.value.trim())){
+    alert("Please enter a valid email Id.");
+    //document.registerform.email.focus();
+    return false;
+  }
+  if(document.registerform.firstname.value.trim() != "" && !check_name(document.registerform.firstname.value.trim())){
+    alert("Names may contain alphabets only. Numbers and special characters not allowed.");
+    //document.registerform.firstname.focus();
+    return false;
+  }
+  if(document.registerform.lastname.value.trim() != "" && !check_name(document.registerform.lastname.value.trim())){
+    alert("Names may contain alphabets only. Numbers and special characters not allowed.");
+    //document.registerform.lastname.focus();
+    return false;
+  }
+  if(document.registerform.middlename.value.trim() != "" && !check_name(document.registerform.middlename.value.trim())){
+    alert("Names may contain alphabets only. Numbers and special characters not allowed.");
+    //document.registerform.middlename.focus();
+    return false;
+  }
+  if(document.registerform.mobilenum.value.trim() != "" && !validate_phonenum(document.registerform.mobilenum.value.trim())){
+    alert("Mobile number may contain digits only.");
+    //document.registerform.mobilenum.focus();
+    return false;
+  }
+  return true;
+}
+
+function process_register(){
+  var val = validate_regdata();
+  if(!val){
+    return false;
+  }
+  document.registerform.username.value = document.registerform.username.value.trim();
+  document.registerform.password.value = document.registerform.password.value.trim();
+  document.registerform.password2.value = document.registerform.password2.value.trim();
+  document.registerform.email.value = document.registerform.email.value.trim();
+  document.registerform.firstname.value = document.registerform.firstname.value.trim();
+  document.registerform.lastname.value = document.registerform.lastname.value.trim();
+  document.registerform.middlename.value = document.registerform.middlename.value.trim();
+  document.registerform.mobilenum.value = document.registerform.mobilenum.value.trim();
+  if(check_passwd_strength(document.registerform.password.value) < {{ min_passwd_strength }}){
+    return false;
+  }
+  document.registerform.submit();
+  return true; // will never come to this line.
+}
+
+
+function clear_all(){
+    yn = confirm("Clicking OK will clear all fields. Do you want to continue?");
+    if(yn){
+        document.registerform.username.value = "";
+        document.registerform.password.value = "";
+        document.registerform.password2.value = "";
+        document.registerform.email.value = "";
+        document.registerform.firstname.value = "";
+        document.registerform.lastname.value = "";
+        document.registerform.middlename.value = "";
+        document.registerform.mobilenum.value = "";
+        return true;
+    }
+    else{
+	return false;
+    }
+}
+
+function forgotpasswd(urlprefix){
+    target_url = "cryptocurry/auth/forgotpasswd/"
+}
+
+</script>
 
 </head>
 
@@ -416,14 +662,32 @@ function displayplots(indexval, urlprefix, source){
                             <div class="top-headline">
                                 <p>Welcome to <span>CryptoCurry</span></p>
                             </div>
-                            <!-- Top Login & Faq & Earn Monery btn -->
+                            <!-- Top Login & Faq & Earn Money btn -->
                             <div class="login-faq-earn-money">
-                                <a href="#" onClick='javascript:showloginscreen("{{urlprefix}}");'>Login&nbsp;&nbsp;</a> | <a href="#" onClick='javascript:showregisterscreen("{{urlprefix}}");'>Register<br /></a>
-                                <a href="#">FAQ</a>
-                                <a href="#" class="active">Trade</a>
-				<div id='logindiv' class='semitrans' style='display:none'></div>
-				<div id='registerdiv' class='semitrans' style='display:none'></div>
+				Login: <form method='POST' name='loginform'>
+	  {% csrf_token %}
+	  {{cxt.loggedin}}
+	  {{username}}
+	  {% if cxt.loggedin == 0 or username == '' %}
+	  
+          <fieldset id="inputs">
+            <input id="username" type="text" name="username" placeholder="Username" value='' required>   
+            <input id="password" type="password" name="password" placeholder="Password" value='' required>
+            <input type="button" id="submit1" name="submit1" value="Log in" onClick='javascript:dologin();'>
+	    <label style="color:#FFFFFF"><input type="checkbox" name='keepmesignedin' checked='checked'> Keep me signed in
+          	|<a href='#/' onClick='javascript:forgotpasswd("{{urlprefix}}");'>Forgot Password</a> | </label>
+	    <a href="#" onClick='javascript:showsignupform("{{urlprefix}}");'>Sign up FREE</a>
+        </fieldset>
+	{% else %}
+	<fieldset id="inputs">
+	<label style='color:#FFFFFF'>You are signed in as {{username}} |</label> <a href='#/' onClick='javascript:signout("{{ userid }}", "{{urlprefix}}")'>Sign Out</a>
+	</fieldset>
+        {% endif %}
+	</form>
+                                <!-- <a href="#" class="active">FAQ</a> -->
+				
                             </div>
+			    <div style='display:none;' id="transscreens" class="semitrans"></div>
 			    <div id='plotnamearea'></div> 
                         </div>
                     </div>

@@ -68,6 +68,7 @@ urlpatterns += patterns('',
     url(r'cryptocurry/coinlayer_api/request/$', 'cryptocurry.analysis.views.coinlayer_data', name='coinlayer_data'),
     url(r'cryptocurry/analyze/visual/operations/$', 'cryptocurry.analysis.views.operations', name='coinlayer_data'),
     url(r'auth/username/availability/$', 'cryptocurry.auth.views.checkavailability', name='checkavailability'),
+    url(r'cryptocurry/activate/$', 'cryptocurry.auth.views.acctactivate', name='acctactivate'),
 )
 
 

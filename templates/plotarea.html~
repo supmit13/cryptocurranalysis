@@ -3,7 +3,7 @@
 <!-- ##### Plot Area ##### -->
     <div class="cryptos-feature-area section-padding-100-0">
         <div class="container-fluid">
-		<a name="plotarea"><div id='plotimage' align='center' style='width:700px;height:240px;'>
+		<a name="plotarea"><div id='plotimage' align='center' style='width:900px;height:300px;'>
 		
 
 		</div></a>
