@@ -151,10 +151,11 @@ def logout(request):
 def register(request):
     if request.method == "GET": # display the registration form
         curdate = datetime.datetime.now()
+        strcurdate = curdate.strftime("%Y-%m-%d %H:%M:%S")
         (username, password, password2, email, firstname, middlename, lastname, mobilenum) = ("", "", "", "", "", "", "", "")
         tmpl = get_template("auth/regform.html")
         
-        c = {'curdate' : curdate, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL, 'hosturl' : utils.gethosturl(request),\
+        c = {'curdate' : strcurdate, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL, 'hosturl' : utils.gethosturl(request),\
              'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL,\
              'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
@@ -203,9 +204,10 @@ def register(request):
             print message + "\n"
         if message != "":
             curdate = datetime.datetime.now()
+            strcurdate = curdate.strftime("%Y-%m-%d %H:%M:%S")
             availabilityURL = utils.AVAILABILITY_URL
             tmpl = get_template("auth/regform.html")
-            c = {'curdate' : curdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
+            c = {'curdate' : strcurdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
                  'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL, \
                  'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
@@ -248,8 +250,9 @@ def register(request):
                 message = "Non unique email and/or username found."
                 tmpl = get_template("auth/regform.html")
                 curdate = datetime.datetime.now()
+                strcurdate = curdate.strftime("%Y-%m-%d %H:%M:%S")
                 availabilityURL = utils.AVAILABILITY_URL
-                c = {'curdate' : curdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
+                c = {'curdate' : strcurdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
                  'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL, \
                  'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
@@ -266,7 +269,8 @@ def register(request):
                 tmpl = get_template("auth/regform.html")
                 availabilityURL = utils.AVAILABILITY_URL
                 curdate = datetime.datetime.now()
-                c = {'curdate' : curdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
+                strcurdate = curdate.strftime("%Y-%m-%d %H:%M:%S")
+                c = {'curdate' : strcurdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
                  'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL, \
                  'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
@@ -302,7 +306,10 @@ def register(request):
             support center staff would only be too glad to help you out. Happy transacting at cyptocurry... </font>"%username
             tmpl = get_template("auth/profile.html")
             curdate = datetime.datetime.now()
-            c = {'curdate' : curdate, 'msg' : message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL, 'csrftoken' : csrftoken}
+            strcurdate = curdate.strftime("%Y-%m-%d %H:%M:%S")
+            c = {'curdate' : strcurdate, 'msg' : message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL, \
+           'csrftoken' : csrftoken, 'username' : username, 'password' : password, 'password2' : password2, 'email' : email, \
+           'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, 'userid' : userid, 'active' : 0 }
             c.update(csrf(request))
             cxt = Context(c)
             profile = tmpl.render(cxt)
@@ -361,11 +368,12 @@ def acctactivation(request):
     try:
         userobj.save() # Email is validated now.
         curdate = datetime.datetime.now()
-        tmpl = get_template("authentication/activation.html")
+        strcurdate = curdate.strftime("%Y-%m-%d %H:%M:%S")
+        tmpl = get_template("auth/activation.html")
         msg = """
         Your email address has been validated. Now you may use your TestYard.com account by logging into it.
         """
-        c = {'curdate' : curdate, 'displayname' : userobj.displayname, 'msg' : msg, 'profile_image_tag' : utils.getprofileimgtag(request) }
+        c = {'curdate' : strcurdate, 'displayname' : userobj.displayname, 'msg' : msg, 'profile_image_tag' : utils.getprofileimgtag(request) }
         c.update(csrf(request))
         cxt = Context(c)
         activehtml = tmpl.render(cxt)

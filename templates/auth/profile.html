@@ -1,0 +1,46 @@
+{% include "inc/cryptoheader.html" %}
+{% include "inc/cryptonavbar.html" %}
+{% include "inc/cryptonavbartail.html" %}
+{% include "inc/cryptostartarea.html" %}
+<div id='profilediv'>
+<form name='profform' method='POST' action=''>
+<table border='0' cellspacing='2' cellpadding='4'>
+	<tr>
+	    <td width='25%'>&nbsp;</td><td width='30%' style='font-weight:bold'>Date/Time:</td><td style='font-weight:bold|italic'>{{curdate}}</td>
+	</tr>
+        <tr>
+	    <td width='25%'>&nbsp;</td><td width='30%' style='font-weight:bold'>Username:</td><td style='font-weight:bold|italic'>{{curdate}}</td>
+	</tr>
+        <tr>
+	    <td width='25%'>&nbsp;</td><td width='30%' style='font-weight:bold'>Email:</td><td><input type='text' name='email' value='{{email}}'></td>
+	</tr>
+        <tr>
+	    <td width='25%'>&nbsp;</td><td width='30%' style='font-weight:bold'>password:</td><td><input type='password' name='passwd' value='{{password}}'></td>
+	</tr>
+        <tr>
+	    <td width='25%'>&nbsp;</td><td width='30%' style='font-weight:bold'>Firstname:</td><td><input type='text' name='firstname' value='{{firstname}}'></td>
+	</tr>
+	<tr>
+	    <td width='25%'>&nbsp;</td><td width='30%' style='font-weight:bold'>Middlename:</td><td><input type='text' name='middlename' value='{{middlename}}'></td>
+	</tr>
+	<tr>
+	    <td width='25%'>&nbsp;</td><td width='30%' style='font-weight:bold'>Lastname:</td><td><input type='text' name='lastname' value='{{lastname}}'></td>
+	</tr>
+ 	<tr>
+	    <td width='25%'>&nbsp;</td><td width='30%' style='font-weight:bold'>Mobile Number:</td><td><input type='text' name='mobilenum' value='{{mobilenum}}'></td>
+	</tr>
+	<tr>
+	    <td span=3>&nbsp;{% csrf_token %}<input type='hidden' name='userid' value='{{userid}}'><input type='hidden' name='active' value='{{active}}'></td>
+	</tr>
+	<tr>
+	    <td width='25%'>&nbsp;</td><td width='30%'><input type='button' name='update_changes' value='Save Changes' onClick='javascript:save_profile_changes();'>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='close_profile' value='Close' onClick='javascript:close_profile();'></td><td>&nbsp;</td>
+	</tr>
+</table>
+</form>
+</div>
+{% include "inc/cryptocoursestartarea.html" %}
+{% include "inc/cryptocurrencyarea.html" %}
+{% include "inc/cryptoblogarea.html" %}
+{% include "inc/cryptofooterarea.html" %}
+
+
