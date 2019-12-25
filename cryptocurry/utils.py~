@@ -464,3 +464,4 @@ def check_password_strength(passwd):
         i += 1
     return strength
 
+

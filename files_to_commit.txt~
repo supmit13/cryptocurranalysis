@@ -113,6 +113,27 @@ Monday, December 23, 2019, 22:18 HRS.
 8. git add templates/inc/cryptonavbar.html
 9. git add cryptocurry/crypto_settings.py
 10.git add templates/auth/regform.html
-10. git add files_to_commit.txt
+11.git add files_to_commit.txt
 -----------------------------------------
+
+=========================================
+Tuesday, December 24, 2019, 13:18 HRS.
+-----------------------------------------
+1. git add cryptocurry/utils.py
+2. git add templates/auth/regform.html
+3. git add templates/inc/cryptoheader.html
+4. git add cryptocurry/auth/views.py
+5. git add templates/inc/cryptonavbar.html
+6. git add templates/auth/profile.html
+7. git add templates/auth/activation.html
+8. git add files_to_commit.txt
+-----------------------------------------
+
+=========================================
+Tuesday, December 24, 2019, 13:18 HRS.
+-----------------------------------------
+1. get add --all
+-----------------------------------------
+
+
 

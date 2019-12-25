@@ -471,12 +471,7 @@ function dologin(){
 	    plotdiv.style.display = "block";
 	    data = xmlhttp.responseText;
 	    // Display data in table in appropriate manner
-            dataparts = data.split(":");
-	    //alert(dataparts[1]);
-            if(dataparts.length > 1 && dataparts[1].search("err")){
-	        alert(dataparts[2]);
-		return(false);
-	    }
+	    //alert(data);
 	    inputsarea = document.getElementById("inputs");
 	    inputsarea.innerHTML = "<label style='color:#FFFFFF'>" + data + " |</label> <a href='#/' onClick='javascript:signout(\"{{ userid }}\");'>Sign Out</a>" ;
         }
@@ -678,26 +673,7 @@ function forgotpasswd(urlprefix){
                             </div>
                             <!-- Top Login & Faq & Earn Money btn -->
                             <div class="login-faq-earn-money">
-				Login: <form method='POST' name='loginform'>
-	  {% csrf_token %}
-	  {{cxt.loggedin}}
-	  {{username}}
-	  {% if cxt.loggedin == 0 or username == '' %}
-	  
-          <fieldset id="inputs">
-            <input id="username" type="text" name="username" placeholder="Username" value='' required>   
-            <input id="password" type="password" name="password" placeholder="Password" value='' required>
-            <input type="button" id="submit1" name="submit1" value="Log in" onClick='javascript:dologin();'>
-	    <label style="color:#FFFFFF"><input type="checkbox" name='keepmesignedin' checked='checked'> Keep me signed in
-          	|<a href='#/' onClick='javascript:forgotpasswd("{{urlprefix}}");'>Forgot Password</a> | </label>
-	    <a href="#" onClick='javascript:showsignupform("{{urlprefix}}");'>Sign up FREE</a>
-        </fieldset>
-	{% else %}
-	<fieldset id="inputs">
-	<label style='color:#FFFFFF'>You are signed in as {{username}} |</label> <a href='#/' onClick='javascript:signout("{{ userid }}", "{{urlprefix}}")'>Sign Out</a>
-	</fieldset>
-        {% endif %}
-	</form>
+				
                                 <!-- <a href="#" class="active">FAQ</a> -->
 				
                             </div>

@@ -471,7 +471,12 @@ function dologin(){
 	    plotdiv.style.display = "block";
 	    data = xmlhttp.responseText;
 	    // Display data in table in appropriate manner
-	    //alert(data);
+            dataparts = data.split(":");
+	    //alert(dataparts[1]);
+            if(dataparts.length > 1 && dataparts[1].search("err")){
+	        alert(dataparts[2]);
+		return(false);
+	    }
 	    inputsarea = document.getElementById("inputs");
 	    inputsarea.innerHTML = "<label style='color:#FFFFFF'>" + data + " |</label> <a href='#/' onClick='javascript:signout(\"{{ userid }}\");'>Sign Out</a>" ;
         }
@@ -634,6 +639,15 @@ function clear_all(){
 	return false;
     }
 }
+
+
+function save_profile_changes(){ // from profile.html
+}
+
+
+function close_profile(){ // from profile.html
+}
+
 
 function forgotpasswd(urlprefix){
     target_url = "cryptocurry/auth/forgotpasswd/"

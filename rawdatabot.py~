@@ -168,7 +168,7 @@ def coinmarketcap():
     db = mongoconn.cryptocurrency
     cryptocurrencydatalist = data[u'data']
     infolist = []
-    mongoconn = pymongo.MongoClient("mongodb://%s:%s@localhost:%s/cryptocurrency"%(config.MONGO_USER, config.MONGO_PASSWD, config.MONGO_PORT))
+    #mongoconn = pymongo.MongoClient("mongodb://%s:%s@localhost:%s/cryptocurrency"%(config.MONGO_USER, config.MONGO_PASSWD, config.MONGO_PORT))
     for cryptodict in cryptocurrencydatalist:
         last_updated, entrydatetime, cryptocurrname, cryptosymbol, marketcap,price, supply, volume, percent_change_1h, percent_change_24h, percent_change_7d = "", "", "", "", "", "", "", "", "", "", "" 
         entrydatetime = str(datetime.datetime.now())

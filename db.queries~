@@ -54,5 +54,15 @@ Displaying Last N records in a collection:
 NOTE: Here in the above command, N is 10. '$natural' stands for natural sequencing, which means the sequence in which the records were
 inserted, and the value '-1' means the display should be in reverse order.
 
+Get Count of Documents in a Collection:
+---------------------------------------
 
+db.coinmarketdata.count()
+db.coinmarketcapdata.count()
+db.investdata.count()
+
+
+Delete a document:
+------------------
+db.COLLECTION_NAME.remove(DELLETION_CRITTERIA)
 

@@ -33,6 +33,7 @@ function dologin(urlprefix){
     username = document.loginform.username.value;
     password = document.loginform.password.value;
     keepmesignedin = false;
+    logindiv = document.getElementById('logindiv');
     if(document.loginform.keepmesignedin.checked == true){
         keepmesignedin = true
     }

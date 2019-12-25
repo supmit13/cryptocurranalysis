@@ -40,6 +40,7 @@ import cryptocurry.settings as settings
 
 #******* End of imports **********#
 
+
 @sensitive_post_parameters()
 @ensure_csrf_cookie
 @csrf_protect
@@ -57,12 +58,12 @@ def login(request):
     uname = utils.authenticate(username, password)
     if not uname: # Incorrect password - return user to login screen with an appropriate message.
         message = err.error_msg('1002')
-        return HttpResponseRedirect(utils.gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
+        return HttpResponse(message)
     else: # user will be logged in after checking the 'active' field
         rec = db["users"].find({"username" : uname})
         if not rec:
             message = err.error_msg('1002')
-            return HttpResponseRedirect(utils.gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
+            return HttpResponse(message)
         #r = rec.next()
         for r in rec:
             active = r["active"]
@@ -90,7 +91,7 @@ def login(request):
             message = err.error_msg('1003')
             if DEBUG:
                 print(message)
-            return HttpResponseRedirect(utils.gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
+            return HttpResponse(message)
 
 
 def display_login_screen(request):
@@ -248,11 +249,11 @@ def register(request):
             e = db.emailvalidation.find({'email' : email})
             if r.count() > 0 or e.count() > 0:
                 message = "Non unique email and/or username found."
-                tmpl = get_template("auth/regform.html")
+                tmpl = get_template("auth/regerror.html")
                 curdate = datetime.datetime.now()
                 strcurdate = curdate.strftime("%Y-%m-%d %H:%M:%S")
                 availabilityURL = utils.AVAILABILITY_URL
-                c = {'curdate' : strcurdate, 'msg' : "<font color='#FF0000'>%s</font>"%message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
+                c = {'curdate' : strcurdate, 'msg' : message, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL,\
                  'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL, \
                  'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
@@ -290,13 +291,13 @@ def register(request):
                 ified your account, you would be able to use it.
 
                 If you feel this email has been sent to you in error, please get back to us at the email address
-                mentioned here: support@cryptocurry.com
+                mentioned here: support@cryptocurry.me
 
                 Thanks and Regards,
                 %s, CEO, CryptoCurry.
                 
             """%(username, utils.gethosturl(request), ACCTACTIVATION_URL, emailvalid['vkey'], MAILSENDER)
-            fromaddr = "register@cryptocurry.com"
+            fromaddr = "register@cryptocurry.me"
             utils.sendemail(email, subject, message, fromaddr)
             # Print a success message and ask user to validate email. The current screen is
             # only a providential state where the user appears to be logged in but has no right
@@ -324,7 +325,49 @@ def register(request):
 
 
 def acctactivate(request):
-    pass
+    vkey = ""
+    if request.GET.has_key('vkey'):
+        vkey = request.GET['vkey']
+    else:
+        return HttpResponse("Invalid request")
+    if vkey == "":
+        return HttpResponse("Invalid request")
+    tmpl = get_template("auth/activation.html")
+    db = utils.get_mongo_client()
+    tbl = db["emailvalidation"]
+    validationrec = tbl.find({'vkey' : vkey})
+    if not validationrec or validationrec.count() < 1:
+        msg = "The request for account activation couldn't be entertained as there is a key mismatch. Please try once more or contact the admin at admin@cryptocurry.me."
+        c = {'message' : msg}
+        c.update(csrf(request))
+        cxt = Context(c)
+        activation = tmpl.render(cxt)
+        for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+            activation = activation.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
+        return HttpResponse(activation)
+    emailid = validationrec[0]['email']
+    usrtbl = db["users"]
+    rec = usrtbl.find({'emailid' : emailid})
+    if not rec or rec.count() < 1:
+        msg = "Couldn't find a emaid Id that matches the code given in the link. Please contact the admin at admin@cryptocurry.me with all the details."
+        c = {'message' : msg}
+        c.update(csrf(request))
+        cxt = Context(c)
+        activation = tmpl.render(cxt)
+        for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+            activation = activation.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
+        return HttpResponse(activation)
+    if DEBUG:
+        print("emailid = " + emailid + "\n------------------------------\n")
+    usrtbl.update_one({'emailid' : emailid}, {"$set" : {'active' : "true"}})
+    msg = "Welcome to CryptoCurry! Your account has been activated. Now you may start using it."
+    c = {'message' : msg}
+    c.update(csrf(request))
+    cxt = Context(c)
+    activation = tmpl.render(cxt)
+    for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+        activation = activation.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
+    return HttpResponse(activation)
 
 
 """
@@ -341,45 +384,6 @@ def checkavailability(request):
     else: # Available
         return HttpResponse('1')
 
-
-
-"""
-view to handle account activation. We would be getting a
-GET query string of the form "vkey=<some-uuid-string>".
-"""
-def acctactivation(request):
-    vkey = ""
-    if request.GET.has_key('vkey'):
-        vkey = request.GET['vkey']
-    else:
-        return HttpResponse("Invalid request")
-    if vkey == "":
-        return HttpResponse("Invalid request")
-    allrecs = EmailValidationKey.objects.filter(vkey=vkey)
-    if allrecs.__len__() == 0: # No entry found that matches the vkey.
-        return HttpResponse("Invalid Request")
-    # There should not be cases where we get multiple emails for same vkey.
-    # If we get that, then that is a bug in the system.
-    email = allrecs[0].email # We take the first value
-    user = User.objects.filter(emailid=email)
-    userobj = user[0]
-    userobj.newuser = False # Should no longer be considered to be a new user.
-    userobj.active = True # Activate account
-    try:
-        userobj.save() # Email is validated now.
-        curdate = datetime.datetime.now()
-        strcurdate = curdate.strftime("%Y-%m-%d %H:%M:%S")
-        tmpl = get_template("auth/activation.html")
-        msg = """
-        Your email address has been validated. Now you may use your TestYard.com account by logging into it.
-        """
-        c = {'curdate' : strcurdate, 'displayname' : userobj.displayname, 'msg' : msg, 'profile_image_tag' : utils.getprofileimgtag(request) }
-        c.update(csrf(request))
-        cxt = Context(c)
-        activehtml = tmpl.render(cxt)
-        return HttpResponse(activehtml)
-    except:
-        return HttpResponse("Email could not be validated - %s.\n"%sys.exc_info()[1].__str__())
 
 
 # Methods for handling requests from mobile handsets and other devices that may be considered in future.

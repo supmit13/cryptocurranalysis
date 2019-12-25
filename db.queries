@@ -62,4 +62,7 @@ db.coinmarketcapdata.count()
 db.investdata.count()
 
 
+Delete a document:
+------------------
+db.COLLECTION_NAME.remove(DELLETION_CRITTERIA)
 

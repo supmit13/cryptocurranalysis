@@ -124,9 +124,16 @@ Tuesday, December 24, 2019, 13:18 HRS.
 3. git add templates/inc/cryptoheader.html
 4. git add cryptocurry/auth/views.py
 5. git add templates/inc/cryptonavbar.html
-6. git add templates/inc/mission_statement.html
-7. git add templates/auth/profile.html
-8. git add templates/auth/activation.html
-9. git add files_to_commit.txt
+6. git add templates/auth/profile.html
+7. git add templates/auth/activation.html
+8. git add files_to_commit.txt
 -----------------------------------------
+
+=========================================
+Thursday, December 26, 2019, 01:44 HRS.
+-----------------------------------------
+1. get add --all
+-----------------------------------------
+
+
 
