@@ -4,7 +4,7 @@ import pandas as pd
 
 DB_NAME = "cryptocurrency"
 DB_USER = "supmit"
-DB_PASS = "******"
+DB_PASS = "*********"
 DB_PORT = 27017
 DB_HOST = "localhost"
 
@@ -114,15 +114,15 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE=True
 SECURE_SSL_REDIRECT = True
 SECURE_HSTS_SECONDS = 31536000 
 
-COIN_MARKET_CAP_API_KEY = "****************************"
+COIN_MARKET_CAP_API_KEY = "***************************"
 COIN_MARKET_CAP_DOMAIN = "https://pro-api.coinmarketcap.com"
 
-BLOCKCHAIN_API_KEY = "****************************"
+BLOCKCHAIN_API_KEY = "*****************************"
 
 COINLAYER_ID = "cryptocurry.me@gmail.com"
-COINLAYER_PASSWD = "********"
+COINLAYER_PASSWD = "*******"
 COINLAYER_COMPANY_NAME = "CryptoCurry Pvt. Ltd."
-COINLAYER_API_KEY = "**********************************"
+COINLAYER_API_KEY = "************************"
 COINLAYER_LIVE_RATES_API_ENDPOINT = "http://api.coinlayer.com/api/live"
 SELECTED_COINLAYER_CRYPTO_CODES = "BNB,BTC,EOS,LTC,XRP,ETH,BCH,ETC,XMR,XLM,BTG,NEO"
 POLL_FREQUENCY = 2 # in hours. So there would be 12 calls per day, which means 360 calls a month.
@@ -133,6 +133,6 @@ POLL_FREQUENCY = 2 # in hours. So there would be 12 calls per day, which means 3
 COINLAYER_NUM_DATETIMES = 3 # We want to see the last 3 date records only. Modify it to suit your needs.
 
 SESSION_EXPIRY_LIMIT = 86400
-
+PASSCODE_EXPIRY_LIMIT = 1800 #30 minutes
 
 

@@ -689,7 +689,7 @@ function forgotpasswd(urlprefix){
             <input id="password" type="password" name="password" placeholder="Password" value='' required>
             <input type="button" id="submit1" name="submit1" value="Log in" onClick='javascript:dologin();'>
 	    <label style="color:#FFFFFF"><input type="checkbox" name='keepmesignedin' checked='checked'> Keep me signed in
-          	|<a href='#/' onClick='javascript:forgotpasswd("{{urlprefix}}");'>Forgot Password</a> | </label>
+          	|<a href='cryptocurry/auth/forgotpasswd/'>Forgot Password</a> | </label>
 	    <a href="#" onClick='javascript:showsignupform("{{urlprefix}}");'>Sign up FREE</a>
         </fieldset>
 	{% else %}

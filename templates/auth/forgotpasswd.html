@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- The above 4 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <script language='JavaScript' type="text/javascript" src='static/scripts/analysis.js'></script>
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=utf-8" />
+    <meta http-equiv="CACHE-CONTROL" content="NO-CACHE">
+    <meta http-equiv="PRAGMA" content="NO-CACHE">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script language='JavaScript' type="text/javascript" src='static/scripts/pageutils.js'></script>
+    <!-- Title -->
+    <title>CryptoCurry - Cryptocurrency Analysis &amp; Trading Platform</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="static/iface_resources/img/core-img/favicon.ico">
+
+    <!-- Core Stylesheet -->
+    <link rel="stylesheet" href="static/iface_resources/style.css">
+    <style>
+	.semitrans {
+	  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=90)";
+	  filter: alpha(opacity=90);
+	  opacity: 0.9;
+	  -moz-opacity: .90; 
+	  -khtml-opacity: 0.9;
+	  background-color:#ff6600;
+	  color:#FFFFFF;
+	  position:absolute; top:250px; left:100px; width:80%; height:150%; text-align:left; vertical-align:middle;padding-left:25px;padding-top:35px;padding-right:50px;
+	}
+
+	.semitrans2 {
+	  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=90)";
+	  filter: alpha(opacity=90);
+	  opacity: 0.9;
+	  -moz-opacity: .90; 
+	  -khtml-opacity: 0.9;
+	  background-color:#ff751a;
+	  color:#FFFFFF;
+	  position:absolute; top:250px; left:100px; width:80%; height:25%; text-align:left; vertical-align:middle;padding-left:25px;padding-top:35px;padding-right:50px;
+	}
+    </style>
+    <!-- <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1.1','packages':['line']}]}"></script> -->
+    <script type='text/javascript'>
+        
+
+function generate_password(urlprefix){
+    target_url = "cryptocurry/auth/generatepasswd/";
+    target_url = urlprefix + "/" + target_url;
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    tmpdiv = document.getElementById('temppasswd');
+    username = document.getElementById('username');
+    emailid = document.getElementById('emailid');
+    postdata = "emailid=" + emailid.value + "&username=" + username.value;
+    xmlhttp.onreadystatechange = function(){
+        if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    data = xmlhttp.responseText;
+	    dataparts = data.split(":");
+            if (dataparts.length > 2 && dataparts[1] == "err"){
+		alert("The following error occurred: " + dataparts[2]);
+		return(false);
+	    }
+            tmpdiv.innerHTML = "<form method='POST' name='genpass'>{% csrf_token %}<div id='passcodediv' style='position:relative;float:left;left:50%;transform:translate(-50%,-50%);'><input type='text' name='passcode' id='passcode' placeholder='Passcode' value='' required><input type='hidden' name='username' id='username' value='" + username.value + "'><input type='hidden' name='emailid' id='emailid' value='" + emailid.value + "'><input type='button' name='passenter' value='Submit Passcode' onClick='javascript:display_passwd_change_screen();'></div></form>";
+        }
+    }
+    xmlhttp.open('POST', target_url, true);
+    xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xmlhttp.setRequestHeader("X-CSRFToken", document.forgotpasswd.csrfmiddlewaretoken.value);
+    xmlhttp.send(postdata);
+}
+
+
+function display_passwd_change_screen(){
+    tempdiv = document.getElementById('temppasswd');
+    passcode_elem = document.getElementById('passcode');
+    username_elem = document.getElementById('username');
+    emailid_elem = document.getElementById('emailid');
+    username = username_elem.value;
+    emailid = emailid_elem.value;
+    passcode = passcode_elem.value;
+    // Send a request to the server to check the usability of the 'passcode' value.
+
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    csrftoken = document.genpass.csrfmiddlewaretoken.value;
+    postdata = "username=" + username + "&emailid=" + emailid + "&passcode=" + passcode + "&csrfmiddlewaretoken=" + csrftoken;
+    xmlhttp.onreadystatechange = function(){
+        if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    data = xmlhttp.responseText;
+	    //alert(data);
+	    dataparts = data.split(":");
+            if(dataparts && dataparts.length > 2){
+		alert("Error: " + dataparts[2]);
+		return(false);
+	    }
+	    else if(data == "true"){
+		tempdiv.innerHTML = "<form name='enternewpasswd' method='POST' action='#/'>{% csrf_token %}<input type='password' name='newpasswd' value='' placeholder='New Password' id='newpasswd'>&nbsp;&nbsp;&nbsp;&nbsp;<input type='password' name='confirmnewpasswd' value='' placeholder='Confirm New Password' id='confirmnewpasswd'>&nbsp;&nbsp;&nbsp;&nbsp;<input type='hidden' name='username' value='" + username + "' id='username'><input type='hidden' name='emailid' value='" + emailid +"' id='emailid'><input type='button' name='change_passwd' value='Confirm Change' onClick='javascript:confirm_passwd_change();'></form>";
+		return(true);
+	    }
+	    else{
+	    	alert("Some error occurred, and we regret the inconvenience. Please try again.");
+		return(false);
+	    }
+        }
+    }
+    posturl = "cryptocurry/auth/check_passcode_usability/";
+    xmlhttp.open('POST', posturl, true);
+    xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xmlhttp.setRequestHeader("X-CSRFToken", document.genpass.csrfmiddlewaretoken.value);
+    //alert(postdata);
+    xmlhttp.send(postdata);
+}
+
+
+function confirm_passwd_change(){
+    //alert("Hello!");
+    tempdiv = document.getElementById('temppasswd');
+    passwd = document.getElementById('newpasswd').value;
+    //alert(passwd);
+    confirmpasswd = document.getElementById('confirmnewpasswd').value;
+    username = document.getElementById('username').value;
+    emailid = document.getElementById('emailid').value;
+    if(passwd != confirmpasswd){
+        alert("The 2 passwords you entered do not match. Please retype them carefully before trying again.");
+        document.enternewpasswd.newpasswd.placeholder = "";
+        document.enternewpasswd.confirmnewpasswd.placeholder = "";
+        document.enternewpasswd.newpasswd.focus();
+        return(false);
+    }
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    csrftoken = document.enternewpasswd.csrfmiddlewaretoken.value;
+    postdata = "newpasswd=" + passwd + "&confirmnewpasswd=" + confirmpasswd + "&username=" + username + "&emailid=" + emailid + "&csrfmiddlewaretoken=" + csrftoken;
+    xmlhttp.onreadystatechange = function(){
+        if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    data = xmlhttp.responseText;
+	    alert(data);
+	    tempdiv.innerHTML = data; // Make this statement clearer. Currently you can barely see this on the screen.
+        }
+    }
+    posturl = "cryptocurry/auth/confirm_passwd_change/";
+    xmlhttp.open('POST', posturl, true);
+    xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xmlhttp.setRequestHeader("X-CSRFToken", document.enternewpasswd.csrfmiddlewaretoken.value);
+    //alert(postdata);
+    xmlhttp.send(postdata);
+}
+
+</script>
+
+</head>
+
+
+<body>
+    <!-- ##### Preloader ##### -->
+    <div id="preloader">
+        <i class="circle-preloader"></i>
+    </div>
+
+    <!-- ##### Header Area Start ##### -->
+    <header class="header-area">
+
+        <!-- Top Header Area -->
+        <div class="top-header">
+            <div class="container h-100">
+                <div class="row h-100">
+                    <div class="col-12 h-100">
+                        <div class="top-header-content h-100 d-flex align-items-center justify-content-between">
+                            <!-- Top Headline -->
+                            <div class="top-headline">
+                                <p>Welcome to <span>CryptoCurry</span></p>
+                            </div>
+                            <!-- Top Login & Faq & Earn Money btn -->
+                            <div id = 'temppasswd' style="position:relative;float:left;top:70%;left:50%;transform:translate(-50%,-50%);color:#AAAAAA">
+				{{message}}
+				 <form method='POST' name='forgotpasswd'>
+	  {% csrf_token %}
+	  
+          <fieldset id="inputs">
+            <input id="username" type="text" name="username" placeholder="Username" value='' required>   
+            <input id="emailid" type="text" name="emailid" placeholder="Registered EmailId" value='' required>
+            <input type="button" id="submit1" name="submit1" value="Request for temporary password" onClick='javascript:generate_password("{{urlprefix}}");'>
+        </fieldset>
+	
+	</form>
+                                <!-- <a href="#" class="active">FAQ</a> -->
+		
+                            </div>
+			    <div style='display:none;' id="transscreens" class="semitrans"></div>
+			    <div id='plotnamearea'></div> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+{% include "inc/cryptonavbar.html" %}
+{% include "inc/cryptonavbartail.html" %}
+{% include "inc/cryptostartarea.html" %}
+{% include "inc/cryptocoursestartarea.html" %}
+{% include "inc/cryptocurrencyarea.html" %}
+{% include "inc/cryptoblogarea.html" %}
+{% include "inc/cryptofooterarea.html" %}

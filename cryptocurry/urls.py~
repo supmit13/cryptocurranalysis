@@ -4,7 +4,6 @@ from django.views.generic import RedirectView
 from cryptocurry import settings as mysettings
 import cryptocurry.utils as cryptoutils
 
-
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
@@ -68,6 +67,11 @@ urlpatterns += patterns('',
     url(r'cryptocurry/coinlayer_api/request/$', 'cryptocurry.analysis.views.coinlayer_data', name='coinlayer_data'),
     url(r'cryptocurry/analyze/visual/operations/$', 'cryptocurry.analysis.views.operations', name='coinlayer_data'),
     url(r'auth/username/availability/$', 'cryptocurry.auth.views.checkavailability', name='checkavailability'),
+    url(r'cryptocurry/activate/$', 'cryptocurry.auth.views.acctactivate', name='acctactivate'),
+    url(r'cryptocurry/auth/forgotpasswd/$', 'cryptocurry.auth.views.forgotpassword', name='forgotpassword'),
+    url(r'cryptocurry/auth/generatepasswd/$', 'cryptocurry.auth.views.generatepasswd', name='generatepasswd'),
+    url(r'cryptocurry/auth/confirm_passwd_change/$', 'cryptocurry.auth.views.confirm_passwd_change', name='confirm_passwd_change'),
+    url(r'cryptocurry/auth/check_passcode_usability/$', 'cryptocurry.auth.views.check_passcode_usability', name='check_passcode_usability'),
 )
 
 

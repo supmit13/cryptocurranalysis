@@ -30,6 +30,8 @@ import os, sys, re, time, datetime
 import cPickle, urlparse
 import decimal, math, base64
 import sha256
+import random
+import string
 
 # Application specific libraries...
 from cryptocurry.analysis.views import datasourceentryiface
@@ -447,6 +449,192 @@ def mobile_verifypassword(request):
         return HttpResponseRedirect(utils.gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
 
 
+@csrf_exempt
+@never_cache
+def forgotpassword(request):
+    if request.method == 'GET':
+        tmpl = get_template("auth/forgotpasswd.html")
+        msg = "Please enter the following information and click on the 'Request for temporary password'. Please note that the temporary password will remain valid for 30 minutes from the instant of sending it via email to your registered email address."
+        urlprefix = utils.gethosturl(request)
+        c = {'message' : msg, 'urlprefix' : urlprefix}
+        c.update(csrf(request))
+        cxt = Context(c)
+        tmppasswd = tmpl.render(cxt)
+        for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+            tmppasswd = tmppasswd.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
+        return HttpResponse(tmppasswd)
+        
+# This one is taken from "https://pynative.com/python-generate-random-string/" verbatim
+# This bit of code must change in future to make it more secure. Currently it is not
+# very secure.
+def randomStringDigits(stringLength=6):
+    """Generate a random string of letters and digits """
+    lettersAndDigits = string.ascii_letters + string.digits
+    return ''.join(random.choice(lettersAndDigits) for i in range(stringLength))
+    
+
+@csrf_exempt
+@never_cache
+def generatepasswd(request):
+    if request.method != "POST":
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    username = "";
+    emailid = "";
+    if request.POST.has_key('username'):
+        username = request.POST['username']
+    else:
+        message = "generatepasswd:err:Required field username is missing. Please fill in the username field and try again";
+        response = HttpResponse(message);
+        return response
+    if request.POST.has_key('emailid'):
+        emailid = request.POST['emailid'];
+    else:
+        message = "generatepasswd:err:Required field emailId is missing. Please fill in the emailId field and try again";
+        response = HttpResponse(message);
+        return response
+    # First, check if the email Id is registered with the given user. If so, we will send the
+    # generated string. If not, we will send out an error message.
+    db = utils.get_mongo_client()
+    tbl = db["users"]
+    rec = tbl.find({'username' : username})
+    if not rec or rec.count() < 1:
+        message = "generatepasswd:err:No user with the given username ('%s') exists in our databases"
+        response = HttpResponse(message);
+        return response
+    email = rec[0]["emailid"]
+    if DEBUG:
+        print("EMAIL: %s\n++++++++++++++++++++++++++++\n"%email)
+    if not email or email != emailid:
+        message = "generatepasswd:err:The email Id for the given username doesn't exist or there is a mismatch between the given email Id and the provided email Id"
+        response = HttpResponse(message)
+        return response
+    else: # Generate the 8 character random string and send it through an email to the given email Id
+        randompasscode = randomStringDigits(8)
+        # First, insert it into the DB
+        curdate = datetime.datetime.now()
+        strcurdate = curdate.strftime("%Y-%m-%d %H:%M:%S")
+        if request.COOKIES.has_key('sessioncode'):
+            sessionid = request.COOKIES['sessioncode']
+        else:
+            sessionid = ""
+        clientip = utils.get_client_ip(request)
+        tsval = int(time.time())
+        insertd = {'username' : username, 'emailid' : emailid, 'passcode' : randompasscode, 'datetime' : strcurdate, 'sourceip' : clientip, 'sessionid' : sessionid, 'tsval' : tsval}
+        db.passwdcodes.insert_one(insertd)
+        # Send this to the registered email Id
+        fromaddr = "admin@cryptocurry.me"
+        subject = "Your temporary passcode"
+        message = "Hi %s,\n\nPlease copy the code (8 characters long) and paste it in the code box on the screen.\nThis will allow you to change your password through a given page\n that will be displayed to you when you submit this code using the 'Send Code' button. Your passcode is '%s'.\n\nThanks and Regards, \nadmin@cryptocurry.me\n"%(username, randompasscode)
+        utils.sendemail(email, subject, message, fromaddr)
+        msg = "An email containing the passcode has been sent to your registered email Id. Please open the email and follow the instructions therein."
+        response = HttpResponse(msg)
+        return response
+
+
+@ensure_csrf_cookie
+@csrf_protect
+def confirm_passwd_change(request):
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    username = "";
+    emailid = "";
+    newpasswd = "";
+    confirmnewpasswd = "";
+    if request.POST.has_key('username'):
+        username = request.POST['username']
+    else:
+        message = "generatepasswd:err:Required field username is missing.";
+        response = HttpResponse(message);
+        return response
+    if request.POST.has_key('emailid'):
+        emailid = request.POST['emailid'];
+    else:
+        message = "generatepasswd:err:Required field emailId is missing.";
+        response = HttpResponse(message);
+        return response
+    #Check if the emailId and username are related.
+    db = utils.get_mongo_client()
+    tbl = db["users"]
+    rec = tbl.find({'username' : username})
+    if not rec or rec.count() < 1:
+        message = "confirm_password_change:err:No user with the given username ('%s') exists in our databases"%username
+        response = HttpResponse(message);
+        return response
+    email = rec[0]["emailid"]
+    if DEBUG:
+        print("EMAIL: %s\n++++++++++++++++++++++++++++\n"%email)
+    if not email or email != emailid:
+        message = "confirm_password_change:err:The email Id for the given username doesn't exist or there is a mismatch between the given email Id and the provided email Id"
+        response = HttpResponse(message)
+        return response
+    if request.POST.has_key('newpasswd'):
+        newpasswd = request.POST['newpasswd'];
+    else:
+        message = "generatepasswd:err:Required field newpasswd is missing.";
+        response = HttpResponse(message);
+        return response
+    if request.POST.has_key('confirmnewpasswd'):
+        confirmnewpasswd = request.POST['confirmnewpasswd'];
+    else:
+        message = "generatepasswd:err:Required field confirmnewpasswd is missing.";
+        response = HttpResponse(message);
+        return response
+    if newpasswd != confirmnewpasswd:
+        message = "Password Mismatch:err:The 2 passwords given do not match. Please rectify this issue and try again."
+        response = HttpResponse(message);
+        return response
+    #Create sha256 hashing of the given password and store it in the record identified by the username/emailid
+    passwd_digest = utils.make_password(newpasswd)
+    message = "The password has been successfully changed."
+    try:
+        tbl.update_one({'username' : username, 'emailid' : emailid, 'active' : "true"}, {"$set":{'password' : passwd_digest}})
+    except:
+        message = "The password change wasn't successfully done: %s\n"%sys.exc_info()[1].__str__()
+    response = HttpResponse(message);
+    return response
+    
+
+@ensure_csrf_cookie
+@csrf_protect
+def check_passcode_usability(request):
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    """
+    Get the passcode from the request and verify it is still usable (i.e., it is not stale yet).
+    MongoDB table db.passwdcodes, field: tsval
+    """
+    currentts = int(time.time())
+    username, emailid, passcode = "", "", ""
+    if request.POST.has_key('username'):
+        username = request.POST['username']
+    if request.POST.has_key('emailid'):
+        emailid = request.POST['emailid']
+    if request.POST.has_key('passcode'):
+        passcode = request.POST['passcode']
+    if not username or not emailid or not passcode:
+        msg = "passcode validation:err:One or more of the required parameters are missing. Can't proceed further without that information."
+        response = HttpResponse(msg)
+        return response
+    db = utils.get_mongo_client()
+    tbl = db["passwdcodes"]
+    rec = tbl.find({'username' : username, 'emailid' : emailid, 'passcode' : passcode})
+    if not rec or rec.count < 1:
+        msg = "Invalid Data:err:Couldn't find any record in the database that matches the entered data. Please check your data before trying again."
+        response = HttpResponse(msg)
+        return response
+    if rec[0].has_key('tsval'):
+        passcodets = rec[0]['tsval']
+        if currentts - int(passcodets) > PASSCODE_EXPIRY_LIMIT:
+            msg = "Passcode Expired:err:Your passcode has expired as it has exceeded the expiry limit of %s minutes. Please try again by generating a new passcode."
+            response = HttpResponse(msg)
+            return response
+    return HttpResponse("true")
 
 
 
