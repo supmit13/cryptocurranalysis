@@ -2527,3 +2527,305 @@ def operations(request):
     return HttpResponse("You are logged in successfully as '%s'!"%username)
 
 
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def profileimagechange(request):
+    if request.method != 'POST':
+        message = error_msg('1004')
+        return HttpResponseBadRequest(message)
+    sesscode = request.COOKIES['sessioncode']
+    userid = request.COOKIES['userid']
+    db = utils.get_mongo_client()
+    rec = db["users"].find({'userid' : userid})
+    if rec and rec.count() > 0:
+        username = rec[0]['username']
+    else:
+        message = "failed - Anonymous users can't upload profile pics."
+        return HttpResponse(message)
+    message = ""
+    if request.FILES.has_key('profpic'):
+        fpath, message, profpic = utils.handleuploadedfile2(request.FILES['profpic'], MEDIA_ROOT + os.path.sep + username + os.path.sep + "images")
+        tbl = db["users"]
+        tbl.update_one({'userid' : userid, 'sessionid' : sesscode}, {"$set":{'userimagepath' : profpic},  "$currentDate":{"lastModified":True}})
+        message = "success"
+    else:
+        message = "failed"
+    return HttpResponse(message)
+
+
+# ======================== Blockcypher API calls ============================= #
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def get_blockcypher_private_public_keys_address():
+    api_endpoint = BLOCKCYPHER_ADDRESS_ENDPOINT
+    opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), utils.NoRedirectHandler())
+    http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
+    blockcypher_request = urllib2.Request(api_endpoint, None, http_headers)
+    blockcypher_response = None
+    try:
+        blockcypher_response = opener.open(blockcypher_request)
+    except:
+        print "Could not get the blockcypher address data - Error: %s\n"%sys.exc_info()[1].__str__()
+        return False
+    if not blockcypher_response:
+        print "Could not retrieve response from the request to '%s'\n"%BLOCKCYPHER_ADDRESS_ENDPOINT
+        return False
+    blockcypher_data_json = blockcypher_response.read()
+    if DEBUG:
+        print(blockcypher_data_json)
+    return blockcypher_data_json
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def create_wallet(request):
+    """
+    A user can have more than one wallet for the same currency under his/her name.
+    Each of these wallets will have a different name (provided by the user) and an
+    address (created during the address creation process using the method named
+    'get_blockcypher_private_public_keys_address'. The address needs to be unique
+    in the collection, but the name may be used by other users (with other addresses)
+    having one or more wallets.
+    """
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "Either you are not logged in or your session has been corrupted. Please login and try again."
+        response = HttpResponse(message)
+        return response
+    rec = db["users"].find({'userid' : userid})
+    username = None
+    if rec:
+        username = rec[0]['username']
+    if not username:
+        message = "Either you are not logged in or your session has been corrupted. Please login and try again."
+        response = HttpResponse(message)
+        return response
+    if request.POST.has_key('currency_name'):
+        currencyname = request.POST['currency_name']
+    else:
+        message = "The currency name field is mandatory. You have not entered a currency name. Please select a currency name and try again"
+        response = HttpResponse(message)
+        return response
+    if request.POST.has_key('walletname'):
+        walletname = request.POST['walletname']
+    else:
+        message = "The wallet name field is mandatory. You have not entered a wallet name. Please enter a wallet name and try again"
+        response = HttpResponse(message)
+        return response
+    v = utils.validate_wallet_name(walletname)
+    if not v:
+        message = "Your wallet name is not valid. Please modify it as per the rules mentioned below to make it a valid one.\n"
+        message += utils.rules_valid_key()
+        response = HttpResponse(message)
+        return response
+    blockcypher_data_json = get_blockcypher_private_public_keys_address()
+    blockcypher_data = json.loads(blockcypher_data_json)
+    private, public, address, wif = "", "", "", ""
+    if blockcypher_data.has_key('private'):
+        private = blockcypher_data['private']
+    if blockcypher_data.has_key('public'):
+        public = blockcypher_data['public']
+    if blockcypher_data.has_key('address'):
+        address = blockcypher_data['address']
+    if blockcypher_data.has_key('wif'):
+        wif = blockcypher_data['wif'] # Wallet Import Format - a common encoding for the private key
+    if not private or not public or not address or not wif:
+        message = "Could not retrieve all the data to create a wallet. Please try again after some time." # TODO: Need to tell user what to do if it keeps failing
+        response = HttpResponse(message)
+        return response 
+    # Create the wallet for the user and put it in the DB in the 'wallets' collection.
+    http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
+    postdata = {'name' : walletname, 'addresses' : [address, ], 'token' : BLOCKCYPHER_ACCOUNT_TOKEN}
+    encoded_data = urllib.urlencode(postdata)
+    api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets"
+    blockcypher_request = urllib2.Request(api_endpoint, encoded_data, http_headers)
+    blockcypher_response = None
+    try:
+        blockcypher_response = opener.open(blockcypher_request)
+    except:
+        print "Could not get the blockcypher wallet data - Error: %s\n"%sys.exc_info()[1].__str__()
+        return False
+    if not blockcypher_response:
+        print "Could not retrieve response from the request to '%s'\n"%api_endpoint
+        return False
+    blockcypher_data_json = blockcypher_response.read()
+    if DEBUG:
+        print(blockcypher_data_json)
+    # At this point, the wallet has been created, and we can store that in our DB with key pair and address associated with it.
+    db = utils.get_mongo_client()
+    timenow = datetime.datetime.now()
+    dtimestr = timenow.strftime("%Y-%m-%d %H:%M:%S")
+    insertd = {'userid' : userid, 'username' : username, 'currencyname' : currencyname.lower(), 'balance_amt' : 0, 'last_updation' : dtimestr, 'wallet_address' : address, 'public_key' : public, 'wif' : wif, 'wallet_name' : walletname}
+    try:
+        db.wallets.insert_one(insertd) # TODO: Dillema as to whether to store the private key in the DB or not.
+    except:
+        message = "Couldn't create the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
+        response = HttpResponse(response)
+        return response
+    message = "Your wallet was created successfully. Please make a note of the following:\nPublic Key: %s\nPrivate Key: %s\nAddress: %s\nWallet Name: %s"%(public, private, address, walletname)
+    message += "<br />Please also note that we are NOT going to store the private key in our database. It is your responsibility to store it at a safe location. You will need it during transactions and trading, and during those operations you would be asked to provide your private key so that we may process your requests.<br />If you lose your private key, you basically lose your wallet.<br />Please also make a note of all the parameters shown above."
+    response = HttpResponse(message)
+    return response
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def add_addresses_to_wallet(request):
+    """
+    This method adds an address to an existing wallet owned by the user. 
+    In order to add an address to an existing wallet, the wallet name
+    is sent as one of the POST arguments. A successful operation would
+    create a new document in the 'wallets' collection in the DB.
+    """
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "Either you are not logged in or your session has been corrupted. Please login and try again."
+        response = HttpResponse(message)
+        return response
+    rec = db["users"].find({'userid' : userid})
+    username = None
+    if rec:
+        username = rec[0]['username']
+    if not username:
+        message = "Either you are not logged in or your session has been corrupted. Please login and try again."
+        response = HttpResponse(message)
+        return response
+    walletname, addresses = "", ""
+    if request.POST.has_key('walletname'):
+        walletname = request.POST['walletname']
+        if utils.isStringEmpty(walletname):
+            message = "The required parameter 'walletname' cannot be empty. Please specify the wallet name at the appropriate field on the form and try again."
+            response = HttpResponse(message)
+            return response
+        walletname = walletname.strip()
+    else:
+        message = "The required parameter 'walletname' couldn't be found. Please specify the wallet name at the appropriate field on the form and try again."
+        response = HttpResponse(message)
+        return response
+    if request.POST.has_key('addresses'):
+        addresses = request.POST['addresses']
+        addresses = addresses.strip()
+        if utils.isStringEmpty(addresses) or addresses.find(",") == -1:
+            message = "The required parameter 'addresses' cannot be empty. Please specify the addresses you want to add to the wallet at the appropriate field on the form and try again."
+            response = HttpResponse(message)
+            return response
+    else:
+        message = "The required parameter 'addresses' couldn't be found. Please specify the addresses you want to add to your wallet at the appropriate field on the form and try again."
+        response = HttpResponse(message)
+        return response
+    addresses_list = addresses.split(",")
+    # Now check if the wallet exist in our DB and it is owned by the user specified using the username.
+    db = utils.get_mongo_client()
+    rec = db.wallets.find({'username' : username, 'wallet_name' : walletname})
+    currencyname, balance_amt, public_key, wif, dtimestr = "", "", "", "",""
+    if not rec or rec.count < 1:
+        message = "It seems that you have specified a wrong wallet name. Either the wallet doesn't exist or you are not the owner of the wallet. Kindly rectify your mistake and try again."
+        response = HtpResponse(message)
+        return response
+    else:
+        currencyname = rec[0]['currencyname']
+        balance_amt = rec[0]['balance_amt']
+        public_key = rec[0]['public_key']
+        wif = rec[0]['wif']
+        timenow = datetime.datetime.now()
+        dtimestr = timenow.strftime("%Y-%m-%d %H:%M:%S")
+    # If we reach here, it means that the named wallet is owned by the user requesting to add the address.
+    # Let's oblige her/him. For every address, a new document will be added to the 'wallets' collection.
+    for addr in addresses_list:
+        qset = {'userid' : userid, 'username' : username, 'currencyname' : currencyname.lower(), 'balance_amt' : balance_amt, 'last_updation' : dtimestr, 'wallet_address' : addr, 'public_key' : public_key, 'wif' : wif, 'wallet_name' : walletname}
+        try:
+            db.wallets.insert_one(qset)
+        except:
+            message = "Couldn't add the address to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
+            response = HttpResponse(response)
+            return response
+    # Now, send a request with the necessary params to the API hook to keep blockcypher in sync.
+    api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets/%s/addresses?token=%s"%(walletname, BLOCKCYPHER_ACCOUNT_TOKEN)
+    addresses_list_str = ",".join(addresses_list)
+    postdata = {'addresses' : [addresses_list_str]}
+    encoded_data = urllib.urlencode(postdata)
+    http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
+    blockcypher_request = urllib2.Request(api_endpoint, encoded_data, http_headers)
+    blockcypher_response = None
+    try:
+        blockcypher_response = opener.open(blockcypher_request)
+    except:
+        print "Could not add the blockcypher addresses data to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
+        return False
+    if not blockcypher_response:
+        print "Could not retrieve response from the request to '%s'\n"%api_endpoint
+        return False
+    blockcypher_response_json = blockcypher_response.read()
+    blockcypher_response_dict = json.loads(blockcypher_response_json)
+    if blockcypher_response_dict.has_key('token') and blockcypher_response_dict['token'] == BLOCKCYPHER_ACCOUNT_TOKEN and blockcypher_response_dict.has_key('name') and blockcypher_response_dict['name'] == walletname and blockcypher_response_dict.has_key('addresses'):
+        message = "The address(es) have been added to the wallet successfully."
+        response = HttpResponse(message)
+        return response
+    else:
+        message = "For some reason, the address(es) could not be added to the named wallet. Please try again. If the error persists, please contact the admin with the wallet and address details at admin@cryptocurry.me"
+        response = HttpResponse(message)
+        return response
+
+
+
+
+# ======================== Blockchain calls end here ============================ #
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def listwallets(request):
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "Either you are not logged in or your session has been corrupted. Please login and try again."
+        response = HttpResponse(message)
+        return response
+    useridarg = ""
+    if request.POST.has_key('userid'):
+        useridarg = request.POST['userid']
+    else:
+        message = "Invalid request: No userid was sent as parameter."
+        response = HttpResponse(message)
+        return response
+    if userid != useridarg:
+        message = "Getting conflicting user Ids in request. Possibly your session is corrupt. Please login and try again"
+        response = HttpResponse(message)
+        return response
+    db = utils.get_mongo_client()
+    rec = db.wallets.find({'userid' : useridarg})
+    if not rec or rec.count() < 1:
+        message = "You do not have any wallet as yet."
+        response = HttpResponse(message)
+        return response
+    message = """
+        <p style="color='#0000AA';">
+	You have the following wallets:
+	<br />
+    """
+    for r in rec:
+        walletname = r["wallet_name"]
+        currency = r["currencyname"]
+        message += "<a href='#/' onClick='javascript:showwalletdetails('%s', '%s');'>%s (%s)</a><br />"%(userid, walletname, walletname, currency)
+    message += "</p>"
+    response = HttpResponse(message)
+    return response
+
+
+
+
+

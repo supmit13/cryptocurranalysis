@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import random
 import simplejson as json
 from datetime import datetime
+import urllib, urllib2
 
 from cryptocurry.crypto_settings import *
 import settings
@@ -423,15 +424,14 @@ def getprofileimgtag(request):
 
 def populate_ifacedict_basic(request):
     curdate = datetime.now()
-    #prof_img_tag = getprofileimgtag(request)
+    prof_img_tag = getprofileimgtag(request)
     #prof_img_tag = prof_img_tag.replace('"','')
     (username, password, password2, email, firstname, middlename, lastname, mobilenum) = ("", "", "", "", "", "", "", "")
     c = {'curdate' : curdate, 'login_url' : gethosturl(request) + "/" + LOGIN_URL, 'hosturl' : gethosturl(request),\
              'register_url' : gethosturl(request) + "/" + REGISTER_URL,\
              'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
-             'hosturl' : gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH, 'availabilityURL' : AVAILABILITY_URL, 'register_url' : REGISTER_URL}
-    #'profile_image_tag' :  prof_img_tag
+             'hosturl' : gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH, 'availabilityURL' : AVAILABILITY_URL, 'register_url' : REGISTER_URL, 'profile_image_tag' :  prof_img_tag}
     return c
 
 
@@ -463,4 +463,76 @@ def check_password_strength(passwd):
             continue
         i += 1
     return strength
+
+
+class NoRedirectHandler(urllib2.HTTPRedirectHandler):
+    def http_error_302(self, req, fp, code, msg, headers):
+        infourl = urllib.addinfourl(fp, headers, req.get_full_url())
+        infourl.status = code
+        infourl.code = code
+        return infourl
+
+    http_error_300 = http_error_302
+    http_error_301 = http_error_302
+    http_error_303 = http_error_302
+    http_error_307 = http_error_302 
+
+"""
+Function to validate a wallet's name.
+"""
+def validate_wallet_name(walletname):
+    """
+    For now, the basic rule is to create a name that is at least 10
+    characters long and starts with an alphabet. The name will be 
+    case-sensitive, and may contain both alphabets as well as numeric
+    values.
+    """
+    name_pattern = re.compile(r"^[a-z][A-Z][\w\d]{9,}$")
+    if re.match(name_pattern, walletname):
+        return True
+    else:
+        return False
+
+"""
+Rules for creating a valid wallet name
+"""
+def rules_valid_name():
+    rules = "1. Name should start with an alphabet (either lowercse or uppercase).<br />2. Names can contain both alphabets and numbers.<br />3. Names should be at least 10 characters long.<br />"
+    return rules
+
+def isStringEmpty(string):
+    string = string.strip()
+    if not string or string == "":
+        return True
+    return False
+
+
+def getprofileimgtag(request):
+    """
+    Function to form the img tag for profile image based on whether
+    the user has a profile image or not.
+    """
+    if not request.COOKIES.has_key('userid'):
+        profileimgtag = "<img src='media/square.gif' height='102' width='102' alt='Profile Image' id='profileimage'>"
+        return profileimgtag
+    userid = request.COOKIES['userid']
+    csrftoken = ''
+    if request.COOKIES.has_key('csrftoken'):
+        csrftoken = request.COOKIES['csrftoken']
+    profimgfile = PROFILE_PHOTO_NAME
+    db = get_mongo_client()
+    rec = db.users.find({'userid' : userid})
+    if not rec or rec.count < 1:
+        profileimgtag = "<img src='media/square.gif' height='102' width='102' alt='Profile Image' id='profileimage'><br /><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;,&quot;%s&quot;);'><font size='-1'>upload profile image</font></a>"%(PROFIMG_CHANGE_URL, csrftoken)
+        return profileimgtag
+    username = rec[0]["username"]
+    profimagepath = os.path.sep.join([ settings.MEDIA_ROOT, username, "images", profimgfile ])
+    profileimgtag = ""
+    if os.path.exists(profimagepath) and profimgfile != "":
+        profileimgtag = "<img src='media/%s/images/%s' height='102' width='102' alt='Profile Image'><br /><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;, &quot;%s&quot;);'><font size='-1'>change profile image</font></a>"%(username, profimgfile, PROFIMG_CHANGE_URL, csrftoken)
+    return profileimgtag
+
+
+
+
 

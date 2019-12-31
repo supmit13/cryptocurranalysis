@@ -5,7 +5,7 @@
 5. Convert plotting to use google charts (refer to https://developers.google.com/chart/interactive/docs/gallery/linechart) [Done]
 6. Implement cryptocurry on Apache web server (httpd)
 7. Implement SSL for https on cryptocurry.
-8. Implement all other types of plots identified and put on the webpage.
+8. Implement all other types of plots identified and put on the webpage.[Done]
 9. Implement interpolation of values on plots for InvestDB "Volume 24 HRS", "change 24 HRS", and some other plots that *require* this.
 10. Work on the CSS and the layout of the page such that the legend, the title and the entire plot is visible and responsive.
 11. Set the Y-axis to percetage in InvestData so that the data may be interpreted correctly.
@@ -18,5 +18,5 @@ Expected Functionalities:
 2. User can buy/sell cryptocurrency from/to another user. This requires both users to be registered on the website and logged in to perform the transaction.
 3. Users can create and maintain a "Blockchain" wallet. This could be used in the transactions mentioned above.
 4. An user can request to see a specific transaction or an enitre block. User should provide the IDs in both cases.
-5. From certain countries where cryptocurrency is recognized as a valid for of currency, users would be able to pay for goods purchased online. This would be done using live market rates for the specific cryptocurrency
+5. From certain countries where cryptocurrency is recognized as a valid for of currency, users would be able to pay for goods purchased online. This would be done using live market rates for the specific cryptocurrency in terms of USD and EURO.
 

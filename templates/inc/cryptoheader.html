@@ -649,8 +649,32 @@ function close_profile(){ // from profile.html
 }
 
 
-function forgotpasswd(urlprefix){
-    target_url = "cryptocurry/auth/forgotpasswd/"
+//function forgotpasswd(urlprefix){
+//    target_url = "cryptocurry/auth/forgotpasswd/"
+//}
+
+function showwalletspage(){
+    userid = "{{userid}}";
+    var xmlhttp;
+    document.getElementById('contentarea').innerHTML = "";
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+    if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	document.getElementById('contentarea').innerHTML = xmlhttp.responseText;
+    }
+    };
+    var walletslisturl = "{{hosturl}}/cryptocurry/wallets/showwalletslist/";
+    postdata = "userid=" + userid + "&csrfmiddlewaretoken=" + document.profilepic.csrfmiddlewaretoken.value;
+    xmlhttp.open("POST",walletslisturl,true); // Make it an ajax call.
+    xmlhttp.send(postdata);
+}
+
+function showwalletdetails(userid, walletname){
 }
 
 </script>
@@ -694,7 +718,7 @@ function forgotpasswd(urlprefix){
         </fieldset>
 	{% else %}
 	<fieldset id="inputs">
-	<label style='color:#FFFFFF'>You are signed in as {{username}} |</label> <a href='#/' onClick='javascript:signout("{{ userid }}", "{{urlprefix}}")'>Sign Out</a>
+	<label style='color:#FFFFFF'>You are signed in as {{username}} |</label> <a href='#/' onClick='javascript:signout("{{ userid }}", "{{urlprefix}}")'>Sign Out</a>{{ profile_image_tag }}
 	</fieldset>
         {% endif %}
 	</form>

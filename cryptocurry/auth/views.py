@@ -9,7 +9,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 #from django.utils import simplejson # Since django no longer ships simplejson as a part of it.
-import simplejson
+import simplejson as json
 from django.template.response import TemplateResponse
 from django.utils.http import base36_to_int, is_safe_url
 from django.utils.translation import ugettext as _
@@ -32,6 +32,7 @@ import decimal, math, base64
 import sha256
 import random
 import string
+import urllib, urllib2
 
 # Application specific libraries...
 from cryptocurry.analysis.views import datasourceentryiface
@@ -635,6 +636,5 @@ def check_passcode_usability(request):
             response = HttpResponse(msg)
             return response
     return HttpResponse("true")
-
 
 

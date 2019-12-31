@@ -1,0 +1,13 @@
+
+<script language='javascript'>
+function showwalletdetails(userid, wname){
+}
+</script>
+<p style="color='#0000AA';">
+You have the following wallets:
+<br />
+{% for w in walletslist %)
+<a href='#/' onClick='javascript:showwalletdetails("{{userid}}", "{{w.wallet_name}}");'>{{w.wallet_name}} ({{w.currencyname}})</a>
+{ % endfor %}
+</p>
+

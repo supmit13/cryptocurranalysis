@@ -38,6 +38,7 @@ urlpatterns += patterns('',
     url(r'cryptocurry/auth/login/$', 'cryptocurry.auth.views.login', name='login'),
     url(r'cryptocurry/auth/logout/$', 'cryptocurry.auth.views.logout', name='logout'),
     url(r'cryptocurry/auth/register/$', 'cryptocurry.auth.views.register', name='register'),
+    url(r'cryptocurry/changeimg/$', 'cryptocurry.auth.views.profileimagechange', name='profileimagechange'),
     url(r'cryptocurry/analyze/visual/dsentryiface/$', 'cryptocurry.analysis.views.datasourceentryiface', name='datasourceentryiface'),
     url(r'cryptocurry/analyze/visual/investdata/currency_price/$', 'cryptocurry.analysis.views.visualize_investdb_currencyprice', name='visualize_investdb_currencyprice'),
     url(r'cryptocurry/analyze/visual/investdata/market_cap/$', 'cryptocurry.analysis.views.visualize_investdb_marketcap', name='visualize_investdb_marketcap'),
@@ -72,6 +73,9 @@ urlpatterns += patterns('',
     url(r'cryptocurry/auth/generatepasswd/$', 'cryptocurry.auth.views.generatepasswd', name='generatepasswd'),
     url(r'cryptocurry/auth/confirm_passwd_change/$', 'cryptocurry.auth.views.confirm_passwd_change', name='confirm_passwd_change'),
     url(r'cryptocurry/auth/check_passcode_usability/$', 'cryptocurry.auth.views.check_passcode_usability', name='check_passcode_usability'),
+    url(r'cryptocurry/analysis/createwallet/$', 'cryptocurry.analysis.views.create_wallet', name='create_wallet'),
+    url(r'cryptocurry/analysis/add_addresses_to_wallet/$', 'cryptocurry.analysis.views.add_addresses_to_wallet', name='add_addresses_to_wallet'),
+    url(r'cryptocurry/wallets/showwalletslist/$', 'cryptocurry.analysis.views.listwallets', name='listwallets'),
 )
 
 

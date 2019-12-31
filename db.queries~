@@ -66,3 +66,9 @@ Delete a document:
 ------------------
 db.COLLECTION_NAME.remove(DELLETION_CRITTERIA)
 
+Dump/Backup as specific database in a specific directory:
+---------------------------------------------------------
+mongodump --db cryptocurrency --out .
+
+
+
