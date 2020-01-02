@@ -487,8 +487,8 @@ def validate_wallet_name(walletname):
     case-sensitive, and may contain both alphabets as well as numeric
     values.
     """
-    name_pattern = re.compile(r"^[a-z][A-Z][\w\d]{9,}$")
-    if re.match(name_pattern, walletname):
+    name_pattern = re.compile("^[a-z][A-Z](\w{9,})$")
+    if re.search(name_pattern, walletname):
         return True
     else:
         return False
@@ -525,7 +525,8 @@ def getprofileimgtag(request):
     if not rec or rec.count < 1:
         profileimgtag = "<img src='media/square.gif' height='102' width='102' alt='Profile Image' id='profileimage'><br /><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;,&quot;%s&quot;);'><font size='-1'>upload profile image</font></a>"%(PROFIMG_CHANGE_URL, csrftoken)
         return profileimgtag
-    username = rec[0]["username"]
+    username = ""
+    #username = rec[0]["username"]
     profimagepath = os.path.sep.join([ settings.MEDIA_ROOT, username, "images", profimgfile ])
     profileimgtag = ""
     if os.path.exists(profimagepath) and profimgfile != "":

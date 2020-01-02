@@ -331,7 +331,6 @@ def collectionEventLoop(scraper_functions_list):
 
 if __name__ == "__main__":
     scraperslist = [scrapeFromInvest, getDataFromCoinMarket, coinmarketcap, cci30index, getcoinlayerinfo,] # Add scraper functions here.
-    # scraperslist = [scrapeFromInvest, getDataFromCoinMarket, cci30index,] # Add scraper functions here.
     collectionEventLoop(scraperslist)
 
 

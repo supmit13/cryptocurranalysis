@@ -1,13 +1,106 @@
+<style>
+$height:65;
+$depth:6;
+$color:#7fbb98;
+$text-color:darken($color,10%);
+$lighten-on-hover:7%;
+$button-speed:.06;
+$timing-function: ease-out;
 
-<script language='javascript'>
-function showwalletdetails(userid, wname){
+.container {
+  margin:auto;
 }
-</script>
-<p style="color='#0000AA';">
-You have the following wallets:
-<br />
-{% for w in walletslist %)
-<a href='#/' onClick='javascript:showwalletdetails("{{userid}}", "{{w.wallet_name}}");'>{{w.wallet_name}} ({{w.currencyname}})</a>
-{ % endfor %}
-</p>
+.button {
+  cursor:pointer;
+  margin-left:5px;
+  margin-bottom:15px;
+  text-shadow:0 -2px 0 darken($color,20%),0 1px 1px lighten($color,20%) ;
+  box-sizing:border-box;
+  font-size:1em;
+  font-family: Helvetica, Arial, Sans-Serif;
+  text-decoration:none;
+  font-weight:bold;
+  color:$text-color;
+  &:visited {
+    color:$text-color;
+  }
+  height:$height+px;
+  line-height:$height+px;
+  padding: 0 (($height/2)+px);
+  display:inline-block;
+  width:auto;
+  background: linear-gradient(to bottom,
+    saturate(lighten($color,15%),35%) 0%,
+    saturate(lighten($color,12%),15%) 26%,
+    $color 100%);
+  border-radius:5px;
+  border-top:1px solid lighten($color,22%);
+  border-bottom:1px solid lighten($color,20%);
+ top:0;
+  transition:all ($button-speed + s) $timing-function;
+  position:relative;
+}
+.button:hover {
+  background: linear-gradient(to bottom,
+    lighten(saturate(lighten($color,15%),35%),$lighten-on-hover) 0%,
+    lighten(saturate(lighten($color,12%),15%),$lighten-on-hover) 26%,
+    lighten($color,$lighten-on-hover) 100%);
+}
+.button:active {
+  top:$depth+px;
+       text-shadow:0 -2px 0 darken($color,0%),0 1px 1px lighten($color,20%), 0 0 4px white ;
+  color:lighten($color,45%);
+  &:before {
+    top:0;
+    box-shadow: 0 3px 3px rgba(0,0,0,.7),0 3px 9px rgba(0,0,0,.2);
+  }
+}
+.button:before {
+  display:inline-block;
+  content:'';
+  position:absolute;
+  left:0;
+  right:0;
+  z-index:-1;
+  top:($depth)+px;
+  border-radius:5px;
+  height:($height)+px;
+  background: linear-gradient(to top,
+    saturate(darken($color,40%),15%) 0%,
+    saturate(darken($color,25%),10%) $depth+px);
+  transition:all (($button-speed*1.3) + s) $timing-function;
+  box-shadow:
+    0 1px 0 2px rgba(0,0,0,.3),
+    0 5px ($depth*.4+px) rgba(0,0,0,.5),
+    0 ($depth*1.8+px) 9px rgba(0,0,0,.2);
+    
+  
+}
+
+button {
+	cursor: pointer;
+	position: relative;
+	padding: 2.5rem 7.5rem;
+	border-radius: 3.75rem;
+	line-height: 2.5rem;
+	font-size: 1rem;
+	font-weight: 300;
+	border: 1px solid #012880;
+	background-image: linear-gradient(-180deg, #FF89D6 0%, #C01F9E 100%);
+	box-shadow: 0 1rem 1.25rem 0 rgba(22,75,195,0.50),
+							0 -0.25rem 1.5rem rgba(110, 15, 155, 1) inset,
+							0 0.75rem 0.5rem rgba(255,255,255, 0.4) inset,
+							0 0.25rem 0.5rem 0 rgba(180, 70, 207, 1) inset;
+}
+</style>
+
+<div class="container">
+  <input type='button' name='createwallet' value='Create Wallet' class="button" onClick="javascript:show_create_wallet_form({{rules}});">
+  <input type='button' name='addaddress' value='Add Address to Wallet' class="button" onClick="javascript:add_address_to_wallet();">
+  <input type='button' name='createnewaddress' value='Create New Address' class="button" onClick="javascript:create_new_address();">
+  <input type='button' name='deleteaddressfromwallet' value='Delete Address from Wallet' class="button" onClick="javascript:delete_address_from_wallet();">
+  <input type='button' name='deletewallet' value='Delete Wallet' class="button" onClick="javascript:delete_wallet();">
+</div>
+<div id='formdiv' style="display:none">
+</div>
 

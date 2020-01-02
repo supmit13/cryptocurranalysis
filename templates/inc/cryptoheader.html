@@ -649,14 +649,11 @@ function close_profile(){ // from profile.html
 }
 
 
-//function forgotpasswd(urlprefix){
-//    target_url = "cryptocurry/auth/forgotpasswd/"
-//}
-
 function showwalletspage(){
     userid = "{{userid}}";
     var xmlhttp;
     document.getElementById('contentarea').innerHTML = "";
+    document.getElementById('plotimage').innerHTML = "";
     if (window.XMLHttpRequest){
         xmlhttp=new XMLHttpRequest();
     }
@@ -674,8 +671,158 @@ function showwalletspage(){
     xmlhttp.send(postdata);
 }
 
-function showwalletdetails(userid, walletname){
+function showfloatingscreen(content){ // Display a floating screen displaying the details of the selected wallet.
+    walletobj = JSON.parse(content);
+    alert(content);
+    var html = "<div class='semitrans' align='left' id='trans_wallet_details'>";
+    html += "<table border=0>";
+    html += "<tr><td style='font-weight:bold;'>Currency Name</td><td style='font-weight:bold;>Balance Amount</td><td style='font-weight:bold;>Wallet Address</td><td style='font-weight:bold;>Public Key</td><td style='font-weight:bold;>Last Updation</td><td style='font-weight:bold;>Wallet Import Format (wif)</td></tr>";
+    html += "<tr><td colspan='6'>&nbsp;</td></tr>";
+    for (var addr in walletobj){
+	alert(addr);
+        if(walletobj.hasOwnProperty(addr)){
+ 	    attriblist = walletobj[addr];
+	    //[currname, balance_amt, walletaddr, public_key, last_updation, wif]	
+	    currname = attriblist[0];
+	    balance_amt = attriblist[1];
+	    walletaddr = attriblist[2];
+  	    public_key = attriblist[3];
+	    last_updation = attriblist[4];
+	    wif = attriblist[5];
+	    html += "<tr><td>" + currname + "</td><td>" + balance_amt + "</td><td>" + walletaddr + "</td><td>" + public_key + "</td><td>" + last_updation + "</td><td>" + wif + "</td></tr>";
+	}
+    }
+    html += "</table>";
+    html += "</div>";
 }
+
+
+function showwalletdetails(userid, walletname){
+    //alert(walletname);
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+    if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	// xmlhttp.responseText would be a JSON object with wallet addresses as keys and [currname, balance_amt, walletaddr, public_key, last_updation, wif] as values.
+	document.getElementById('floatdata').innerHTML = showfloatingscreen(xmlhttp.responseText);
+    }
+    };
+    walletslisturl = "{{hosturl}}/cryptocurry/wallets/showwalletdetails/";
+    //alert(walletslisturl);
+    postdata = "userid=" + userid + "&csrfmiddlewaretoken=" + document.profilepic.csrfmiddlewaretoken.value + "&walletname=" + walletname;
+    //alert(postdata);
+    xmlhttp.open("POST",walletslisturl,true); // Make it an ajax call.
+    xmlhttp.send(postdata);
+}
+
+
+function open_address_form(){
+    //alert("Open Address Form");
+    address_div = document.getElementById('addressdiv');
+    address_div.innerHTML = "<table align='center' border='0'><tr><td style='font-weight:bold;color:blue;'>Address</td><td><input type='text' name='address' value=''></tr><tr><td colspan='2'>&nbsp;</td></tr><tr><td style='font-weight:bold;color:blue;'>Public Key</td><td><input type='text' name='publickey' value=''></tr><tr><td colspan='2'>&nbsp;</td></tr><tr><td style='font-weight:bold;color:blue;'>Wallet Import Format (wif)</td><td><input type='text' name='wif' value=''></tr></table><br><a href='#/' onclick='javascript:address_div.innerHTML=\"\"' style='font-weight:bold;font-style:italic;color:blue;'>Clear this form</a>";
+}
+
+
+function confirmcancel(){
+    yn = confirm("Are you sure you don't want to create this wallet?");
+    if(yn == true){
+        formdiv = document.getElementById('formdiv');
+	formdiv.innerHTML = "";
+    }
+    else{
+	// Do nothing. All is hunkydory.
+    }
+}
+
+function create_wallet(){
+    waitdiv = document.getElementById('waitdivcreatewallet');
+    waitdiv.innerHTML = "<img src='static/images/loading_big.gif'><br><p style='font-weight:italic;color:#0000AA'>Creating wallet. Please be patient, as this might take a little while.</p>";
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+    if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+        msgparts = xmlhttp.responseText.split(":");
+        if (msgparts.length > 2){
+	    if(msgparts[1] == "err"){
+ 		waitdiv.innerHTML = "<p align='center' style='font-weight:bold;color:AA0000'>" + msgparts[2] + "</p>";
+		return(false);
+	    }
+	}
+	else{
+	    waitdiv.innerHTML = "<p align='center' style='font-weight:bold;font-style:italic;color:#0000AA;'>" + xmlhttp.responseText + "</p>";
+	    waitdiv.innerHTML += "<p align='center' style='font-weight:bold;font-style:italic;color:#0000AA;'>Please go to the menu above, hover on 'Operations' -> click on 'Wallets' to view the created wallet</p>";
+	}
+        return (true);
+    }
+    };
+    walletcreateurl = "{{hosturl}}/cryptocurry/analysis/createwallet/";
+    //alert(walletslisturl);
+    walletname = document.createwallet.walletname.value;
+    currency_name = document.createwallet.currency_name.options[document.createwallet.currency_name.selectedIndex].value;
+    postdata = "csrfmiddlewaretoken=" + document.profilepic.csrfmiddlewaretoken.value + "&walletname=" + walletname + "&currency_name=" + currency_name;
+    //alert(postdata);
+    xmlhttp.open("POST",walletcreateurl,true); // Make it an ajax call.
+    xmlhttp.send(postdata);
+    
+}
+
+// Functions from wallets.html
+function show_create_wallet_form(rules){
+    document.getElementById('formdiv').style.display = "";
+    // Form should contain following fields: currency_name, walletname, and optionally [address, public_key, wif]. 
+    // If you are adding address, then you also must enter the public key and wif for the address and store the 
+    // private key safely with yourself. Otherwise, if you want the system to generate the address and public/private
+    // key pairs, the system will generate it and store the public_key and the address in the DB, and the private
+    // key will be displayed to you. You should note it down and store it safely with you as you will need it during
+    // transactions. Our DB will NOT store your private key anywhere as we are not supposed to do so.
+    // alert("Create Wallet");
+
+    // {'BNB' : 'Binance Coin', 'BTC' : 'Bitcoin', 'EOS' : 'EOS', 'LTC' : 'Litecoin', 'XRP' : 'Ripple', 'ETH' : 'Ethereum', 'BCH' : 'Bitcoin Cash', 'ETC' : 'Ethereum Classic', 'XMR' : 'Monero', 'XLM' : 'Stellar', 'BTG' : 'Bitcoin Gold', 'NEO' : 'NEO'}
+    // Ideally, I should have taken this from a config file, but I have not done that. It is a bad design decision. However, I
+    // intend to put this in a settings file and take the values from there. As for now, if we need to add another crypto, we
+    // will just create a option tag and insert it here.
+    formdiv = document.getElementById('formdiv');
+    formdiv.innerHTML = "<div id='waitdivcreatewallet'></div><br><form name='createwallet' method='POST' action='{{hosturl}}/cryptocurry/analysis/createwallet/'><table border='0' cellspacing='2' cellpadding='3'><tr><td style='font-weight:bold;color:blue'>Select Currency Name:</td><td><select name='currency_name'><option value='BTC'>Bitcoin</option><option value='BNB'>Binance Coin</option><option value='EOS'>EOS</option><option value='LTC'>Litecoin</option><option value='XRP'>Ripple</option><option value='ETH'>Ethereum</option><option value='BCH'>Bitcoin Cash</option><option value='ETC'>Ethereum Classic</option><option value='XMR'>Monero</option><option value='XLM'>Stellar</option><option value='BTG'>Bitcoin Gold</option><option value='NEO'>NEO</option></select> &nbsp;&nbsp;<span style='font-style:italic;color:blue;'>As of now, we support only the listed cryptocurrencies. In the near future, we will add some more.</span></td></tr><tr><td colspan='2'>&nbsp;</td></tr><tr><td style='font-weight:bold;color:blue'>Enter Wallet Name *:</td><td><input type='text' name='walletname' value='' maxlength='25'></td></tr><tr><td>&nbsp;</td></tr><tr><td style='font-style:italic;color:blue' colspan=2>*" + rules + "</td></tr></table><p style='font-weight:italic;color:blue'>If you want to enter address details (address, public key and wif), then you may click this <a href='#/' onClick='javascript:open_address_form();'>link</a> here. Otherwise, the address, public key, private key and wif will be generated automatically and will be displayed to you. We will keep the address, public key and wif values in our database, but you would need to note down the private key value corresponding to the address and the public key mentioned and store it safely as you would need it during transactions. We will NOT store your private key as it is against our policy.</p><div id='addressdiv'></div><p align='center'><input type='button' name='create' value='Create Wallet' onClick='javascript:create_wallet();'>&nbsp;&nbsp;<input type='button' name='cancel' onClick='confirmcancel();' value='Confirm Cancel'></p></form><br><hr><br>";
+}
+
+function add_address_to_wallet(){
+    document.getElementById('formdiv').style.display = "";
+    alert("Add Address to Wallet");
+}
+
+function create_new_address(){
+    document.getElementById('formdiv').style.display = "";
+    alert("Create new Address");
+}
+
+function delete_address_from_wallet(){
+    document.getElementById('formdiv').style.display = "";
+    alert("Delete Address from Wallet");
+}
+
+function delete_wallet(){
+    document.getElementById('formdiv').style.display = "";
+    alert("Delete Wallet");
+}
+// End of wallets.html functions.
+
+
+
+
+
+
+
+
 
 </script>
 

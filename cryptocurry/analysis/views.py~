@@ -2596,33 +2596,34 @@ def create_wallet(request):
         return response
     userid = request.COOKIES["userid"]
     if not userid:
-        message = "Either you are not logged in or your session has been corrupted. Please login and try again."
+        message = "msg:err:Either you are not logged in or your session has been corrupted. Please login and try again."
         response = HttpResponse(message)
         return response
+    db = utils.get_mongo_client()
     rec = db["users"].find({'userid' : userid})
     username = None
     if rec:
         username = rec[0]['username']
     if not username:
-        message = "Either you are not logged in or your session has been corrupted. Please login and try again."
+        message = "msg:err:Either you are not logged in or your session has been corrupted. Please login and try again."
         response = HttpResponse(message)
         return response
     if request.POST.has_key('currency_name'):
         currencyname = request.POST['currency_name']
     else:
-        message = "The currency name field is mandatory. You have not entered a currency name. Please select a currency name and try again"
+        message = "msg:err:The currency name field is mandatory. You have not entered a currency name. Please select a currency name and try again"
         response = HttpResponse(message)
         return response
     if request.POST.has_key('walletname'):
         walletname = request.POST['walletname']
     else:
-        message = "The wallet name field is mandatory. You have not entered a wallet name. Please enter a wallet name and try again"
+        message = "msg:err:The wallet name field is mandatory. You have not entered a wallet name. Please enter a wallet name and try again"
         response = HttpResponse(message)
         return response
     v = utils.validate_wallet_name(walletname)
     if not v:
-        message = "Your wallet name is not valid. Please modify it as per the rules mentioned below to make it a valid one.\n"
-        message += utils.rules_valid_key()
+        message = "msg:err:Your wallet name is not valid. Please modify it as per the rules mentioned below to make it a valid one.<br>"
+        message += utils.rules_valid_name()
         response = HttpResponse(message)
         return response
     blockcypher_data_json = get_blockcypher_private_public_keys_address()
@@ -2634,10 +2635,12 @@ def create_wallet(request):
         public = blockcypher_data['public']
     if blockcypher_data.has_key('address'):
         address = blockcypher_data['address']
+    if request.POST.has_key(address) and request.POST["address"] != "":
+        address = request.POST["address"]
     if blockcypher_data.has_key('wif'):
         wif = blockcypher_data['wif'] # Wallet Import Format - a common encoding for the private key
     if not private or not public or not address or not wif:
-        message = "Could not retrieve all the data to create a wallet. Please try again after some time." # TODO: Need to tell user what to do if it keeps failing
+        message = "msg:err:Could not retrieve all the data to create a wallet. Please try again after some time." # TODO: Need to tell user what to do if it keeps failing
         response = HttpResponse(message)
         return response 
     # Create the wallet for the user and put it in the DB in the 'wallets' collection.
@@ -2650,10 +2653,10 @@ def create_wallet(request):
     try:
         blockcypher_response = opener.open(blockcypher_request)
     except:
-        print "Could not get the blockcypher wallet data - Error: %s\n"%sys.exc_info()[1].__str__()
+        print "msg:err:Could not get the blockcypher wallet data - Error: %s\n"%sys.exc_info()[1].__str__()
         return False
     if not blockcypher_response:
-        print "Could not retrieve response from the request to '%s'\n"%api_endpoint
+        print "msg:err:Could not retrieve response from the request to '%s'\n"%api_endpoint
         return False
     blockcypher_data_json = blockcypher_response.read()
     if DEBUG:
@@ -2666,7 +2669,7 @@ def create_wallet(request):
     try:
         db.wallets.insert_one(insertd) # TODO: Dillema as to whether to store the private key in the DB or not.
     except:
-        message = "Couldn't create the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
+        message = "msg:err:Couldn't create the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
         response = HttpResponse(response)
         return response
     message = "Your wallet was created successfully. Please make a note of the following:\nPublic Key: %s\nPrivate Key: %s\nAddress: %s\nWallet Name: %s"%(public, private, address, walletname)
@@ -2694,6 +2697,7 @@ def add_addresses_to_wallet(request):
         message = "Either you are not logged in or your session has been corrupted. Please login and try again."
         response = HttpResponse(message)
         return response
+    db = utils.get_mongo_client()
     rec = db["users"].find({'userid' : userid})
     username = None
     if rec:
@@ -2778,14 +2782,57 @@ def add_addresses_to_wallet(request):
         response = HttpResponse(message)
         return response
 
-
-
-
 # ======================== Blockchain calls end here ============================ #
+
 @utils.is_session_valid
 @utils.session_location_match
 @csrf_protect
-def listwallets(request):
+def showwalletspage(request):
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "<div style='color:#AA0000;'>Either you are not logged in or your session has been corrupted. Please login and try again.</div>"
+        response = HttpResponse(message)
+        return response
+    useridarg = ""
+    if request.POST.has_key('userid'):
+        useridarg = request.POST['userid']
+    else:
+        message = "<div style='color:#AA0000;'>Invalid request: No userid was sent as parameter.</div>"
+        response = HttpResponse(message)
+        return response
+    tmpl = get_template("wallets.html")
+    rules = utils.rules_valid_name()
+    c = {'rules' : rules}
+    c.update(csrf(request))
+    cxt = Context(c)
+    menuitems = tmpl.render(cxt)
+    message = "<div id='menuitems' class='menuitems'>" + menuitems + "</div>"
+    if userid != useridarg:
+        message = "<div style='color:#AA0000;'>Getting conflicting user Ids in request. Please refresh the screen and try again</div>"
+        response = HttpResponse(message)
+        return response
+    db = utils.get_mongo_client()
+    rec = db.wallets.find({'userid' : useridarg})
+    if not rec or rec.count() < 1:
+        message += "<div style='color:#AA0000;'>You do not have any wallet as yet.</div>"
+        response = HttpResponse(message)
+        return response
+    message += "<div style='color:#0000AA;'>You have the following wallets:<br />"
+    for r in rec:
+        walletname = r["wallet_name"]
+        currency = r["currencyname"]
+        message += "<a href='#/' onClick=\"javascript:showwalletdetails('%s', '%s');\" style='color:#0000AA;font-weight:bold;'>%s (%s)</a><br />"%(userid, walletname, walletname, currency)
+    message += "</div>"
+    response = HttpResponse(message)
+    return response
+
+
+
+def getwalletdetails(request):
     if request.method != 'POST':
         message = err.ERR_INCORRECT_HTTP_METHOD
         response = HttpResponseBadRequest(message)
@@ -2803,27 +2850,37 @@ def listwallets(request):
         response = HttpResponse(message)
         return response
     if userid != useridarg:
-        message = "Getting conflicting user Ids in request. Possibly your session is corrupt. %s, %s Please login and try again"%(userid, useridarg)
+        message = "Getting conflicting user Ids in request. Please refresh the screen and try again"
+        response = HttpResponse(message)
+        return response
+    walletname = ""
+    if request.POST.has_key('walletname'):
+        walletname = request.POST['walletname']
+    else:
+        message = "The name of the wallet to query was not found. Please contact the support staff with the userid '%s' and wallet name '%s' at support@cryptocurry.me"%(userid, walletname)
         response = HttpResponse(message)
         return response
     db = utils.get_mongo_client()
-    rec = db.wallets.find({'userid' : useridarg})
+    rec = db.wallets.find({'userid' : userid, 'wallet_name' : walletname})
     if not rec or rec.count() < 1:
-        message = "You do not have any wallet as yet."
+        message = "Details pertaining to the mentioned wallet couldn't be found. For more information, contact support with userId '%s' and wallet name '%s' at support@cryptocurry.me"%(userid, walletname)
         response = HttpResponse(message)
         return response
-    message = """
-        <p style="color='#0000AA';">
-	You have the following wallets:
-	<br />
-    """
+    walletdict = {}
     for r in rec:
-        walletname = r["wallet_name"]
-        currency = r["currencyname"]
-        message += "<a href='#/' onClick='javascript:showwalletdetails('%s', '%s');'>%s (%s)</a><br />"%(userid, walletname, walletname, currency)
-    message += "</p>"
-    response = HttpResponse(message)
-    return response
+        currname = r["currencyname"]
+        balance_amt = r["balance_amt"]
+        walletaddr = r["wallet_address"]
+        public_key = r["public_key"]
+        last_updation = r["last_updation"]
+        wif = r["wif"]
+        l = [currname, balance_amt, walletaddr, public_key, last_updation, wif]
+        walletdict[walletaddr] = l
+    walletdictstr = json.dumps(walletdict)
+    return HttpResponse(walletdictstr)
+
+
+
 
 
 
