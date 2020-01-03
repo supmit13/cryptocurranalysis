@@ -70,5 +70,13 @@ Dump/Backup as specific database in a specific directory:
 ---------------------------------------------------------
 mongodump --db cryptocurrency --out .
 
+Delete a MongoDB collection:
+----------------------------
+db.<collection_name>.drop()
+
+
+Mongo DB collection to CSV file:
+---------------------------------
+mongoexport --host localhost --db cryptocurrency --collection coinmarketdata --csv --out coinmarketdata.csv --fields all
 
 

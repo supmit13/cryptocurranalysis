@@ -2651,24 +2651,28 @@ def create_wallet(request):
     if not private or not public or not address or not wif:
         message = "msg:err:Could not retrieve all the data to create a wallet. Please try again after some time." # TODO: Need to tell user what to do if it keeps failing
         response = HttpResponse(message)
-        return response 
+        return response
     # Create the wallet for the user and put it in the DB in the 'wallets' collection.
     http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
-    postdata = {'name' : walletname, 'addresses' : [address, ], 'token' : BLOCKCYPHER_ACCOUNT_TOKEN}
-    encoded_data = urllib.urlencode(postdata)
-    api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets"
+    postdata = {'name' : walletname, 'addresses' : [address]}
+    postdatastr = json.dumps(postdata)
+    api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
+    if DEBUG:
+        print("API Endpoint: %s\n"%api_endpoint)
     opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), utils.NoRedirectHandler())
-    blockcypher_request = urllib2.Request(api_endpoint, encoded_data, http_headers)
+    blockcypher_request = urllib2.Request(api_endpoint, postdatastr, http_headers)
     blockcypher_response = None
     try:
         blockcypher_response = opener.open(blockcypher_request)
     except:
-        print "msg:err:Could not get the blockcypher wallet data - Error: %s\n"%sys.exc_info()[1].__str__()
-        response = HttpResponse("Could not get the blockcypher wallet data - Error: %s\n"%sys.exc_info()[1].__str__())
+        print "msg:err:Could not get the blockcypher wallet data - Error= %s\n"%sys.exc_info()[1].__str__()
+        message = "msg:err:Could not get the blockcypher wallet data - Error= %s\n"%sys.exc_info()[1].__str__()
+        response = HttpResponse(message)
         return response
     if not blockcypher_response:
         print "msg:err:Could not retrieve response from the request to '%s'\n"%api_endpoint
-        response = HttpResponse("Could not retrieve response from the request to '%s'\n"%api_endpoint)
+        message = "msg:err:Could not retrieve response from the request to '%s'\n"%api_endpoint
+        response = HttpResponse(message)
         return response
     blockcypher_data_json = blockcypher_response.read()
     if DEBUG:

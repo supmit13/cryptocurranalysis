@@ -735,13 +735,19 @@ function confirmcancel(){
 	formdiv.innerHTML = "";
     }
     else{
-	// Do nothing. All is hunkydory.
+	// Do nothing. All is hunky-dory.
     }
 }
 
+
 function create_wallet(){
+    walletnamefieldvalue = document.createwallet.walletname.value.trim();
+    if(walletnamefieldvalue == ""){
+	alert("Wallet name cannot be empty. Please enter a valid name and try again.");
+	return(false);
+    }
     waitdiv = document.getElementById('waitdivcreatewallet');
-    waitdiv.innerHTML = "<img src='static/images/loading_big.gif'><br><p style='font-weight:italic;color:#0000AA'>Creating wallet. Please be patient, as this might take a little while.</p>";
+    waitdiv.innerHTML = "<img src='static/images/loading_big.gif'><br><p style='font-weight:italic;color:#0000AA;'>Creating wallet. Please be patient, as this might take a little while.</p>";
     var xmlhttp;
     if (window.XMLHttpRequest){
         xmlhttp=new XMLHttpRequest();
@@ -773,8 +779,8 @@ function create_wallet(){
     //alert(postdata);
     xmlhttp.open("POST",walletcreateurl,true); // Make it an ajax call.
     xmlhttp.send(postdata);
-    
 }
+
 
 // Functions from wallets.html
 function show_create_wallet_form(rules){
@@ -792,7 +798,7 @@ function show_create_wallet_form(rules){
     // intend to put this in a settings file and take the values from there. As for now, if we need to add another crypto, we
     // will just create a option tag and insert it here.
     formdiv = document.getElementById('formdiv');
-    formdiv.innerHTML = "<div id='waitdivcreatewallet'></div><br><form name='createwallet' method='POST' action='{{hosturl}}/cryptocurry/analysis/createwallet/'><table border='0' cellspacing='2' cellpadding='3'><tr><td style='font-weight:bold;color:blue'>Select Currency Name:</td><td><select name='currency_name'><option value='BTC'>Bitcoin</option><option value='BNB'>Binance Coin</option><option value='EOS'>EOS</option><option value='LTC'>Litecoin</option><option value='XRP'>Ripple</option><option value='ETH'>Ethereum</option><option value='BCH'>Bitcoin Cash</option><option value='ETC'>Ethereum Classic</option><option value='XMR'>Monero</option><option value='XLM'>Stellar</option><option value='BTG'>Bitcoin Gold</option><option value='NEO'>NEO</option></select> &nbsp;&nbsp;<span style='font-style:italic;color:blue;'>As of now, we support only the listed cryptocurrencies. In the near future, we will add some more.</span></td></tr><tr><td colspan='2'>&nbsp;</td></tr><tr><td style='font-weight:bold;color:blue'>Enter Wallet Name *:</td><td><input type='text' name='walletname' value='' maxlength='25'></td></tr><tr><td>&nbsp;</td></tr><tr><td style='font-style:italic;color:blue' colspan=2>*" + rules + "</td></tr></table><p style='font-weight:italic;color:blue'>If you want to enter address details (address, public key and wif), then you may click this <a href='#/' onClick='javascript:open_address_form();'>link</a> here. Otherwise, the address, public key, private key and wif will be generated automatically and will be displayed to you. We will keep the address, public key and wif values in our database, but you would need to note down the private key value corresponding to the address and the public key mentioned and store it safely as you would need it during transactions. We will NOT store your private key as it is against our policy.</p><div id='addressdiv'></div><p align='center'><input type='button' name='create' value='Create Wallet' onClick='javascript:create_wallet();'>&nbsp;&nbsp;<input type='button' name='cancel' onClick='confirmcancel();' value='Confirm Cancel'></p></form><br><hr><br>";
+    formdiv.innerHTML = "<div id='waitdivcreatewallet'></div><br><form name='createwallet' method='POST' action='{{hosturl}}/cryptocurry/analysis/createwallet/'><table border='0' cellspacing='2' cellpadding='3'><tr><td style='font-weight:bold;color:blue'>Select Currency Name:</td><td><select name='currency_name'><option value='BTC' defaultSelected>Bitcoin</option><option value='BNB'>Binance Coin</option><option value='EOS'>EOS</option><option value='LTC'>Litecoin</option><option value='XRP'>Ripple</option><option value='ETH'>Ethereum</option><option value='BCH'>Bitcoin Cash</option><option value='ETC'>Ethereum Classic</option><option value='XMR'>Monero</option><option value='XLM'>Stellar</option><option value='BTG'>Bitcoin Gold</option><option value='NEO'>NEO</option></select> &nbsp;&nbsp;<span style='font-style:italic;color:blue;'>As of now, we support only the listed cryptocurrencies. In the near future, we will add some more.</span></td></tr><tr><td colspan='2'>&nbsp;</td></tr><tr><td style='font-weight:bold;color:blue'>Enter Wallet Name *:</td><td><input type='text' name='walletname' value='' maxlength='25'></td></tr><tr><td>&nbsp;</td></tr><tr><td style='font-style:italic;color:blue' colspan=2>*" + rules + "</td></tr></table><p style='font-weight:italic;color:blue'>If you want to enter address details (address, public key and wif), then you may click this <a href='#/' onClick='javascript:open_address_form();'>link</a> here. Otherwise, the address, public key, private key and wif will be generated automatically and will be displayed to you. We will keep the address, public key and wif values in our database, but you would need to note down the private key value corresponding to the address and the public key mentioned and store it safely as you would need it during transactions. We will NOT store your private key as it is against our policy.</p><div id='addressdiv'></div><p align='center'><input type='button' name='create' value='Create Wallet' onClick='javascript:create_wallet();'>&nbsp;&nbsp;<input type='button' name='cancel' onClick='confirmcancel();' value='Confirm Cancel'></p></form><br><hr><br>";
 }
 
 function add_address_to_wallet(){
