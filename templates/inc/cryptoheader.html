@@ -754,7 +754,7 @@ function create_wallet(){
         msgparts = xmlhttp.responseText.split(":");
         if (msgparts.length > 2){
 	    if(msgparts[1] == "err"){
- 		waitdiv.innerHTML = "<p align='center' style='font-weight:bold;color:AA0000'>" + msgparts[2] + "</p>";
+ 		waitdiv.innerHTML = "<p align='justify' style='font-weight:bold;color:#AA0000'>" + msgparts[2] + "</p>";
 		return(false);
 	    }
 	}

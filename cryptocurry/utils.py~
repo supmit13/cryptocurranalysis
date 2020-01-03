@@ -487,10 +487,12 @@ def validate_wallet_name(walletname):
     case-sensitive, and may contain both alphabets as well as numeric
     values.
     """
-    name_pattern = re.compile("^[a-z][A-Z](\w{9,})$")
+    name_pattern = re.compile("^([a-zA-Z])([\w\d]{9,})")
     if re.search(name_pattern, walletname):
         return True
     else:
+        if DEBUG:
+            print "Walletname: %s\n"%walletname
         return False
 
 """

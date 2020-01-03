@@ -754,7 +754,7 @@ function create_wallet(){
         msgparts = xmlhttp.responseText.split(":");
         if (msgparts.length > 2){
 	    if(msgparts[1] == "err"){
- 		waitdiv.innerHTML = "<p align='center' style='font-weight:bold;color:AA0000'>" + msgparts[2] + "</p>";
+ 		waitdiv.innerHTML = "<p align='justify' style='font-weight:bold;color:#AA0000'>" + msgparts[2] + "</p>";
 		return(false);
 	    }
 	}
@@ -762,7 +762,6 @@ function create_wallet(){
 	    waitdiv.innerHTML = "<p align='center' style='font-weight:bold;font-style:italic;color:#0000AA;'>" + xmlhttp.responseText + "</p>";
 	    waitdiv.innerHTML += "<p align='center' style='font-weight:bold;font-style:italic;color:#0000AA;'>Please go to the menu above, hover on 'Operations' -> click on 'Wallets' to view the created wallet</p>";
 	}
-	
         return (true);
     }
     };

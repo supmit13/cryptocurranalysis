@@ -13,6 +13,7 @@ import cPickle, urlparse
 import decimal, math, base64
 from passlib.hash import pbkdf2_sha256 # To create hash of passwords
 from pandas.plotting import register_matplotlib_converters
+import urllib, urllib2
 
 import cryptocurry.errors as err
 import cryptocurry.utils as utils
@@ -2555,14 +2556,13 @@ def profileimagechange(request):
 
 
 # ======================== Blockcypher API calls ============================= #
-@utils.is_session_valid
-@utils.session_location_match
-@csrf_protect
+
 def get_blockcypher_private_public_keys_address():
     api_endpoint = BLOCKCYPHER_ADDRESS_ENDPOINT
     opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), utils.NoRedirectHandler())
     http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
-    blockcypher_request = urllib2.Request(api_endpoint, None, http_headers)
+    postdummydata = "dummy=1"
+    blockcypher_request = urllib2.Request(api_endpoint, postdummydata, http_headers) # Need to put the dummy data to treat it as POST request.
     blockcypher_response = None
     try:
         blockcypher_response = opener.open(blockcypher_request)
@@ -2635,10 +2635,19 @@ def create_wallet(request):
         public = blockcypher_data['public']
     if blockcypher_data.has_key('address'):
         address = blockcypher_data['address']
-    if request.POST.has_key(address) and request.POST["address"] != "":
-        address = request.POST["address"]
     if blockcypher_data.has_key('wif'):
         wif = blockcypher_data['wif'] # Wallet Import Format - a common encoding for the private key
+    if request.POST.has_key('address') and request.POST["address"] != "":
+        address = request.POST["address"]
+    if request.POST.has_key('publickey') and request.POST["publickey"] != "":
+        public = request.POST["publickey"]
+    if request.POST.has_key('wif') and request.POST["wif"] != "":
+        wif = request.POST["wif"]
+    if DEBUG:
+        print("Address: %s\n"%address);
+        print("Public: %s\n"%public);
+        print("private: %s\n"%private);
+        print("wif: %s\n"%wif);
     if not private or not public or not address or not wif:
         message = "msg:err:Could not retrieve all the data to create a wallet. Please try again after some time." # TODO: Need to tell user what to do if it keeps failing
         response = HttpResponse(message)
@@ -2648,16 +2657,19 @@ def create_wallet(request):
     postdata = {'name' : walletname, 'addresses' : [address, ], 'token' : BLOCKCYPHER_ACCOUNT_TOKEN}
     encoded_data = urllib.urlencode(postdata)
     api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets"
+    opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), utils.NoRedirectHandler())
     blockcypher_request = urllib2.Request(api_endpoint, encoded_data, http_headers)
     blockcypher_response = None
     try:
         blockcypher_response = opener.open(blockcypher_request)
     except:
         print "msg:err:Could not get the blockcypher wallet data - Error: %s\n"%sys.exc_info()[1].__str__()
-        return False
+        response = HttpResponse("Could not get the blockcypher wallet data - Error: %s\n"%sys.exc_info()[1].__str__())
+        return response
     if not blockcypher_response:
         print "msg:err:Could not retrieve response from the request to '%s'\n"%api_endpoint
-        return False
+        response = HttpResponse("Could not retrieve response from the request to '%s'\n"%api_endpoint)
+        return response
     blockcypher_data_json = blockcypher_response.read()
     if DEBUG:
         print(blockcypher_data_json)
