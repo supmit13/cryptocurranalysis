@@ -90,7 +90,7 @@ def datasourceentryiface(request):
     ifacedict['prevk'] = 0
     csrf_token = get_token(request)
     ifacedict.update(csrf(request))
-    cxt = RequestContext(request, ifacedict)
+    cxt = RequestContext(request)
     rtr = render_to_response("dsentry.html", ifacedict, context_instance=cxt)
     return rtr
 
@@ -2688,7 +2688,7 @@ def create_wallet(request):
         message = "msg:err:Couldn't create the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
         response = HttpResponse(response)
         return response
-    message = "Your wallet was created successfully. Please make a note of the following:\nPublic Key: %s\nPrivate Key: %s\nAddress: %s\nWallet Name: %s"%(public, private, address, walletname)
+    message = "Your wallet was created successfully. Please make a note of the following:<br />Public Key: %s<br />Private Key: %s<br />Address: %s<br />Wallet Name: %s<br />"%(public, private, address, walletname)
     message += "<br />Please also note that we are NOT going to store the private key in our database. It is your responsibility to store it at a safe location. You will need it during transactions and trading, and during those operations you would be asked to provide your private key so that we may process your requests.<br />If you lose your private key, you basically lose your wallet.<br />Please also make a note of all the parameters shown above."
     response = HttpResponse(message)
     return response

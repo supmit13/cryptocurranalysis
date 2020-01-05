@@ -30,7 +30,7 @@
                                     <li><a href="#">Operations</a>
                                         <div class="megamenu">
                                             <ul class="single-mega cn-col-4">
-                                                <li><a href="#">- Wallets</a></li>
+                                                <li><a href="#/" onclick='javascript:showwalletspage();'>- Wallets</a></li>
                                                 <li><a href="#">- Buy/Sell</a></li>
                                                 <li><a href="#">- Exchange/Convert</a></li>
 						<li><a href="#">- Currencies</a></li>
@@ -53,8 +53,8 @@
 
                                 <div class="header-profilepic-form">
                                     
-				    <form name='profilepic' method='POST' action='#'>
-				        {{ profile_image_tag }}
+				    <form name='profilepic' method='POST' action='#/'>
+				        <!-- <span id='profpicspan'>{{ profile_image_tag }}</span> -->
 					{%csrf_token %}
 			 	    </form>
                                 </div>

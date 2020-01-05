@@ -479,6 +479,8 @@ function dologin(){
 	    }
 	    inputsarea = document.getElementById("inputs");
 	    inputsarea.innerHTML = "<label style='color:#FFFFFF'>" + data + " |</label> <a href='#/' onClick='javascript:signout(\"{{ userid }}\");'>Sign Out</a>" ;
+	    regdiv = document.getElementById('transscreens');
+	    regdiv.innerHTML = "";
         }
     }
     posturl = urlprefix + "/cryptocurry/auth/login/";
@@ -746,6 +748,7 @@ function create_wallet(){
 	alert("Wallet name cannot be empty. Please enter a valid name and try again.");
 	return(false);
     }
+    document.createwallet.cancel.disabled = true; // Disable the wallet creation cancellation key
     waitdiv = document.getElementById('waitdivcreatewallet');
     waitdiv.innerHTML = "<img src='static/images/loading_big.gif'><br><p style='font-weight:italic;color:#0000AA;'>Creating wallet. Please be patient, as this might take a little while.</p>";
     var xmlhttp;
@@ -762,6 +765,10 @@ function create_wallet(){
 	    if(msgparts[1] == "err"){
  		waitdiv.innerHTML = "<p align='justify' style='font-weight:bold;color:#AA0000'>" + msgparts[2] + "</p>";
 		return(false);
+	    }
+	    else{
+		waitdiv.innerHTML = "<p align='justify' style='font-weight:bold;color:#AA0000'>" + xmlhttp.responseText + "</p>";
+		return(true);
 	    }
 	}
 	else{
@@ -871,12 +878,11 @@ function delete_wallet(){
         </fieldset>
 	{% else %}
 	<fieldset id="inputs">
-	<label style='color:#FFFFFF'>You are signed in as {{username}} |</label> <a href='#/' onClick='javascript:signout("{{ userid }}", "{{urlprefix}}")'>Sign Out</a>{{ profile_image_tag }}
+	<label style='color:#FFFFFF'>You are signed in as {{username}} |</label> <a href='#/' onClick='javascript:signout("{{ userid }}", "{{urlprefix}}");'>Sign Out</a>
 	</fieldset>
         {% endif %}
 	</form>
-                                <!-- <a href="#" class="active">FAQ</a> -->
-				
+                                <!-- <a href="#" class="active">FAQ</a> -->	
                             </div>
 			    <div style='display:none;' id="transscreens" class="semitrans"></div>
 			    <div id='plotnamearea'></div> 

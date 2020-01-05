@@ -425,7 +425,10 @@ def getprofileimgtag(request):
 def populate_ifacedict_basic(request):
     curdate = datetime.now()
     prof_img_tag = getprofileimgtag(request)
+    #print(prof_img_tag);
     #prof_img_tag = prof_img_tag.replace('"','')
+    # Mask prof image now till it is fixed
+    #prof_img_tag = ""
     (username, password, password2, email, firstname, middlename, lastname, mobilenum) = ("", "", "", "", "", "", "", "")
     c = {'curdate' : curdate, 'login_url' : gethosturl(request) + "/" + LOGIN_URL, 'hosturl' : gethosturl(request),\
              'register_url' : gethosturl(request) + "/" + REGISTER_URL,\
@@ -499,7 +502,7 @@ def validate_wallet_name(walletname):
 Rules for creating a valid wallet name
 """
 def rules_valid_name():
-    rules = "1. Name should start with an alphabet (either lowercse or uppercase).<br />2. Names can contain both alphabets and numbers.<br />3. Names should be at least 10 characters long.<br />"
+    rules = "1. Name should start with an alphabet (either lowercse or uppercase).<br />2. Names can contain both alphabets and numbers.<br />3. Names should be at least 10 characters long.<br />4. Wallet names may not have whitespace characters."
     return rules
 
 def isStringEmpty(string):
@@ -509,31 +512,6 @@ def isStringEmpty(string):
     return False
 
 
-def getprofileimgtag(request):
-    """
-    Function to form the img tag for profile image based on whether
-    the user has a profile image or not.
-    """
-    if not request.COOKIES.has_key('userid'):
-        profileimgtag = "<img src='media/square.gif' height='102' width='102' alt='Profile Image' id='profileimage'>"
-        return profileimgtag
-    userid = request.COOKIES['userid']
-    csrftoken = ''
-    if request.COOKIES.has_key('csrftoken'):
-        csrftoken = request.COOKIES['csrftoken']
-    profimgfile = PROFILE_PHOTO_NAME
-    db = get_mongo_client()
-    rec = db.users.find({'userid' : userid})
-    if not rec or rec.count < 1:
-        profileimgtag = "<img src='media/square.gif' height='102' width='102' alt='Profile Image' id='profileimage'><br /><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;,&quot;%s&quot;);'><font size='-1'>upload profile image</font></a>"%(PROFIMG_CHANGE_URL, csrftoken)
-        return profileimgtag
-    username = ""
-    #username = rec[0]["username"]
-    profimagepath = os.path.sep.join([ settings.MEDIA_ROOT, username, "images", profimgfile ])
-    profileimgtag = ""
-    if os.path.exists(profimagepath) and profimgfile != "":
-        profileimgtag = "<img src='media/%s/images/%s' height='102' width='102' alt='Profile Image'><br /><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;, &quot;%s&quot;);'><font size='-1'>change profile image</font></a>"%(username, profimgfile, PROFIMG_CHANGE_URL, csrftoken)
-    return profileimgtag
 
 
 

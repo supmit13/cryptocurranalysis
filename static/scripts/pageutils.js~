@@ -322,9 +322,16 @@ function signout(userid, urlprefix){
             <input type='button' id='submit1' name='submit1' value='Log in' onClick='javascript:dologin();'>  \
 	    <label style='color:#FFFFFF'><input type='checkbox' name='keepmesignedin'> Keep me signed in</label>  \
           	| \
-	    <a href='#' onClick='javascript:signup(" + urlprefix + ");'>Sign up FREE</a>  \
+	    <a href='#' onClick='javascript:showsignupform(\"" + urlprefix + "\");'>Sign up FREE</a>  \
 		<br>  \
-            <a href='#' onClick='javascript:forgotpasswd(" + urlprefix + ");' style='color:#FFFFFF'>Forgot Password</a>" ;
+            <a href='/cryptocurry/auth/forgotpasswd/' style='color:#FFFFFF'>Forgot Password</a>" ;
+	    formdivelem = document.getElementById('formdiv');
+	    contentarea = document.getElementById('contentarea');
+	    formdivelem.innerHTML = "";
+	    formdivelem.style.display = "none";
+            contentarea.innerHTML = "";
+	    contentarea.style.display = "none";
+	    //window.location.href.reload();
         }
     }
     posturl = urlprefix + "/cryptocurry/auth/logout/";
