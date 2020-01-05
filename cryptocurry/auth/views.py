@@ -236,7 +236,16 @@ def register(request):
             rec['sex'] = sex
             rec['active'] = False # Will become active when user verifies email Id.
             rec['userimagepath'] = profpic
-            rec['usertype'] = usertype
+            usercode = '0'
+            if usertype == 'SILVER':
+                usercode = '1'
+            elif usertype == 'GOLD':
+                usercode = '2'
+            elif usertype == 'PLATINUM':
+                usercode = '3'
+            else:
+                pass
+            rec['usertype'] = usercode
             userid = str(sha256.sha256(str(username)).hexdigest())
             if DEBUG:
                 print "type of userid is " + str(type(userid)) + "\n"
