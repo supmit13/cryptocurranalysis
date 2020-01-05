@@ -512,6 +512,76 @@ def isStringEmpty(string):
     return False
 
 
+def check_wallet_limits(userid):
+    db = get_mongo_client()
+    usertype = 'GENERAL'
+    rec = db.users.find({'userid' : userid})
+    try:
+        if rec.count() > 0:
+            usercode = rec['usertype']
+            if usercode == '0':
+                usertype = 'GENERAL'
+            elif usercode == '1':
+                usertype = 'SILVER'
+            elif usercode == '2':
+                usertype = 'GOLD'
+            elif usercode == '3':
+                usertype = 'PLATINUM'
+        else:
+            pass
+    except:
+        pass
+    rec_total = db.wallets.find({'userid' : userid})
+    max_limit = NUM_WALLETS_GENERAL
+    if usertype == 'SILVER':
+        max_limit = NUM_WALLETS_SILVER
+    elif usertype == 'GOLD':
+        max_limit = NUM_WALLETS_GOLD
+    elif usertype == 'PLATINUM':
+        max_limit = NUM_WALLETS_PLATINUM
+    else:
+        pass
+    if rec_total.count() >= max_limit:
+        return False
+    else:
+        return True
+
+    
+
+def check_currency_limits(userid, currencyname):
+    db = get_mongo_client()
+    usertype = 'GENERAL'
+    rec = db.users.find({'userid' : userid})
+    try:
+        if rec.count() > 0:
+            usercode = rec['usertype']
+            if usercode == '0':
+                usertype = 'GENERAL'
+            elif usercode == '1':
+                usertype = 'SILVER'
+            elif usercode == '2':
+                usertype = 'GOLD'
+            elif usercode == '3':
+                usertype = 'PLATINUM'
+        else:
+            pass
+    except:
+        pass
+    rec_total = db.wallets.find({'userid' : userid, 'currencyname' : currencyname.lower()})
+    max_limit = NUM_WALLETS_PER_CURRENCY_GENERAL
+    if usertype == 'SILVER':
+        max_limit = NUM_WALLETS_PER_CURRENCY_SILVER
+    elif usertype == 'GOLD':
+        max_limit = NUM_WALLETS_PER_CURRENCY_GOLD
+    elif usertype == 'PLATINUM':
+        max_limit = NUM_WALLETS_PER_CURRENCY_PLATINUM
+    else:
+        pass
+    if rec_total.count() >= max_limit:
+        return False
+    else:
+        return True
+
 
 
 

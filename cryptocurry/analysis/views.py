@@ -2610,8 +2610,19 @@ def create_wallet(request):
         return response
     if request.POST.has_key('currency_name'):
         currencyname = request.POST['currency_name']
+        #print currencyname, "\n--------------\n"
     else:
         message = "msg:err:The currency name field is mandatory. You have not entered a currency name. Please select a currency name and try again"
+        response = HttpResponse(message)
+        return response
+    allowed = utils.check_wallet_limits(userid)
+    if not allowed:
+        message = "You cannot create a new wallet without upgrading your membership. Please upgrade and try again"
+        response = HttpResponse(message)
+        return response
+    allowed = utils.check_currency_limits(userid, currencyname)
+    if not allowed:
+        message = "You cannot create a new wallet for this currency without upgrading your membership. Please upgrade and try again"
         response = HttpResponse(message)
         return response
     if request.POST.has_key('walletname'):

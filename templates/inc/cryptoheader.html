@@ -480,7 +480,9 @@ function dologin(){
 	    inputsarea = document.getElementById("inputs");
 	    inputsarea.innerHTML = "<label style='color:#FFFFFF'>" + data + " |</label> <a href='#/' onClick='javascript:signout(\"{{ userid }}\");'>Sign Out</a>" ;
 	    regdiv = document.getElementById('transscreens');
-	    regdiv.innerHTML = "";
+	    if(regdiv){
+	    	regdiv.innerHTML = "";
+	    }
         }
     }
     posturl = urlprefix + "/cryptocurry/auth/login/";

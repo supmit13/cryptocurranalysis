@@ -26,6 +26,15 @@
 			<b>*Sex: </b><select name='sex' class='glowing-border'><option value='m'>Male</option><option value='f'>Female</option><option value='u' selected>Undisclosed</option></select>&nbsp;&nbsp;<br />
 			<b>Mobile Number: </b><input type='text' name='mobilenum' value='{{ mobilenum }}' class='glowing-border'><br />
 			&nbsp;&nbsp;&nbsp;&nbsp;<b>Upload Profile Photo: </b><input type='file' name='profpic' value='' class='glowing-border'>(will be resized to {{ profpicheight }}x{{ profpicwidth }} pixels.)<br />
+			<b>*User Type: </b><select name='usertype' class='glowing-border'>
+			{% for ut in usertypes %}
+			{% if ut == 'GENERAL' %}
+			<option value='{{ut}}' selected>{{ut}}</option>
+			{% else %}
+			<option value='{{ut}}'>{{ut}}</option>
+			{% endif %}
+			{% endfor %}
+			</select>&nbsp;&nbsp;<br />
 			{% csrf_token %}
 			<input type='button' name='register' value='Register' onClick='javascript:process_register();' class='glowing-border'>
 			<input type='button' name='cancel' value='Cancel' onClick='javascript:clear_all();' class='glowing-border'>

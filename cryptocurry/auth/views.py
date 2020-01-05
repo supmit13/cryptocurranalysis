@@ -157,13 +157,13 @@ def register(request):
         curdate = datetime.datetime.now()
         strcurdate = curdate.strftime("%Y-%m-%d %H:%M:%S")
         (username, password, password2, email, firstname, middlename, lastname, mobilenum) = ("", "", "", "", "", "", "", "")
+        usertypes = MEMBERSHIP_TYPES.keys()
         tmpl = get_template("auth/regform.html")
-        
         c = {'curdate' : strcurdate, 'login_url' : utils.gethosturl(request) + "/" + LOGIN_URL, 'hosturl' : utils.gethosturl(request),\
              'register_url' : utils.gethosturl(request) + "/" + REGISTER_URL,\
              'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
-             'hosturl' : utils.gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH, 'availabilityURL' : utils.AVAILABILITY_URL }
+             'hosturl' : utils.gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH, 'availabilityURL' : utils.AVAILABILITY_URL, 'usertypes' : usertypes }
         c.update(csrf(request))
         
         cxt = Context(c)
@@ -183,6 +183,7 @@ def register(request):
         mobilenum = request.POST['mobilenum']
         profpic = ""
         csrftoken = request.POST['csrfmiddlewaretoken']
+        usertype = request.POST['usertype']
         message = ""
         # Validate the collected data...
         if password != password2:
@@ -235,6 +236,7 @@ def register(request):
             rec['sex'] = sex
             rec['active'] = False # Will become active when user verifies email Id.
             rec['userimagepath'] = profpic
+            rec['usertype'] = usertype
             userid = str(sha256.sha256(str(username)).hexdigest())
             if DEBUG:
                 print "type of userid is " + str(type(userid)) + "\n"
