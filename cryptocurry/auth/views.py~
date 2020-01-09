@@ -636,16 +636,51 @@ def check_passcode_usability(request):
     db = utils.get_mongo_client()
     tbl = db["passwdcodes"]
     rec = tbl.find({'username' : username, 'emailid' : emailid, 'passcode' : passcode})
-    if not rec or rec.count < 1:
+    if not rec or rec.count() < 1:
         msg = "Invalid Data:err:Couldn't find any record in the database that matches the entered data. Please check your data before trying again."
         response = HttpResponse(msg)
         return response
     if rec[0].has_key('tsval'):
         passcodets = rec[0]['tsval']
         if currentts - int(passcodets) > PASSCODE_EXPIRY_LIMIT:
-            msg = "Passcode Expired:err:Your passcode has expired as it has exceeded the expiry limit of %s minutes. Please try again by generating a new passcode."
+            msg = "Passcode Expired:err:Your passcode has expired as it has exceeded the expiry limit of %s minutes. Please try again by generating a new passcode."%str(PASSCODE_EXPIRY_LIMIT)
             response = HttpResponse(msg)
             return response
     return HttpResponse("true")
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def profileimagechange(request):
+    if request.method != 'POST':
+        message = error_msg('1004')
+        return HttpResponseBadRequest(message)
+    sesscode = request.COOKIES['sessioncode']
+    userid = request.COOKIES['userid']
+    db = utils.get_mongo_client()
+    rec = db["users"].find({'userid' : userid})
+    if rec and rec.count() > 0:
+        username = rec[0]['username']
+    else:
+        message = "failed - Anonymous users can't upload profile pics."
+        return HttpResponse(message)
+    message = ""
+    if request.FILES.has_key('profpic'):
+        fpath, message, profpic = utils.handleuploadedfile2(request.FILES['profpic'], settings.MEDIA_ROOT + os.path.sep + username + os.path.sep + "images")
+        if DEBUG:
+            print(profpic + " in views.profileimagechange\n\n")
+            print(profpic + " in views.profileimagechange\n\n")
+        tbl = db["users"]
+        tbl.update_one({'userid' : userid}, {"$set":{'userimagepath' : profpic},  "$currentDate":{"lastModified":True}})
+        message = "success"
+    else:
+        message = "failed"
+    if DEBUG:
+        print(message + "\n************************\n")
+    return HttpResponse(message)
+
+
+
 
 

@@ -95,13 +95,15 @@ function uploader(viewurl, csrftoken){
   var thediv=document.getElementById('uploadbox');
   if(thediv.style.display == "none"){
     thediv.style.display = "";
-    thediv.innerHTML = "<form name='profimageuploadform' action='" + viewurl + "' enctype='multipart/form-data' method='POST'><center><input type='file' name='profpic' value=''><input type='button' name='btnupload' value='Go' onClick='javascript:uploadimage();'><input type='button' name='btnclose' value='Close' onClick='javascript:closeimgscreen();'></center><input type='hidden' name='csrfmiddlewaretoken' value='" + csrftoken + "'></form>";
+    //alert(viewurl);
+    thediv.innerHTML = "<center><form name='profimageuploadform' action='" + viewurl + "' enctype='multipart/form-data' method='POST'><input type='file' name='profpic'><input type='button' name='btnupload' value='Go' onClick='javascript:uploadimage();'><input type='button' name='btnclose' value='Close' onClick='javascript:closeimgscreen();'><input type='hidden' name='csrfmiddlewaretoken' value='" + csrftoken + "'></form></center>";
+    //alert("Hello " + thediv.innerHTML);
   }
   else{
     thediv.style.display = "none";
     thediv.innerHTML = '';
   }
-  return false;
+  return thediv.innerHTML;
 }
 
 
@@ -331,6 +333,8 @@ function signout(userid, urlprefix){
 	    formdivelem.style.display = "none";
             contentarea.innerHTML = "";
 	    contentarea.style.display = "none";
+	    document.getElementById('plotnamearea').innerHTML = "";
+	    document.getElementById('plotnamearea').style.display = "none";
 	    //window.location.href.reload();
         }
     }

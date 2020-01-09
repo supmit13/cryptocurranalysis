@@ -221,8 +221,6 @@ def visualize_investdb_currencyprice(request):
                 datadict[currname] = [{datelists[i] : datarecs[i]}, ]
     for d in range(alldatetimes.__len__()):
         alldatetimes[d] = alldatetimes[d].replace('&#39;', utils.hexcodecharmap['&#39;'])
-    #for currencyname in datadict.keys():
-    #    print "\n\n\n", currencyname, " === ", datadict[currencyname], " \nddd###################################\n "
     ifacedict['datadict'] = datadict
     ifacedict['plotname'] = "Invest DB Currency Price ";
     ifacedict['currencynames'] = currencynames
@@ -269,9 +267,7 @@ def visualize_investdb_marketcap(request):
         if currency_vals.has_key(currname):
             data = list([])
             data = currency_vals[currname]
-            #print "CURRNAME: ", currname,"\n"
             data.append(val)
-            #print "DATA: ", data, "\n"
             currency_vals[currname] = data
             dtlist = list([])
             if currency_times.has_key(currname):
@@ -357,9 +353,7 @@ def visualize_investdb_vol24hrs(request):
         if currency_vals.has_key(currname):
             data = list([])
             data = currency_vals[currname]
-            #print "CURRNAME: ", currname,"\n"
             data.append(val)
-            #print "DATA: ", data, "\n"
             currency_vals[currname] = data
             dtlist = list([])
             if currency_times.has_key(currname):
@@ -445,9 +439,7 @@ def visualize_investdb_change24hrs(request):
         if currency_vals.has_key(currname):
             data = list([])
             data = currency_vals[currname]
-            #print "CURRNAME: ", currname,"\n"
             data.append(val)
-            #print "DATA: ", data, "\n"
             currency_vals[currname] = data
             dtlist = list([])
             if currency_times.has_key(currname):
@@ -690,7 +682,6 @@ def visualize_ohlcv_voltraded(request):
     collected_target_currname = {}
     for valdict in ddict['ohlcvdata']:
         currname = valdict['currency_name']
-        #print currname, "\n"
         if currname.upper() not in target_currencies:
             continue
         for k in utils.hexcodecharmap.keys():
@@ -705,7 +696,6 @@ def visualize_ohlcv_voltraded(request):
             val = re.sub(patval, str(float(patmatchobj.groups()[0])/10 ** int(patmatchobj.groups()[1])), val)
         else:
             val = re.sub(patval, str(float(patmatchobj.groups()[0])), val)
-        #print currname, " ", val, "\n***********************************99\n\n"
         datetimeentry = valdict['time_period_start'] # Need to ensure datetime are sorted
         datetimeentry = re.sub('\:\d+\.\d+$', '', datetimeentry)
         if currency_vals.has_key(currname):
@@ -787,7 +777,6 @@ def visualize_ohlcv_tradescount(request):
     collected_target_currname = {}
     for valdict in ddict['ohlcvdata']:
         currname = valdict['currency_name']
-        #print currname, "\n"
         if currname.upper() not in target_currencies:
             continue
         for k in utils.hexcodecharmap.keys():
@@ -882,7 +871,6 @@ def visualize_ohlcv_pricehigh(request):
     collected_target_currname = {}
     for valdict in ddict['ohlcvdata']:
         currname = valdict['currency_name']
-        #print currname, "\n"
         if currname.upper() not in target_currencies:
             continue
         for k in utils.hexcodecharmap.keys():
@@ -977,7 +965,6 @@ def visualize_ohlcv_priceopen(request):
     collected_target_currname = {}
     for valdict in ddict['ohlcvdata']:
         currname = valdict['currency_name']
-        #print currname, "\n"
         if currname.upper() not in target_currencies:
             continue
         for k in utils.hexcodecharmap.keys():
@@ -1072,7 +1059,6 @@ def visualize_ohlcv_priceclose(request):
     collected_target_currname = {}
     for valdict in ddict['ohlcvdata']:
         currname = valdict['currency_name']
-        #print currname, "\n"
         if currname.upper() not in target_currencies:
             continue
         for k in utils.hexcodecharmap.keys():
@@ -1167,7 +1153,6 @@ def visualize_ohlcv_pricelow(request):
     collected_target_currname = {}
     for valdict in ddict['ohlcvdata']:
         currname = valdict['currency_name']
-        #print currname, "\n"
         if currname.upper() not in target_currencies:
             continue
         for k in utils.hexcodecharmap.keys():
@@ -1234,7 +1219,6 @@ def visualize_ohlcv_pricelow(request):
     colors = utils.randomcolorgenerator(currencynames.__len__())
     ifacedict['colors'] = colors
     ifacedict = json.dumps(ifacedict)
-    #print (str(ifacedict) + "\n##################################\n")
     response = HttpResponse(ifacedict)
     return response
 
@@ -1360,7 +1344,6 @@ def cmcd_percent07day(request):
     collected_target_currname = {}
     for valdict in ddict['coinmarketcapdata']:
         currname = valdict['currency_name']
-        #print currname, "\n"
         if currname.upper() not in target_currencies:
             continue
         for k in utils.hexcodecharmap.keys():
@@ -1456,7 +1439,6 @@ def cmcd_volume(request):
     collected_target_currname = {}
     for valdict in ddict['coinmarketcapdata']:
         currname = valdict['currency_name']
-        #print currname, "\n"
         if currname.upper() not in target_currencies:
             continue
         for k in utils.hexcodecharmap.keys():
@@ -2525,34 +2507,13 @@ def operations(request):
         username = rec[0]['username']
     else:
         username = "Anonymous"
+    ifacedict = utils.populate_ifacedict_basic(request)
+    prof_img_tag = ifacedict['profile_image_tag']
+    #urlprefix = utils.gethosturl(request)
+    #return HttpResponse("You are logged in successfully as '%s'! %s | <a href='#/' onClick='signout(\"%s\", \"\");'>"%(username, prof_img_tag, userid))
+    #return HttpResponse("You are logged in successfully as '%s'! %s"%(username, prof_img_tag))
     return HttpResponse("You are logged in successfully as '%s'!"%username)
 
-
-@utils.is_session_valid
-@utils.session_location_match
-@csrf_protect
-def profileimagechange(request):
-    if request.method != 'POST':
-        message = error_msg('1004')
-        return HttpResponseBadRequest(message)
-    sesscode = request.COOKIES['sessioncode']
-    userid = request.COOKIES['userid']
-    db = utils.get_mongo_client()
-    rec = db["users"].find({'userid' : userid})
-    if rec and rec.count() > 0:
-        username = rec[0]['username']
-    else:
-        message = "failed - Anonymous users can't upload profile pics."
-        return HttpResponse(message)
-    message = ""
-    if request.FILES.has_key('profpic'):
-        fpath, message, profpic = utils.handleuploadedfile2(request.FILES['profpic'], MEDIA_ROOT + os.path.sep + username + os.path.sep + "images")
-        tbl = db["users"]
-        tbl.update_one({'userid' : userid, 'sessionid' : sesscode}, {"$set":{'userimagepath' : profpic},  "$currentDate":{"lastModified":True}})
-        message = "success"
-    else:
-        message = "failed"
-    return HttpResponse(message)
 
 
 # ======================== Blockcypher API calls ============================= #
@@ -2610,7 +2571,6 @@ def create_wallet(request):
         return response
     if request.POST.has_key('currency_name'):
         currencyname = request.POST['currency_name']
-        #print currencyname, "\n--------------\n"
     else:
         message = "msg:err:The currency name field is mandatory. You have not entered a currency name. Please select a currency name and try again"
         response = HttpResponse(message)

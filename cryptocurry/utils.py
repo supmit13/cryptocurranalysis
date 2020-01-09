@@ -378,7 +378,7 @@ def get_extension2(filename):
     return ext
 
 
-def handleuploadedfile2(uploaded_file, targetdir, filename=PROFILE_PHOTO_NAME):
+def handleuploadedfile2(uploaded_file, targetdir, filename=settings.PROFILE_PHOTO_NAME):
     """
     Replica of 'handleuploadedfile' defined in earlier. In previous version,
     the file extension is assumed to be 3 chars long only. Hence, in this present
@@ -396,6 +396,8 @@ def handleuploadedfile2(uploaded_file, targetdir, filename=PROFILE_PHOTO_NAME):
         destination.close()
         os.chmod(targetdir, 0777)
         os.chmod(destinationfile, 0777) # Is there a way to club these 'chmod' statements?
+    if DEBUG:
+        print(filename + "." + ext + " in utils.handleuploadedfile2\n\n")
     return [ destinationfile, '', filename + "." + ext ]
 
 
@@ -405,8 +407,14 @@ def getprofileimgtag(request):
     the user has a profile image or not.
     """
     db = get_mongo_client()
-    sesscode = request.COOKIES['sessioncode']
-    userid = request.COOKIES['userid']
+    if request.COOKIES.has_key('sessioncode'):
+        sesscode = request.COOKIES['sessioncode']
+    else:
+        sesscode = ""
+    if request.COOKIES.has_key('userid'):
+        userid = request.COOKIES['userid']
+    else:
+        userid = ""
     userrec = db.users.find({'userid': userid})
     if not userrec or userrec.count() < 1:
         return ""
@@ -416,19 +424,17 @@ def getprofileimgtag(request):
     if request.COOKIES.has_key('csrftoken'):
         csrftoken = request.COOKIES['csrftoken']
     profimagepath = os.path.sep.join([ settings.MEDIA_ROOT, username, "images", profimgfile ])
-    profileimgtag = "<img src='media/square.gif' height='102' width='102' alt='Profile Image' id='profileimage'><br /><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;,&quot;%s&quot;);'><font size='-1'>upload profile image</font></a>"%(PROFIMG_CHANGE_URL, csrftoken)
+    profileimgtag = "<img src='media/square.png' height='50' width='50' alt='Profile Image' id='profileimage'><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;,&quot;%s&quot;);'><font size='-1'>upload profile image</font></a>"%(PROFIMG_CHANGE_URL, csrftoken)
+    if DEBUG:
+        print(profimagepath + "\n----------------\n" + profimgfile + "\n\n")
     if os.path.exists(profimagepath) and profimgfile != "":
-        profileimgtag = "<img src='media/%s/images/%s' height='102' width='102' alt='Profile Image'><br /><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;, &quot;%s&quot;);'><font size='-1'>change profile image</font></a>"%(username, profimgfile, PROFIMG_CHANGE_URL, csrftoken)
+        profileimgtag = "<img src='media/%s/images/%s' height='90' width='90' alt='Profile Image'><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;, &quot;%s&quot;);'><font size='-1'>change profile image</font></a>"%(username, profimgfile, PROFIMG_CHANGE_URL, csrftoken)
     return profileimgtag
 
 
 def populate_ifacedict_basic(request):
     curdate = datetime.now()
     prof_img_tag = getprofileimgtag(request)
-    #print(prof_img_tag);
-    #prof_img_tag = prof_img_tag.replace('"','')
-    # Mask prof image now till it is fixed
-    #prof_img_tag = ""
     (username, password, password2, email, firstname, middlename, lastname, mobilenum) = ("", "", "", "", "", "", "", "")
     c = {'curdate' : curdate, 'login_url' : gethosturl(request) + "/" + LOGIN_URL, 'hosturl' : gethosturl(request),\
              'register_url' : gethosturl(request) + "/" + REGISTER_URL,\

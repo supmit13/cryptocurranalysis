@@ -80,16 +80,16 @@ function drawChart(data, source="investdb"){
       currlist = new Array();
       plotareadiv.innerHTML = "It might take a little while to plot your chart. Please be patient.";
       if(source == "investdb"){
-          headers_investdb = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "LITECOIN", "MONERO", "NICASH"];
+          headers_investdb = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "LITECOIN", "MONERO", "NICASH", "COSMOS"];
       }
       else if(source == "ohlcv"){
-	  headers_ohlcv = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "ETHEREUM CLASSIC", "COSMOS"];
+	  headers_ohlcv = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "ETHEREUM CLASSIC", "COSMOS", "NICASH"];
       }
       else if(source == "coinmarketdata"){
-	  headers_coinmarketdata = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "DIGIBYTE", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "COSMOS", "DASH"];
+	  headers_coinmarketdata = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "DIGIBYTE", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "COSMOS", "DASH", "NICASH"];
       }
       else if(source == "coinmarketcapdata"){
-	  headers_coinmarketcapdata = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO", "COSMOS"];
+	  headers_coinmarketcapdata = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO", "COSMOS", "NICASH"];
       }
       //else if(source == "coinlayer"){
       //  headers_coinlayer = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO"];
@@ -99,16 +99,16 @@ function drawChart(data, source="investdb"){
       }
       //headers_investdb = ["Datetime", "EOS", "BITCOIN", "BINANCE COIN", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO"];
       if(source == "investdb"){
-          currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "LITECOIN" : 0, "MONERO" : 0, "NICASH" : 0};
+          currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "LITECOIN" : 0, "MONERO" : 0, "NICASH" : 0, "COSMOS" : 0};
       }
       else if(source == "ohlcv"){
-	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "ETHEREUM CLASSIC" : 0};
+	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "ETHEREUM CLASSIC" : 0, "NICASH" : 0};
       }
       else if(source == "coinmarketdata"){
-	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "LITECOIN" : 0, "XRP" : 0, "DIGIBYTE" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "COSMOS" : 0, "DASH" : 0};
+	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "LITECOIN" : 0, "XRP" : 0, "DIGIBYTE" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "COSMOS" : 0, "DASH" : 0, "NICASH" : 0};
       }
       else if(source == "coinmarketcapdata"){
-	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "BITCOIN SV" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NEO" : 0, "COSMOS" : 0};
+	  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "BITCOIN SV" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NEO" : 0, "COSMOS" : 0, "NICASH" : 0};
       }
       //else if(source == "coinlayer"){
       //  currflagobj = {"EOS" : 0, "BITCOIN" : 0, "BINANCE COIN" : 0, "XRP" : 0, "TETHER" : 0, "STELLAR" : 0, "BITCOIN CASH" : 0, "ETHEREUM" : 0, "MONERO" : 0, "NEO" : 0};
@@ -121,17 +121,17 @@ function drawChart(data, source="investdb"){
       var plotdata = new google.visualization.DataTable();
       plotdata.addColumn('string', 'Datetime');
       if(source == "investdb"){
-          listedcurrencies_investdb = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "LITECOIN", "MONERO", "NICASH");
+          listedcurrencies_investdb = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "LITECOIN", "MONERO", "NICASH", "COSMOS");
           //listedcurrencies_investdb = new Array("EOS", "BITCOIN", "BINANCE COIN", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO");
       }
       else if(source == "ohlcv"){
-	  listedcurrencies_ohlcv = new Array("EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "ETHEREUM CLASSIC", "COSMOS");
+	  listedcurrencies_ohlcv = new Array("EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "ETHEREUM CLASSIC", "COSMOS", "NICASH");
       }
       else if(source == "coinmarketdata"){
-	  listedcurrencies_coinmarketdata = new Array("EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "DIGIBYTE", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "COSMOS", "DASH");
+	  listedcurrencies_coinmarketdata = new Array("EOS", "BITCOIN", "BINANCE COIN", "LITECOIN", "XRP", "DIGIBYTE", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "COSMOS", "DASH", "NICASH");
       }  
       else if(source == "coinmarketcapdata"){
-	  listedcurrencies_coinmarketcapdata = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO", "COSMOS");
+	  listedcurrencies_coinmarketcapdata = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO", "COSMOS", "NICASH");
       }
       //else if(source == "coinlayer"){
       //  listedcurrencies_coinlayer = new Array("EOS", "BITCOIN", "BINANCE COIN", "BITCOIN SV", "XRP", "TETHER", "STELLAR", "BITCOIN CASH", "ETHEREUM", "MONERO", "NEO");
@@ -152,6 +152,7 @@ function drawChart(data, source="investdb"){
 	      plotdata.addColumn('number', "LITECOIN");
 	      plotdata.addColumn('number', "MONERO");
 	      plotdata.addColumn('number', "NICASH");
+	      plotdata.addColumn('number', "COSMOS");
       }
       else if(source == "ohlcv"){
 	      plotdata.addColumn('number', "EOS");
@@ -165,6 +166,7 @@ function drawChart(data, source="investdb"){
 	      plotdata.addColumn('number', "ETHEREUM");
 	      plotdata.addColumn('number', "MONERO");
 	      plotdata.addColumn('number', "ETHEREUM CLASSIC");
+	      plotdata.addColumn('number', "NICASH");
       }
       else if(source == "coinmarketdata"){
 	      plotdata.addColumn('number', "EOS");
@@ -179,6 +181,7 @@ function drawChart(data, source="investdb"){
 	      plotdata.addColumn('number', "MONERO");
 	      plotdata.addColumn('number', "COSMOS");
     	      plotdata.addColumn('number', "DASH");
+	      plotdata.addColumn('number', "NICASH");
       }  
       else if(source == "coinmarketcapdata"){
               plotdata.addColumn('number', "EOS");
@@ -193,6 +196,7 @@ function drawChart(data, source="investdb"){
 	      plotdata.addColumn('number', "MONERO");
 	      plotdata.addColumn('number', "NEO");
 	      plotdata.addColumn('number', "COSMOS");
+	      plotdata.addColumn('number', "NICASH");
       }
       else{
 	alert("Unrecognized Source.");
@@ -474,11 +478,12 @@ function dologin(){
             dataparts = data.split(":");
 	    //alert(dataparts[1]);
             if(dataparts.length > 1 && dataparts[1].search("err")){
-	        alert(dataparts[2]);
+	        alert(dataparts[2]); // ** THIS IS REQUIRED. DO NOT DELETE OR COMMENT OUT.
 		return(false);
 	    }
 	    inputsarea = document.getElementById("inputs");
-	    inputsarea.innerHTML = "<label style='color:#FFFFFF'>" + data + " |</label> <a href='#/' onClick='javascript:signout(\"{{ userid }}\");'>Sign Out</a>" ;
+	    alert(data);
+	    inputsarea.innerHTML = "<table border='0' width='90%'><tr><td nowrap style='color:#FFFFFF'>" + data + "{{profile_image_tag|safe}} |<a href='#/' onClick='javascript:signout(\"{{ userid }}\", \"{{urlprefix}}\");'>Sign Out</a></td>	</tr></table>" ;
 	    regdiv = document.getElementById('transscreens');
 	    if(regdiv){
 	    	regdiv.innerHTML = "";
@@ -675,18 +680,18 @@ function showwalletspage(){
     xmlhttp.send(postdata);
 }
 
+
 function showfloatingscreen(content){ // Display a floating screen displaying the details of the selected wallet.
     walletobj = JSON.parse(content);
-    alert(content);
     var html = "<div class='semitrans' align='left' id='trans_wallet_details'>";
-    html += "<table border=0>";
-    html += "<tr><td style='font-weight:bold;'>Currency Name</td><td style='font-weight:bold;>Balance Amount</td><td style='font-weight:bold;>Wallet Address</td><td style='font-weight:bold;>Public Key</td><td style='font-weight:bold;>Last Updation</td><td style='font-weight:bold;>Wallet Import Format (wif)</td></tr>";
+    html += "<table border='1' cellspacing='3' cellpadding='3'>";
+    html += "<tr><td style='font-weight:bold;'>Currency Name</td><td style='font-weight:bold;'>Balance Amount</td><td style='font-weight:bold;'>Wallet Address</td><td style='font-weight:bold;'>Public Key</td><td style='font-weight:bold;'>Last Updation</td><td style='font-weight:bold;'>Wallet Import Format (wif)</td></tr>";
     html += "<tr><td colspan='6'>&nbsp;</td></tr>";
     for (var addr in walletobj){
-	alert(addr);
+	//alert(addr);
         if(walletobj.hasOwnProperty(addr)){
  	    attriblist = walletobj[addr];
-	    //[currname, balance_amt, walletaddr, public_key, last_updation, wif]	
+	    //[currname, balance_amt, walletaddr, public_key, last_updation, wif]
 	    currname = attriblist[0];
 	    balance_amt = attriblist[1];
 	    walletaddr = attriblist[2];
@@ -698,6 +703,7 @@ function showfloatingscreen(content){ // Display a floating screen displaying th
     }
     html += "</table>";
     html += "</div>";
+    return (html);
 }
 
 
@@ -711,10 +717,10 @@ function showwalletdetails(userid, walletname){
         xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
     }
     xmlhttp.onreadystatechange = function(){
-    if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+    	if(xmlhttp.readyState == 4 && xmlhttp.status==200){
 	// xmlhttp.responseText would be a JSON object with wallet addresses as keys and [currname, balance_amt, walletaddr, public_key, last_updation, wif] as values.
-	document.getElementById('floatdata').innerHTML = showfloatingscreen(xmlhttp.responseText);
-    }
+	    document.getElementById('plotnamearea').innerHTML = showfloatingscreen(xmlhttp.responseText);
+    	}
     };
     walletslisturl = "{{hosturl}}/cryptocurry/wallets/showwalletdetails/";
     //alert(walletslisturl);
@@ -775,7 +781,10 @@ function create_wallet(){
 	}
 	else{
 	    waitdiv.innerHTML = "<p align='center' style='font-weight:bold;font-style:italic;color:#0000AA;'>" + xmlhttp.responseText + "</p>";
-	    waitdiv.innerHTML += "<p align='center' style='font-weight:bold;font-style:italic;color:#0000AA;'>Please go to the menu above, hover on 'Operations' -> click on 'Wallets' to view the created wallet</p>";
+	    pat = new RegExp("You cannot create a new wallet");
+	    if(!pat.test(xmlhttp.responseText)){
+	    	waitdiv.innerHTML += "<p align='center' style='font-weight:bold;font-style:italic;color:#0000AA;'>Please go to the menu above, hover on 'Operations' -> click on 'Wallets' to view the created wallet</p>";
+	    }
 	}
         return (true);
     }
@@ -831,14 +840,6 @@ function delete_wallet(){
 }
 // End of wallets.html functions.
 
-
-
-
-
-
-
-
-
 </script>
 
 </head>
@@ -864,6 +865,8 @@ function delete_wallet(){
                             </div>
                             <!-- Top Login & Faq & Earn Money btn -->
                             <div class="login-faq-earn-money">
+		<fieldset id="sessioneffects">
+		<table border='0'><tr><td nowrap>
 				Login: <form method='POST' name='loginform'>
 	  {% csrf_token %}
 	  {{cxt.loggedin}}
@@ -880,14 +883,21 @@ function delete_wallet(){
         </fieldset>
 	{% else %}
 	<fieldset id="inputs">
-	<label style='color:#FFFFFF'>You are signed in as {{username}} |</label> <a href='#/' onClick='javascript:signout("{{ userid }}", "{{urlprefix}}");'>Sign Out</a>
+	<table border='0' width='70%'><tr>
+	<td nowrap style='color:#FFFFFF'>You are signed in as {{username}}| <a href='#/' onClick='javascript:signout("{{ userid }}", "{{urlprefix}}");'>Sign Out</a></td>
+	</tr></table>
 	</fieldset>
         {% endif %}
 	</form>
+	</td><td nowrap>
+	 {{profile_image_tag|safe}}
+	</td></tr></table>
+	
+		</fieldset>
                                 <!-- <a href="#" class="active">FAQ</a> -->	
                             </div>
 			    <div style='display:none;' id="transscreens" class="semitrans"></div>
-			    <div id='plotnamearea'></div> 
+			    <div id='plotnamearea'></div>
                         </div>
                     </div>
                 </div>
