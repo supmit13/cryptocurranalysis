@@ -270,7 +270,7 @@ function checkbrowser(){
 // Utility routine, mostly used for dumping large amount of data to a file.
 function WriteFile(textcontent){
     var fso  = new ActiveXObject("Scripting.FileSystemObject"); 
-    var fh = fso.CreateTextFile("/home/supriyo/work/testyard/dump.txt", true); 
+    var fh = fso.CreateTextFile("/home/supriyo/work/cryptocurranalysis/dump.txt", true); 
     fh.WriteLine(textcontent); 
     fh.Close(); 
 }
@@ -312,6 +312,7 @@ function signout(userid, urlprefix){
     xmlhttp.onreadystatechange = function(){
         if(xmlhttp.readyState == 4 && xmlhttp.status==200){
 	    data = xmlhttp.responseText;
+	    //alert(data);
 	    if(data == '1'){
 		alert("You have signed out successfully");
 	    }
@@ -327,15 +328,19 @@ function signout(userid, urlprefix){
 	    <a href='#' onClick='javascript:showsignupform(\"" + urlprefix + "\");'>Sign up FREE</a>  \
 		<br>  \
             <a href='/cryptocurry/auth/forgotpasswd/' style='color:#FFFFFF'>Forgot Password</a>" ;
-	    formdivelem = document.getElementById('formdiv');
-	    contentarea = document.getElementById('contentarea');
-	    formdivelem.innerHTML = "";
-	    formdivelem.style.display = "none";
-            contentarea.innerHTML = "";
-	    contentarea.style.display = "none";
+	    //formdivelem = document.getElementById('formdiv');
+	    //contentarea = document.getElementById('contentarea');
+	    //formdivelem.innerHTML = "";
+	    //formdivelem.style.display = "none";
+            //contentarea.innerHTML = "";
+	    //contentarea.style.display = "none";
 	    document.getElementById('plotnamearea').innerHTML = "";
 	    document.getElementById('plotnamearea').style.display = "none";
-	    //window.location.href.reload();
+	    //alert(document.getElementById('profimage').innerText);
+            document.getElementById('profimage').innerText = "";
+	    document.getElementById('profimage').style.display = "none";
+	    //alert(window.location.href);
+	    window.location.href=window.location.href; // refresh 
         }
     }
     posturl = urlprefix + "/cryptocurry/auth/logout/";
