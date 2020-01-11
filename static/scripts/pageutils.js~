@@ -328,14 +328,30 @@ function signout(userid, urlprefix){
 	    <a href='#' onClick='javascript:showsignupform(\"" + urlprefix + "\");'>Sign up FREE</a>  \
 		<br>  \
             <a href='/cryptocurry/auth/forgotpasswd/' style='color:#FFFFFF'>Forgot Password</a>" ;
-	    //formdivelem = document.getElementById('formdiv');
-	    //contentarea = document.getElementById('contentarea');
-	    //formdivelem.innerHTML = "";
-	    //formdivelem.style.display = "none";
-            //contentarea.innerHTML = "";
-	    //contentarea.style.display = "none";
-	    document.getElementById('plotnamearea').innerHTML = "";
-	    document.getElementById('plotnamearea').style.display = "none";
+	    formdivelem = document.getElementById('formdiv');
+	    contentarea = document.getElementById('container');
+	    if(formdivelem){
+	    	formdivelem.innerHTML = "";
+	        formdivelem.style.display = "none";
+	    }
+	    if(contentarea){
+            	contentarea.innerHTML = "";
+	    	contentarea.style.display = "none";
+	    }
+	    walletslistdiv = document.getElementById('walletslist');
+	    if(walletslistdiv){
+	        walletslistdiv.innerHTML = "";
+	        walletslistdiv.style.display = "none";
+	    }
+            menuitemsdiv = document.getElementById('menuitems');
+	    if(menuitemsdiv){
+	    	document.getElementById('menuitems').innerHTML = "";
+	    }
+	    plotnamediv = document.getElementById('plotnamearea');
+	    if(plotnamediv){
+	    	document.getElementById('plotnamearea').innerHTML = "";
+	    	document.getElementById('plotnamearea').style.display = "none";
+	    }
 	    //alert(document.getElementById('profimage').innerText);
             document.getElementById('profimage').innerText = "";
 	    document.getElementById('profimage').style.display = "none";

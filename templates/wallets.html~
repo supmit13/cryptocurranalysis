@@ -94,8 +94,8 @@ button {
 }
 </style>
 
-<div class="container">
-  <input type='button' name='createwallet' value='Create Wallet' class="button" onClick="javascript:show_create_wallet_form({{rules}});">
+<div id='container' class="container">
+  <input type='button' name='createwallet' value='Create Wallet' class="button" onClick="javascript:show_create_wallet_form('{{rules}}');">
   <input type='button' name='addaddress' value='Add Address to Wallet' class="button" onClick="javascript:add_address_to_wallet();">
   <input type='button' name='createnewaddress' value='Create New Address' class="button" onClick="javascript:create_new_address();">
   <input type='button' name='deleteaddressfromwallet' value='Delete Address from Wallet' class="button" onClick="javascript:delete_address_from_wallet();">

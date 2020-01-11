@@ -9,6 +9,7 @@ import random
 import simplejson as json
 from datetime import datetime
 import urllib, urllib2
+from PIL import Image
 
 from cryptocurry.crypto_settings import *
 import settings
@@ -378,6 +379,14 @@ def get_extension2(filename):
     return ext
 
 
+def checkimagewithpil(path):
+    try:
+        Image.open(path)
+    except IOError:
+        return False
+    return True
+
+
 def handleuploadedfile2(uploaded_file, targetdir, filename=settings.PROFILE_PHOTO_NAME):
     """
     Replica of 'handleuploadedfile' defined in earlier. In previous version,
@@ -386,10 +395,14 @@ def handleuploadedfile2(uploaded_file, targetdir, filename=settings.PROFILE_PHOT
     """
     mkdir_p(targetdir)
     if uploaded_file.size > MAX_FILE_SIZE_ALLOWED:
-        message = error_msg['1005']
+        message = err.error_msg['1005']
         return [ None, message, '' ]
     ext = get_extension2(uploaded_file.name)
     destinationfile = os.path.sep.join([ targetdir, filename + "." + ext, ])
+    # Check if destination file is an image file
+    tf = checkimagewithpil(destinationfile)
+    if not tf:
+        return [] # Not an image file, so we return an empty list
     with open(destinationfile, 'wb+') as destination:
         for chunk in uploaded_file.chunks():
             destination.write(chunk)
@@ -415,6 +428,8 @@ def getprofileimgtag(request):
         userid = request.COOKIES['userid']
     else:
         userid = ""
+    if request.POST.has_key('userid'):
+        userid = request.POST['userid']
     userrec = db.users.find({'userid': userid})
     if not userrec or userrec.count() < 1:
         return ""
@@ -552,7 +567,6 @@ def check_wallet_limits(userid):
     else:
         return True
 
-    
 
 def check_currency_limits(userid, currencyname):
     db = get_mongo_client()

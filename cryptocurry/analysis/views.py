@@ -2563,6 +2563,7 @@ def create_wallet(request):
     db = utils.get_mongo_client()
     rec = db["users"].find({'userid' : userid})
     username = None
+    hdwallet = '0' # By default, you create a normal wallet. If you want to create an HD wallet, you need to check the checkbox in the interface.
     if rec:
         username = rec[0]['username']
     if not username:
@@ -2575,6 +2576,10 @@ def create_wallet(request):
         message = "msg:err:The currency name field is mandatory. You have not entered a currency name. Please select a currency name and try again"
         response = HttpResponse(message)
         return response
+    if request.POST.has_key('hdwallet'):
+        hdwallet = request.POST['hdwallet']
+    else:
+        message = "We are going to create an HD Wallet here."
     allowed = utils.check_wallet_limits(userid)
     if not allowed:
         message = "You cannot create a new wallet without upgrading your membership. Please upgrade and try again"
@@ -2627,7 +2632,10 @@ def create_wallet(request):
     http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
     postdata = {'name' : walletname, 'addresses' : [address]}
     postdatastr = json.dumps(postdata)
-    api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
+    if hdwallet == '0' or not hdwallet:
+        api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
+    else:
+        api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets/hd?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
     if DEBUG:
         print("API Endpoint: %s\n"%api_endpoint)
     opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), utils.NoRedirectHandler())
@@ -2769,8 +2777,8 @@ def add_addresses_to_wallet(request):
         response = HttpResponse(message)
         return response
 
-# ======================== Blockchain calls end here ============================ #
 
+# ======================== Blockchain calls end here ============================ #
 @utils.is_session_valid
 @utils.session_location_match
 @csrf_protect
@@ -2808,7 +2816,7 @@ def showwalletspage(request):
         message += "<div style='color:#AA0000;'>You do not have any wallet as yet.</div>"
         response = HttpResponse(message)
         return response
-    message += "<div style='color:#0000AA;'>You have the following wallets:<br />"
+    message += "<div style='color:#0000AA;' id='walletslist'>You have the following wallets:<br />"
     for r in rec:
         walletname = r["wallet_name"]
         currency = r["currencyname"]
@@ -2816,7 +2824,6 @@ def showwalletspage(request):
     message += "</div>"
     response = HttpResponse(message)
     return response
-
 
 
 def getwalletdetails(request):
@@ -2865,11 +2872,6 @@ def getwalletdetails(request):
         walletdict[walletaddr] = l
     walletdictstr = json.dumps(walletdict)
     return HttpResponse(walletdictstr)
-
-
-
-
-
 
 
 

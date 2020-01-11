@@ -63,7 +63,7 @@ def login(request):
         message = err.error_msg('1002')
         return HttpResponse(message)
     else: # user will be logged in after checking the 'active' field
-        rec = db["users"].find({"username" : uname})
+        rec = db["users"].find({"username" : username})
         if not rec:
             message = err.error_msg('1002')
             return HttpResponse(message)
@@ -89,6 +89,7 @@ def login(request):
             response = HttpResponseRedirect(utils.gethosturl(request) + "/" + OPERATIONS_URL)
             response.set_cookie('sessioncode', sessionid)
             response.set_cookie('userid', sessionuser)
+            print("USERID: %s\nUSERNAME: %s\n"%(sessionuser, username))
             return response
         else:
             message = err.error_msg('1003')
@@ -198,8 +199,6 @@ def register(request):
             message = error_msg('1015')
         elif not REALNAME_PATTERN.search(firstname) or not REALNAME_PATTERN.search(lastname) or not REALNAME_PATTERN.search(middlename):
             message = error_msg('1017')
-        #elif userprivilege not in privileges:
-        #    message = error_msg('1018')
         elif utils.check_password_strength(password) < MIN_ALLOWABLE_PASSWD_STRENGTH:
             message = error_msg('1019')
         if request.FILES.has_key('profpic'):
@@ -666,8 +665,13 @@ def profileimagechange(request):
         message = "failed - Anonymous users can't upload profile pics."
         return HttpResponse(message)
     message = ""
+    fpath, message, profpic = "", "", ""
     if request.FILES.has_key('profpic'):
-        fpath, message, profpic = utils.handleuploadedfile2(request.FILES['profpic'], settings.MEDIA_ROOT + os.path.sep + username + os.path.sep + "images")
+        retlist = utils.handleuploadedfile2(request.FILES['profpic'], settings.MEDIA_ROOT + os.path.sep + username + os.path.sep + "images")
+        if retlist.__len__() == 0:
+            message = "failed - Uploaded file is not an image file"
+            return HttpResponse(message)
+        fpath, message, profpic = retlist[0], retlist[1], retlist[2]
         if DEBUG:
             print(profpic + " in views.profileimagechange\n\n")
             print(profpic + " in views.profileimagechange\n\n")
