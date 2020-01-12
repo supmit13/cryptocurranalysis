@@ -45,10 +45,23 @@
 	}
     </style>
     <!-- <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1.1','packages':['line']}]}"></script> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> <!-- Adding Jquery from CDN -->
     <script type='text/javascript'>
         google.charts.load('current', {'packages':['line']});
 	google.charts.load('current', {'packages':['corechart', 'bar']});
         //google.charts.setOnLoadCallback(drawChart);
+
+// this will disable dragging of all images
+  $("img").mousedown(function(e){
+       e.preventDefault()
+  });
+
+  // this will disable right-click on all images. Please note that this will NOT prevent downloading of images from the website.
+(function($){
+  $(document).on('contextmenu', 'img', function() {
+      return false;
+  })
+})(jQuery);
 
 
 function sanitizedataforjs(data){
@@ -792,7 +805,7 @@ function create_wallet(){
     //alert(walletslisturl);
     walletname = document.createwallet.walletname.value;
     currency_name = document.createwallet.currency_name.options[document.createwallet.currency_name.selectedIndex].value;
-    postdata = "csrfmiddlewaretoken=" + document.profilepic.csrfmiddlewaretoken.value + "&walletname=" + walletname + "&currency_name=" + currency_name;
+    postdata = "csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value + "&walletname=" + walletname + "&currency_name=" + currency_name;
     //alert(postdata);
     xmlhttp.open("POST",walletcreateurl,true); // Make it an ajax call.
     xmlhttp.send(postdata);
@@ -825,7 +838,34 @@ function add_address_to_wallet(){
 
 function create_new_address(){
     document.getElementById('formdiv').style.display = "";
-    alert("Create new Address");
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+    	if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	// xmlhttp.responseText would be a JSON object.
+	    //alert(xmlhttp.responseText);
+	    data = JSON.parse(xmlhttp.responseText);
+	    content = "<u>Address Details:</u><br />";
+	    content += "Private Key: " + data['private'] + "<br />";
+	    content += "Public Key: " + data['public'] + "<br />";
+	    content += "Address: " + data['address'] + "<br />";
+	    content += "Wallet Import Format (wif): " + data['wif'] + "<br />";
+            document.getElementById('formdiv').innerHTML = "The following address alongwith its private and public key has been generated. Please note that we will NOT be storing your private key in our database. So please make a note of all the details given below for further usage.<br />";
+	    document.getElementById('formdiv').innerHTML = "<p style='color:#0000AA;font-weight:bold;font-style:italics;'>" + content + "</p><br />";
+	    document.getElementById('formdiv').innerHTML += "<br /><div id='address' style='color:#0000AA;font-weight:bold;font-style:italic;'>Address created successfully. You may now add this address to one of your wallets.<br />You may do that using the 'Add Address to Wallet Button'</div><br /><br />";
+    	}
+    };
+    newaddressurl = "{{hosturl}}/cryptocurry/addresses/create_new_address/";
+    postdata = "csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
+    xmlhttp.open("POST",newaddressurl,true); // Make it an ajax call.
+    xmlhttp.send(postdata);
+    //alert(postdata);
+    document.getElementById('formdiv').innerHTML = "<img src='static/images/loading_big.gif'><div style='color:blue;font-style:italics;'>Generating new address... Please be patient. This could take a while depending on the volume of requests we are getting at this moment.</div>";
 }
 
 function delete_address_from_wallet(){
@@ -836,6 +876,11 @@ function delete_address_from_wallet(){
 function delete_wallet(){
     document.getElementById('formdiv').style.display = "";
     alert("Delete Wallet");
+}
+
+function show_transaction_options(){
+    document.getElementById('formdiv').style.display = "";
+    alert("Transaction Options");
 }
 // End of wallets.html functions.
 

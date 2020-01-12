@@ -33,6 +33,7 @@ import sha256
 import random
 import string
 import urllib, urllib2
+import shutil
 
 # Application specific libraries...
 from cryptocurry.analysis.views import datasourceentryiface
@@ -683,6 +684,7 @@ def profileimagechange(request):
     if DEBUG:
         print(message + "\n************************\n")
     return HttpResponse(message)
+
 
 
 

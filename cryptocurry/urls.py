@@ -75,6 +75,7 @@ urlpatterns += patterns('',
     url(r'cryptocurry/auth/check_passcode_usability/$', 'cryptocurry.auth.views.check_passcode_usability', name='check_passcode_usability'),
     url(r'cryptocurry/analysis/createwallet/$', 'cryptocurry.analysis.views.create_wallet', name='create_wallet'),
     url(r'cryptocurry/analysis/add_addresses_to_wallet/$', 'cryptocurry.analysis.views.add_addresses_to_wallet', name='add_addresses_to_wallet'),
+    url(r'cryptocurry/addresses/create_new_address/$', 'cryptocurry.analysis.views.create_new_address', name='create_new_address'),
     url(r'cryptocurry/wallets/showwalletslist/$', 'cryptocurry.analysis.views.showwalletspage', name='showwalletspage'),
     url(r'cryptocurry/wallets/showwalletdetails/$', 'cryptocurry.analysis.views.getwalletdetails', name='getwalletdetails'),
 )

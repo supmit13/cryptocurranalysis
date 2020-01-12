@@ -89,14 +89,13 @@ function generateuuid(){
   return(uuid);
 }
 
-
 // Function to display the semi-transparent profile image upload form screen.
 function uploader(viewurl, csrftoken){
   var thediv=document.getElementById('uploadbox');
   if(thediv.style.display == "none"){
     thediv.style.display = "";
     //alert(viewurl);
-    thediv.innerHTML = "<center><form name='profimageuploadform' action='" + viewurl + "' enctype='multipart/form-data' method='POST'><input type='file' name='profpic'><input type='button' name='btnupload' value='Go' onClick='javascript:uploadimage();'><input type='button' name='btnclose' value='Close' onClick='javascript:closeimgscreen();'><input type='hidden' name='csrfmiddlewaretoken' value='" + csrftoken + "'></form></center>";
+    thediv.innerHTML = "<form name='profimageuploadform' action='" + viewurl + "' enctype='multipart/form-data' method='POST'><input type='file' name='profpic' id='profimg'><input type='button' name='btnupload' value='Go' onClick='javascript:uploadimage();'><input type='button' name='btnclose' value='Close' onClick='javascript:closeimgscreen();'><input type='hidden' name='csrfmiddlewaretoken' value='" + csrftoken + "'></form>";
     //alert("Hello " + thediv.innerHTML);
   }
   else{
@@ -114,9 +113,41 @@ function closeimgscreen(){
 }
 
 
+function checkfilesize() {
+    var input, file;
+    // (Can't use `typeof FileReader === "function"` because apparently
+    // it comes back as "object" on some browsers. So just see if it's there
+    // at all.)
+    if (!window.FileReader) {
+        alert("The file API isn't supported on this browser yet.");
+        return false;
+    }
+    input = document.getElementById('profimg');
+    if (!input) {
+        alert("Couldn't find the fileinput element.");
+    }
+    else if (!input.files) {
+        alert("This browser doesn't seem to support the 'files' property of file inputs.");
+    }
+    else if (!input.files[0]) {
+        alert("Selected file...");
+    }
+    else {
+        file = input.files[0];
+        if(file.size > 200000){
+            alert("File with size greater than 200 KB is not allowed. Please upload an image with a smaller size.");
+	    return false;
+	}
+    }
+    return true;
+}
+
+
+
 // This has to make an xmlhttp POST request.
 function uploadimage(){
   var targeturl = document.profimageuploadform.action;
+  //alert(targeturl);
   var postdata = new FormData(document.forms.namedItem("profimageuploadform"));
   var xmlhttp;
   if (window.XMLHttpRequest){
@@ -129,6 +160,10 @@ function uploadimage(){
   xmlhttp.onreadystatechange = function(){
   if(xmlhttp.readyState == 4 && xmlhttp.status==200){
     if(xmlhttp.responseText == 'success'){
+      tf = checkfilesize();
+      if(!tf){
+	return(0);
+      }
       alert("Image was uploaded successfully");
       window.location.href = window.location.href; // refresh the window.
     }

@@ -2727,53 +2727,147 @@ def add_addresses_to_wallet(request):
     addresses_list = addresses.split(",")
     # Now check if the wallet exist in our DB and it is owned by the user specified using the username.
     db = utils.get_mongo_client()
-    rec = db.wallets.find({'username' : username, 'wallet_name' : walletname})
+    recwlt = db.wallets.find({'username' : username, 'wallet_name' : walletname})
     currencyname, balance_amt, public_key, wif, dtimestr = "", "", "", "",""
-    if not rec or rec.count < 1:
+    if not recwlt or recwlt.count < 1:
         message = "It seems that you have specified a wrong wallet name. Either the wallet doesn't exist or you are not the owner of the wallet. Kindly rectify your mistake and try again."
         response = HtpResponse(message)
         return response
-    else:
-        currencyname = rec[0]['currencyname']
-        balance_amt = rec[0]['balance_amt']
-        public_key = rec[0]['public_key']
-        wif = rec[0]['wif']
+    else: 
+        currencyname = recwlt[0]['currencyname']
+        balance_amt = 0 # This is for the wallet with the new address. Note that the same wallet can have a balance > 0 with other addresses.
+        successmessage = ""
         timenow = datetime.datetime.now()
         dtimestr = timenow.strftime("%Y-%m-%d %H:%M:%S")
-    # If we reach here, it means that the named wallet is owned by the user requesting to add the address.
-    # Let's oblige her/him. For every address, a new document will be added to the 'wallets' collection.
-    for addr in addresses_list:
-        qset = {'userid' : userid, 'username' : username, 'currencyname' : currencyname.lower(), 'balance_amt' : balance_amt, 'last_updation' : dtimestr, 'wallet_address' : addr, 'public_key' : public_key, 'wif' : wif, 'wallet_name' : walletname}
-        try:
-            db.wallets.insert_one(qset)
-        except:
-            message = "Couldn't add the address to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
-            response = HttpResponse(response)
-            return response
-    # Now, send a request with the necessary params to the API hook to keep blockcypher in sync.
-    api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets/%s/addresses?token=%s"%(walletname, BLOCKCYPHER_ACCOUNT_TOKEN)
-    addresses_list_str = ",".join(addresses_list)
-    postdata = {'addresses' : [addresses_list_str]}
-    encoded_data = urllib.urlencode(postdata)
+        opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), utils.NoRedirectHandler())
+        # Check if the address(es) is/are already associated with the wallet or not.
+        for addr in addresses_list:
+            newaddr, publickey, wif = addr.split("##") # These 3 entries are sent from the form in this format:addr##publickey##wif
+            recwallet = db.wallets.find({'username' : username, 'wallet_name' : walletname, 'wallet_address' : newaddr})
+            if recwallet and recwallet.count() < 1:
+                qset = {'userid' : userid, 'username' : username, 'currencyname' : currencyname.lower(), 'balance_amt' : balance_amt, 'last_updation' : dtimestr, 'wallet_address' : newaddr, 'public_key' : publickey, 'wif' : wif, 'wallet_name' : walletname}
+		# HERE, CHECK IF THE USER IS OF THE RIGHT TYPE (GENERAL,SILVER,ETC.) TO DO THIS OPERATION.
+                recusr = db.users.find({'userid' : userid})
+                usertype = '0' # GENERAL, by default
+                if not recusr or recusr.count() < 1:
+                    message = "Couldn't find user with the given user Id.\n"
+                    response = HttpResponse(message)
+                    return response
+                else:
+                    usertype = recusr[0]['usertype']
+                memtype = settings.REVERSE_MEMBERSHIP_TYPES[usertype]
+                addresslimit = 2 # By default, general membership
+                if memtype == "SILVER":
+                    addresslimit = settings.NUM_ADDRESSES_PER_WALLET_SILVER
+                elif memtype == "GOLD":
+                    addresslimit = settings.NUM_ADDRESSES_PER_WALLET_GOLD
+                elif memtype == "PLATINUM":
+                    addresslimit = settings.NUM_ADDRESSES_PER_WALLET_PLATINUM
+                else:
+                    pass
+                if recwlt.count() < addresslimit:
+                    try:
+                        db.wallets.insert_one(qset)
+                    except:
+                        message = "Couldn't add the address to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
+                        response = HttpResponse(response)
+                        return response
+                else:
+                    message = "msg:err:You cannot add more addresses to this wallet with your membership status."
+                    response = HttpResponse(message)
+                    return response
+                # Now, send a request with the necessary params to the API hook to keep blockcypher in sync. [TO DO FROM HERE]
+                # If we reach here, it means that the named wallet is owned by the user requesting to add the address.
+                # Let's oblige her/him. For every address, a new document will be added to the 'wallets' collection.
+                api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets/%s/addresses?token=%s"%(walletname, BLOCKCYPHER_ACCOUNT_TOKEN)
+                postdata = {'addresses' : [newaddr]}
+                encoded_data = urllib.urlencode(postdata)
+                http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
+                blockcypher_request = urllib2.Request(api_endpoint, encoded_data, http_headers)
+                blockcypher_response = None
+                try:
+                    blockcypher_response = opener.open(blockcypher_request)
+                except:
+                    print "Could not add the blockcypher addresses data to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
+                    return False
+                if not blockcypher_response:
+                    print "Could not retrieve response from the request to '%s'\n"%api_endpoint
+                    return False
+                blockcypher_response_json = blockcypher_response.read()
+                blockcypher_response_dict = json.loads(blockcypher_response_json)
+                if blockcypher_response_dict.has_key('token') and blockcypher_response_dict['token'] == BLOCKCYPHER_ACCOUNT_TOKEN and blockcypher_response_dict.has_key('name') and blockcypher_response_dict['name'] == walletname and blockcypher_response_dict.has_key('addresses'):
+                    successmessage += "<p style='color:#0000AA;font-weight:bold;'>The address (%s) have been added to the wallet successfully.</p>"%newaddr
+        response = HttpResponse(successmessage)
+        return response
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def create_new_address(request):
+    """
+    This method creates an address and places it in the addresses collection.
+    A successful operation would create a new document in the 'addresses'
+    collection in the DB.
+    """
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "Either you are not logged in or your session has been corrupted. Please login and try again."
+        response = HttpResponse(message)
+        return response
+    db = utils.get_mongo_client()
+    rec = db["users"].find({'userid' : userid})
+    username = None
+    if rec:
+        username = rec[0]['username']
+    if not username:
+        message = "Either you are not logged in or your session has been corrupted. Please login and try again."
+        response = HttpResponse(message)
+        return response
+    # Now create a HTTP(S) request to the address creation endpoint.
+    api_endpoint = "https://api.blockcypher.com/v1/btc/main/addrs"
+    encoded_data = "" # Empty POST parameters.
     http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
     blockcypher_request = urllib2.Request(api_endpoint, encoded_data, http_headers)
+    opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), utils.NoRedirectHandler())
     blockcypher_response = None
     try:
         blockcypher_response = opener.open(blockcypher_request)
     except:
-        print "Could not add the blockcypher addresses data to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
+        print "Could not add the blockcypher addresses data - Error: %s\n"%sys.exc_info()[1].__str__()
         return False
     if not blockcypher_response:
         print "Could not retrieve response from the request to '%s'\n"%api_endpoint
         return False
     blockcypher_response_json = blockcypher_response.read()
     blockcypher_response_dict = json.loads(blockcypher_response_json)
-    if blockcypher_response_dict.has_key('token') and blockcypher_response_dict['token'] == BLOCKCYPHER_ACCOUNT_TOKEN and blockcypher_response_dict.has_key('name') and blockcypher_response_dict['name'] == walletname and blockcypher_response_dict.has_key('addresses'):
-        message = "The address(es) have been added to the wallet successfully."
+    if blockcypher_response_dict.has_key('private') and  blockcypher_response_dict.has_key('public') and blockcypher_response_dict.has_key('address'):
+        privatekey = blockcypher_response_dict['private']
+        publickey = blockcypher_response_dict['public']
+        address = blockcypher_response_dict['address']
+        wif = blockcypher_response_dict['wif']
+        blockcyphertoken = BLOCKCYPHER_ACCOUNT_TOKEN
+        timenow = datetime.datetime.now()
+        ts = time.time()
+        dtimestr = timenow.strftime("%Y-%m-%d %H:%M:%S")
+        insertd = {'userid' : userid, 'username' : username, 'address' : address, 'publickey' : publickey, 'created' : dtimestr, 'wif' : wif, 'timestamp' : str(int(ts))}
+        try:
+            db.address.insert_one(insertd) # TODO: Dillema as to whether to store the private key in the DB or not. (Right now, we don't store the private key in our DB).
+        except:
+            message = "msg:err:Couldn't create the address - Error: %s\n"%sys.exc_info()[1].__str__()
+            response = HttpResponse(response)
+            return response
+        message = blockcypher_response_json
+        if DEBUG:
+            print(message)
         response = HttpResponse(message)
         return response
     else:
-        message = "For some reason, the address(es) could not be added to the named wallet. Please try again. If the error persists, please contact the admin with the wallet and address details at admin@cryptocurry.me"
+        message = "For some reason, the address creation request failed. Please try again. If the error persists, please contact the support staff with the details at support@cryptocurry.me"
         response = HttpResponse(message)
         return response
 
@@ -2816,7 +2910,7 @@ def showwalletspage(request):
         message += "<div style='color:#AA0000;'>You do not have any wallet as yet.</div>"
         response = HttpResponse(message)
         return response
-    message += "<div style='color:#0000AA;'>You have the following wallets:<br />"
+    message += "<div style='color:#0000AA;' id='walletslist'>You have the following wallets:<br />"
     for r in rec:
         walletname = r["wallet_name"]
         currency = r["currencyname"]

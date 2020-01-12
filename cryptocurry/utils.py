@@ -400,9 +400,9 @@ def handleuploadedfile2(uploaded_file, targetdir, filename=settings.PROFILE_PHOT
     ext = get_extension2(uploaded_file.name)
     destinationfile = os.path.sep.join([ targetdir, filename + "." + ext, ])
     # Check if destination file is an image file
-    tf = checkimagewithpil(destinationfile)
-    if not tf:
-        return [] # Not an image file, so we return an empty list
+    #tf = checkimagewithpil(destinationfile)
+    #if not tf:
+    #    return [] # Not an image file, so we return an empty list
     with open(destinationfile, 'wb+') as destination:
         for chunk in uploaded_file.chunks():
             destination.write(chunk)
@@ -439,11 +439,11 @@ def getprofileimgtag(request):
     if request.COOKIES.has_key('csrftoken'):
         csrftoken = request.COOKIES['csrftoken']
     profimagepath = os.path.sep.join([ settings.MEDIA_ROOT, username, "images", profimgfile ])
-    profileimgtag = "<img src='media/square.png' height='50' width='50' alt='Profile Image' id='profileimage'><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;,&quot;%s&quot;);'><font size='-1'>upload profile image</font></a>"%(PROFIMG_CHANGE_URL, csrftoken)
+    profileimgtag = "<img src='media/square.png' height='50' width='50' alt='Profile Image' id='profileimage'><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;,&quot;%s&quot;);'><font size='-1'>upload profile image</font></a>"%(settings.PROFIMG_CHANGE_URL, csrftoken)
     if DEBUG:
         print(profimagepath + "\n----------------\n" + profimgfile + "\n\n")
     if os.path.exists(profimagepath) and profimgfile != "":
-        profileimgtag = "<img src='media/%s/images/%s' height='90' width='90' alt='Profile Image'><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;, &quot;%s&quot;);'><font size='-1'>change profile image</font></a>"%(username, profimgfile, PROFIMG_CHANGE_URL, csrftoken)
+        profileimgtag = "<img src='media/%s/images/%s' height='90' width='90' alt='Profile Image'><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;, &quot;%s&quot;);'><font size='-1'>change profile image</font></a>"%(username, profimgfile, settings.PROFIMG_CHANGE_URL, csrftoken)
     return profileimgtag
 
 
