@@ -2676,6 +2676,54 @@ def create_wallet(request):
 @utils.is_session_valid
 @utils.session_location_match
 @csrf_protect
+def address_add_to_wallet_form(request):
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "Either you are not logged in or your session has been corrupted. Please login and try again."
+        response = HttpResponse(message)
+        return response
+    db = utils.get_mongo_client()
+    rec = db["users"].find({'userid' : userid})
+    username = None
+    if rec:
+        username = rec[0]['username']
+    if not username:
+        message = "Either you are not logged in or your session has been corrupted. Please login and try again."
+        response = HttpResponse(message)
+        return response
+    userwalletsrecs = db.wallets.find({'userid' : userid})
+    walletnames = {} # We will need unique wallet names for the user. Note that the user can have more than one wallet with the same name with different addresses.
+    for userwallet in userwalletsrecs:
+        walletname = userwallet['wallet_name']
+        if not walletnames.has_key(walletname):
+            walletnames[walletname] = 1
+        else:
+            pass
+    # Get addresses now
+    useraddressrecs = db.address.find({'userid' : userid})
+    useraddresses = [] # This can be a list as there can't be multiple addresses with the same address field.
+    for useraddress in useraddressrecs:
+        address = useraddress['address']
+        publickey = useraddress['publickey']
+        wif = useraddress['wif']
+        composite_element = address + "##" + publickey + "##" + wif
+        useraddresses.append(composite_element)
+    ifacedict = utils.populate_ifacedict_basic(request)
+    ifacedict['useraddresses'] = useraddresses
+    ifacedict['walletnames'] = walletnames.keys()
+    ifacedict.update(csrf(request))
+    cxt = RequestContext(request)
+    rtr = render_to_response("add_address_to_wallet.html", ifacedict, context_instance=cxt)
+    return rtr
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
 def add_addresses_to_wallet(request):
     """
     This method adds an address to an existing wallet owned by the user. 
@@ -2773,7 +2821,7 @@ def add_addresses_to_wallet(request):
                         response = HttpResponse(response)
                         return response
                 else:
-                    message = "msg:err:You cannot add more addresses to this wallet with your membership status."
+                    message = "msg:err:You cannot add more addresses to this wallet with your membership status. Please upgrade, or contact the support staff at support@cryptocurry.me if you are a Platinum member.<br />"
                     response = HttpResponse(message)
                     return response
                 # Now, send a request with the necessary params to the API hook to keep blockcypher in sync. [TO DO FROM HERE]

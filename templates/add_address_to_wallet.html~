@@ -1,0 +1,20 @@
+<form name='address_wallet_form' method='POST' action='/cryptocurry/analysis/add_addresses_to_wallet/'>
+<span align='center' style='color:#0000AA;'>
+<table border='0'>
+<tr><td align='center' valign='middle' style='color:#0000AA;font-weight:bold;' nowrap>Select a Wallet: <select name='selwallet' size='5'>
+{% for wallet in walletnames %}
+<option value='{{wallet}}'>{{wallet}}</option>
+{% endfor %}
+</select>
+</td>
+<td align='center' valign='middle' style='color:#0000AA;font-weight:bold;' nowrap>Select Address(es) for the Selected Wallet: <select name='seladdress' size='5' multiple>
+{% for addr in useraddresses %}
+<option value='{{addr}}'>{{addr}}</option>
+{% endfor %}
+</select>
+</td>
+</tr>
+</table>
+<input type='button' name='btnLinkAddrtoWallet' value='Link Address to Wallet' onClick='document.address_wallet_form.submit();'>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnCancel' value='Close Form' onClick='javascript:closeform();'>
+</span>
+</form>
