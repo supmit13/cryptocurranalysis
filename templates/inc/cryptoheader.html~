@@ -695,26 +695,39 @@ function showwalletspage(){
 }
 
 
+function closeme(){
+    divarea = document.getElementById('plotnamearea');
+    divarea.innerHTML = "";
+}
+
+
 function showfloatingscreen(content){ // Display a floating screen displaying the details of the selected wallet.
     walletobj = JSON.parse(content);
     var html = "<div class='semitrans' align='left' id='trans_wallet_details'>";
-    html += "<table border='1' cellspacing='3' cellpadding='3'>";
-    html += "<tr><td style='font-weight:bold;'>Currency Name</td><td style='font-weight:bold;'>Balance Amount</td><td style='font-weight:bold;'>Wallet Address</td><td style='font-weight:bold;'>Public Key</td><td style='font-weight:bold;'>Last Updation</td><td style='font-weight:bold;'>Wallet Import Format (wif)</td></tr>";
+    html += "<table border='1' cellspacing=3 cellpadding=3>";
+    html += "<tr><td style='color:#0000AA;font-weight:bold;' nowrap>Currency Name</td><td style='color:#0000AA;font-weight:bold;' nowrap>Balance Amount</td><td style='color:#0000AA;font-weight:bold;' nowrap>Wallet Address</td><td style='color:#0000AA;font-weight:bold;' nowrap>Public Key</td><td style='color:#0000AA;font-weight:bold;' nowrap>Last Updation</td><td style='color:#0000AA;font-weight:bold;' nowrap>Wallet Import Format (wif)</td></tr>";
     html += "<tr><td colspan='6'>&nbsp;</td></tr>";
+    currdict = {'bnb' : 'Binance Coin', 'btc' : 'Bitcoin', 'eos' : 'EOS', 'ltc' : 'Litecoin', 'xrp' : 'Ripple', 'eth' : 'Ethereum', 'bch' : 'Bitcoin Cash', 'etc' : 'Ethereum Classic', 'xmr' : 'Monero', 'xlm' : 'Stellar', 'btg' : 'Bitcoin Gold', 'neo' : 'NEO' };
     for (var addr in walletobj){
 	//alert(addr);
         if(walletobj.hasOwnProperty(addr)){
  	    attriblist = walletobj[addr];
 	    //[currname, balance_amt, walletaddr, public_key, last_updation, wif]
-	    currname = attriblist[0];
+	    if(attriblist[0] in currdict){
+	        currname = currdict[attriblist[0]];
+	    }
+	    else{
+		currname = attriblist[0];
+	    }
 	    balance_amt = attriblist[1];
 	    walletaddr = attriblist[2];
   	    public_key = attriblist[3];
 	    last_updation = attriblist[4];
 	    wif = attriblist[5];
-	    html += "<tr><td>" + currname + "</td><td>" + balance_amt + "</td><td>" + walletaddr + "</td><td>" + public_key + "</td><td>" + last_updation + "</td><td>" + wif + "</td></tr>";
+	    html += "<tr><td style='color:#0000AA;font-weight:bold' nowrap>" + currname + "</td><td style='color:#0000AA;font-weight:bold' nowrap>" + balance_amt + "</td><td style='color:#0000AA;font-weight:bold' nowrap>" + walletaddr + "</td><td style='color:#0000AA;font-weight:bold' nowrap>" + public_key + "</td><td style='color:#0000AA;font-weight:bold' nowrap>" + last_updation + "</td><td style='color:#0000AA;font-weight:bold' nowrap>" + wif + "</td></tr>";
 	}
     }
+    html += "<tr><td colspan=6 style='align:center;valign:middle;'><input type='button' name='closeme' value='Close Me' onClick='javascript:closeme();'></td></tr>"
     html += "</table>";
     html += "</div>";
     return (html);
@@ -723,6 +736,7 @@ function showfloatingscreen(content){ // Display a floating screen displaying th
 
 function showwalletdetails(userid, walletname){
     //alert(walletname);
+    nameareadiv = document.getElementById('plotnamearea');
     var xmlhttp;
     if (window.XMLHttpRequest){
         xmlhttp=new XMLHttpRequest();
@@ -742,6 +756,7 @@ function showwalletdetails(userid, walletname){
     //alert(postdata);
     xmlhttp.open("POST",walletslisturl,true); // Make it an ajax call.
     xmlhttp.send(postdata);
+    nameareadiv.innerHTML = "<img src='static/images/loading_small.gif'><span style='color:#0000AA;'>Getting wallet details in a jiffy...</span>";
 }
 
 
@@ -865,7 +880,7 @@ function add_address_to_wallet(){
     postdata = "csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
     xmlhttp.open("POST",formurl,true); // Make it an ajax call.
     xmlhttp.send(postdata);
-    formdiv.innerHTML = "<img src='static/images/loading_small.gif'><span id='patiencemsg' style='color:\'#0000AA;font-weight:bold\''>Please be patient while we render the Add Address to Wallet form</span>";
+    formdiv.innerHTML = "<img src='static/images/loading_small.gif'><span id='patiencemsg' style='color:#0000AA;font-weight:bold;'>Please be patient while we render the Add Address to Wallet form</span>";
 }
 
 function create_new_address(){
@@ -916,6 +931,32 @@ function show_transaction_options(){
 }
 
 function upgrademembership(){
+}
+
+function linkaddresstowallet(){
+    var xmlhttp;
+    statusmsg = document.getElementById('showstatusmsg');
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+    	if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    statusmsg.innerHTML = "";
+	    statusmsg.innerHTML = xmlhttp.responseText;
+        }
+    }
+    targeturl = document.address_wallet_form.action;
+    //alert(targeturl);
+    postdata = "selwallet=" + document.address_wallet_form.selwallet.options[document.address_wallet_form.selwallet.options.selectedIndex].value;
+    postdata += "&seladdress=" + document.address_wallet_form.seladdress.options[document.address_wallet_form.seladdress.options.selectedIndex].value;
+    //alert(postdata);
+    postdata += "&csrfmiddlewaretoken=" + document.address_wallet_form.csrfmiddlewaretoken.value;
+    xmlhttp.open("POST",targeturl,true); // Make it an ajax call.
+    xmlhttp.send(postdata);
+    statusmsg.innerHTML = "<img src='static/images/loading_small.gif'><span id='statusspanmsg' style='color:#0000AA;font-weight:bold;'>Please be patient while we link the selected address(es) to the selected wallet.</span>";
 }
 // End of wallets.html functions.
 
@@ -975,8 +1016,6 @@ function upgrademembership(){
 		</fieldset>
                                 <!-- <a href="#" class="active">FAQ</a> -->	
                             </div>
-			    <div style='display:none;' id="transscreens" class="semitrans"></div>
-			    <div id='plotnamearea'></div>
                         </div>
                     </div>
                 </div>

@@ -439,11 +439,11 @@ def getprofileimgtag(request):
     if request.COOKIES.has_key('csrftoken'):
         csrftoken = request.COOKIES['csrftoken']
     profimagepath = os.path.sep.join([ settings.MEDIA_ROOT, username, "images", profimgfile ])
-    profileimgtag = "<img src='media/square.png' height='50' width='50' alt='Profile Image' id='profileimage'><div id='uploadbox' style='display:;'></div><a href='#' onClick='return uploader(&quot;%s&quot;,&quot;%s&quot;);'><font size='-1'>upload profile image</font></a>"%(settings.PROFIMG_CHANGE_URL, csrftoken)
+    profileimgtag = "<img src='media/square.png' height='50' width='50' alt='Profile Image' id='profileimage'><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;,&quot;%s&quot;);'><font size='-1'>upload profile image</font></a>"%(settings.PROFIMG_CHANGE_URL, csrftoken)
     if DEBUG:
         print(profimagepath + "\n----------------\n" + profimgfile + "\n\n")
     if os.path.exists(profimagepath) and profimgfile != "":
-        profileimgtag = "<img src='media/%s/images/%s' height='90' width='90' alt='Profile Image'><div id='uploadbox' style='display:;'></div><a href='#' onClick='return uploader(&quot;%s&quot;, &quot;%s&quot;);'><font size='-1'>change profile image</font></a>"%(username, profimgfile, settings.PROFIMG_CHANGE_URL, csrftoken)
+        profileimgtag = "<img src='media/%s/images/%s' height='90' width='90' alt='Profile Image'><div id='uploadbox' style='display: none;'></div><a href='#' onClick='return uploader(&quot;%s&quot;, &quot;%s&quot;);'><font size='-1'>change profile image</font></a>"%(username, profimgfile, settings.PROFIMG_CHANGE_URL, csrftoken)
     return profileimgtag
 
 
@@ -603,7 +603,6 @@ def check_currency_limits(userid, currencyname):
         return True
 
 
-
-
+currmap = {'Binance Coin' : 'bnb', 'Bitcoin' : 'btc',  'EOS' : 'eos', 'Litecoin' : 'ltc', 'Ripple' : 'xrp', 'Ethereum' : 'eth', 'Bitcoin Cash' : 'bch', 'Ethereum Classic' : 'etc', 'Monero' : 'xmr', 'Stellar' : 'xlm', 'Bitcoin Gold' : 'btg', 'NEO' : 'neo' }
 
 

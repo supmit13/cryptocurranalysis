@@ -2736,6 +2736,8 @@ def add_addresses_to_wallet(request):
         response = HttpResponseBadRequest(message)
         return response
     userid = request.COOKIES["userid"]
+    if DEBUG:
+        print("user id is %s\n"%userid)
     if not userid:
         message = "Either you are not logged in or your session has been corrupted. Please login and try again."
         response = HttpResponse(message)
@@ -2749,30 +2751,36 @@ def add_addresses_to_wallet(request):
         message = "Either you are not logged in or your session has been corrupted. Please login and try again."
         response = HttpResponse(message)
         return response
+    if DEBUG:
+        print("username is %s\n"%username)
     walletname, addresses = "", ""
-    if request.POST.has_key('walletname'):
-        walletname = request.POST['walletname']
+    if request.POST.has_key('selwallet'):
+        walletname = request.POST['selwallet']
         if utils.isStringEmpty(walletname):
             message = "The required parameter 'walletname' cannot be empty. Please specify the wallet name at the appropriate field on the form and try again."
             response = HttpResponse(message)
             return response
         walletname = walletname.strip()
     else:
-        message = "The required parameter 'walletname' couldn't be found. Please specify the wallet name at the appropriate field on the form and try again."
+        message = "The required parameter 'selwallet' couldn't be found. Please specify the wallet name at the appropriate field on the form and try again."
         response = HttpResponse(message)
         return response
-    if request.POST.has_key('addresses'):
-        addresses = request.POST['addresses']
+    if request.POST.has_key('seladdress'):
+        addresses = request.POST['seladdress']
         addresses = addresses.strip()
-        if utils.isStringEmpty(addresses) or addresses.find(",") == -1:
-            message = "The required parameter 'addresses' cannot be empty. Please specify the addresses you want to add to the wallet at the appropriate field on the form and try again."
+        if utils.isStringEmpty(addresses) and addresses.find(",") == -1:
+            message = "The required parameter 'seladdress' cannot be empty. Please specify the addresses you want to add to the wallet at the appropriate field on the form and try again."
             response = HttpResponse(message)
             return response
     else:
-        message = "The required parameter 'addresses' couldn't be found. Please specify the addresses you want to add to your wallet at the appropriate field on the form and try again."
+        message = "The required parameter 'seladdress' couldn't be found. Please specify the addresses you want to add to your wallet at the appropriate field on the form and try again."
         response = HttpResponse(message)
         return response
+    if DEBUG:
+        print(str(type(addresses)) + "\n=============== \n")
     addresses_list = addresses.split(",")
+    if DEBUG:
+        print("Addresses submitted is %s\n"%('\n'.join(addresses_list)))
     # Now check if the wallet exist in our DB and it is owned by the user specified using the username.
     db = utils.get_mongo_client()
     recwlt = db.wallets.find({'username' : username, 'wallet_name' : walletname})
@@ -2781,9 +2789,13 @@ def add_addresses_to_wallet(request):
         message = "It seems that you have specified a wrong wallet name. Either the wallet doesn't exist or you are not the owner of the wallet. Kindly rectify your mistake and try again."
         response = HtpResponse(message)
         return response
-    else: 
+    else:
+        if DEBUG:
+            print("Wallet with name %s exists.\n"%walletname)
         currencyname = recwlt[0]['currencyname']
         balance_amt = 0 # This is for the wallet with the new address. Note that the same wallet can have a balance > 0 with other addresses.
+        if DEBUG:
+            print("\nCurrency name: %s\n"%currencyname)
         successmessage = ""
         timenow = datetime.datetime.now()
         dtimestr = timenow.strftime("%Y-%m-%d %H:%M:%S")
@@ -2791,6 +2803,8 @@ def add_addresses_to_wallet(request):
         # Check if the address(es) is/are already associated with the wallet or not.
         for addr in addresses_list:
             newaddr, publickey, wif = addr.split("##") # These 3 entries are sent from the form in this format:addr##publickey##wif
+            if DEBUG:
+                print("Address part is %s\n"%newaddr)
             recwallet = db.wallets.find({'username' : username, 'wallet_name' : walletname, 'wallet_address' : newaddr})
             if recwallet and recwallet.count() < 1:
                 qset = {'userid' : userid, 'username' : username, 'currencyname' : currencyname.lower(), 'balance_amt' : balance_amt, 'last_updation' : dtimestr, 'wallet_address' : newaddr, 'public_key' : publickey, 'wif' : wif, 'wallet_name' : walletname}
@@ -2802,49 +2816,59 @@ def add_addresses_to_wallet(request):
                     response = HttpResponse(message)
                     return response
                 else:
-                    usertype = recusr[0]['usertype']
-                memtype = settings.REVERSE_MEMBERSHIP_TYPES[usertype]
+                    if recusr[0].has_key('usertype'):
+                        usertype = recusr[0]['usertype']
+                    else:
+                        usertype = '0' # By default, you are a 'general' member.
+                memtype = REVERSE_MEMBERSHIP_TYPES[usertype]
                 addresslimit = 2 # By default, general membership
                 if memtype == "SILVER":
-                    addresslimit = settings.NUM_ADDRESSES_PER_WALLET_SILVER
+                    addresslimit = NUM_ADDRESSES_PER_WALLET_SILVER
                 elif memtype == "GOLD":
-                    addresslimit = settings.NUM_ADDRESSES_PER_WALLET_GOLD
+                    addresslimit = NUM_ADDRESSES_PER_WALLET_GOLD
                 elif memtype == "PLATINUM":
-                    addresslimit = settings.NUM_ADDRESSES_PER_WALLET_PLATINUM
+                    addresslimit = NUM_ADDRESSES_PER_WALLET_PLATINUM
                 else:
                     pass
+                
+                # Now, send a request with the necessary params to the API hook to keep blockcypher in sync.
+                # If we reach here, it means that the named wallet is owned by the user requesting to add the address.
+                # Let's oblige her/him. For every address, a new document will be added to the 'wallets' collection.
                 if recwlt.count() < addresslimit:
+                    api_endpoint = "https://api.blockcypher.com/v1/%s/main/wallets/%s/addresses?token=%s"%(currencyname,walletname, BLOCKCYPHER_ACCOUNT_TOKEN)
+                    postdata = {'addresses' : [newaddr]}
+                    encoded_data = urllib.urlencode(postdata)
+                    http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
+                    if DEBUG:
+                        print("API endpoint is %s\n"%api_endpoint)
+                    blockcypher_request = urllib2.Request(api_endpoint, encoded_data, http_headers)
+                    blockcypher_response = None
+                    try:
+                        blockcypher_response = opener.open(blockcypher_request)
+                    except:
+                        print "Could not add the blockcypher addresses data to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
+                        message = "Could not add the blockcypher addresses data to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
+                        return HttpResponse(message)
+                    if not blockcypher_response:
+                        print "Could not retrieve response from the request to '%s'\n"%api_endpoint
+                        message = "Could not retrieve response from the request to '%s'\n"%api_endpoint
+                        return HttpResponse(message)
+                    blockcypher_response_json = blockcypher_response.read()
+                    blockcypher_response_dict = json.loads(blockcypher_response_json)
+                    if blockcypher_response_dict.has_key('token') and blockcypher_response_dict['token'] == BLOCKCYPHER_ACCOUNT_TOKEN and blockcypher_response_dict.has_key('name') and blockcypher_response_dict['name'] == walletname and blockcypher_response_dict.has_key('addresses'):
+                        successmessage += "<p style='color:#0000AA;font-weight:bold;'>The address (%s) have been added to the wallet successfully.</p>"%newaddr
                     try:
                         db.wallets.insert_one(qset)
+                        if DEBUG:
+                            print("Address(es) added successfully to the target wallet.")
                     except:
                         message = "Couldn't add the address to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
                         response = HttpResponse(response)
                         return response
                 else:
-                    message = "msg:err:You cannot add more addresses to this wallet with your membership status. Please upgrade, or contact the support staff at support@cryptocurry.me if you are a Platinum member.<br />"
+                    message = "msg:err:You cannot add more addresses to this wallet with your membership status. Please <a href='#/' onclick='javascript:upgrademembership();'>upgrade</a>, or contact the support staff at support@cryptocurry.me if you are a Platinum member.<br />"
                     response = HttpResponse(message)
                     return response
-                # Now, send a request with the necessary params to the API hook to keep blockcypher in sync. [TO DO FROM HERE]
-                # If we reach here, it means that the named wallet is owned by the user requesting to add the address.
-                # Let's oblige her/him. For every address, a new document will be added to the 'wallets' collection.
-                api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets/%s/addresses?token=%s"%(walletname, BLOCKCYPHER_ACCOUNT_TOKEN)
-                postdata = {'addresses' : [newaddr]}
-                encoded_data = urllib.urlencode(postdata)
-                http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
-                blockcypher_request = urllib2.Request(api_endpoint, encoded_data, http_headers)
-                blockcypher_response = None
-                try:
-                    blockcypher_response = opener.open(blockcypher_request)
-                except:
-                    print "Could not add the blockcypher addresses data to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
-                    return False
-                if not blockcypher_response:
-                    print "Could not retrieve response from the request to '%s'\n"%api_endpoint
-                    return False
-                blockcypher_response_json = blockcypher_response.read()
-                blockcypher_response_dict = json.loads(blockcypher_response_json)
-                if blockcypher_response_dict.has_key('token') and blockcypher_response_dict['token'] == BLOCKCYPHER_ACCOUNT_TOKEN and blockcypher_response_dict.has_key('name') and blockcypher_response_dict['name'] == walletname and blockcypher_response_dict.has_key('addresses'):
-                    successmessage += "<p style='color:#0000AA;font-weight:bold;'>The address (%s) have been added to the wallet successfully.</p>"%newaddr
         response = HttpResponse(successmessage)
         return response
 

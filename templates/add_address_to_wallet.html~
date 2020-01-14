@@ -15,6 +15,9 @@
 </td>
 </tr>
 </table>
-<input type='button' name='btnLinkAddrtoWallet' value='Link Address to Wallet' onClick='document.address_wallet_form.submit();'>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnCancel' value='Close Form' onClick='javascript:closeform();'>
+<input type='button' name='btnLinkAddrtoWallet' value='Link Address to Wallet' onClick='linkaddresstowallet();'>&nbsp;&nbsp;&nbsp;&nbsp;<input type='button' name='btnCancel' value='Close Form' onClick='javascript:closeform();'>
+<div id='showstatusmsg'></div>
+{% csrf_token %}
 </span>
 </form>
+

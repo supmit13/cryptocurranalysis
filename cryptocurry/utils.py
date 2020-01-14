@@ -603,7 +603,6 @@ def check_currency_limits(userid, currencyname):
         return True
 
 
-
-
+currmap = {'Binance Coin' : 'bnb', 'Bitcoin' : 'btc',  'EOS' : 'eos', 'Litecoin' : 'ltc', 'Ripple' : 'xrp', 'Ethereum' : 'eth', 'Bitcoin Cash' : 'bch', 'Ethereum Classic' : 'etc', 'Monero' : 'xmr', 'Stellar' : 'xlm', 'Bitcoin Gold' : 'btg', 'NEO' : 'neo' }
 
 
