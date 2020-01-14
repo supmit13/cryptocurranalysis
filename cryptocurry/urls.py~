@@ -79,6 +79,7 @@ urlpatterns += patterns('',
     url(r'cryptocurry/addresses/create_new_address/$', 'cryptocurry.analysis.views.create_new_address', name='create_new_address'),
     url(r'cryptocurry/wallets/showwalletslist/$', 'cryptocurry.analysis.views.showwalletspage', name='showwalletspage'),
     url(r'cryptocurry/wallets/showwalletdetails/$', 'cryptocurry.analysis.views.getwalletdetails', name='getwalletdetails'),
+    url(r'cryptocurry/membership/upgrade/$', 'cryptocurry.analysis.views.upgrademembership', name='upgrademembership'),
 )
 
 

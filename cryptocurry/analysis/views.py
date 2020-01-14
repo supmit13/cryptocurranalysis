@@ -17,7 +17,7 @@ import urllib, urllib2
 
 import cryptocurry.errors as err
 import cryptocurry.utils as utils
-from cryptocurry.crypto_settings import * 
+from cryptocurry.crypto_settings import *
 
 from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie, requires_csrf_token
 from django.core.context_processors import csrf
@@ -2582,12 +2582,12 @@ def create_wallet(request):
         message = "We are going to create an HD Wallet here."
     allowed = utils.check_wallet_limits(userid)
     if not allowed:
-        message = "You cannot create a new wallet without upgrading your membership. Please upgrade and try again"
+        message = "You cannot create a new wallet without upgrading your membership. Please <a href='#/' onclick='javascript:upgrademembership();'>upgrade</a> and try again"
         response = HttpResponse(message)
         return response
     allowed = utils.check_currency_limits(userid, currencyname)
     if not allowed:
-        message = "You cannot create a new wallet for this currency without upgrading your membership. Please upgrade and try again"
+        message = "You cannot create a new wallet for this currency without upgrading your membership. Please <a href='#/' onclick='javascript:upgrademembership();'>upgrade</a> and try again"
         response = HttpResponse(message)
         return response
     if request.POST.has_key('walletname'):
@@ -2705,13 +2705,13 @@ def address_add_to_wallet_form(request):
             pass
     # Get addresses now
     useraddressrecs = db.address.find({'userid' : userid})
-    useraddresses = [] # This can be a list as there can't be multiple addresses with the same address field.
+    useraddresses = {} # This can be a list as there can't be multiple addresses with the same address field.
     for useraddress in useraddressrecs:
         address = useraddress['address']
         publickey = useraddress['publickey']
         wif = useraddress['wif']
         composite_element = address + "##" + publickey + "##" + wif
-        useraddresses.append(composite_element)
+        useraddresses[address] = composite_element
     ifacedict = utils.populate_ifacedict_basic(request)
     ifacedict['useraddresses'] = useraddresses
     ifacedict['walletnames'] = walletnames.keys()
@@ -3015,5 +3015,9 @@ def getwalletdetails(request):
     walletdictstr = json.dumps(walletdict)
     return HttpResponse(walletdictstr)
 
-
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def upgrademembership(request):
+    pass
 

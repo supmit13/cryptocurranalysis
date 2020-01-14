@@ -8,8 +8,8 @@
 </select>
 </td>
 <td align='center' valign='middle' style='color:#0000AA;font-weight:bold;' nowrap>Select Address(es) for the Selected Wallet: <select name='seladdress' size='5' multiple>
-{% for addr in useraddresses %}
-<option value='{{addr}}'>{{addr}}</option>
+{% for addr,value in useraddresses.items %}
+<option value='{{value}}'>{{addr}}</option>
 {% endfor %}
 </select>
 </td>

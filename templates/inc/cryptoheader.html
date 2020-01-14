@@ -683,6 +683,7 @@ function showwalletspage(){
     }
     xmlhttp.onreadystatechange = function(){
     if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	document.getElementById('contentarea').innerHTML = "";
 	document.getElementById('contentarea').innerHTML = xmlhttp.responseText;
     }
     };
@@ -690,6 +691,7 @@ function showwalletspage(){
     postdata = "userid=" + userid + "&csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
     xmlhttp.open("POST",walletslisturl,true); // Make it an ajax call.
     xmlhttp.send(postdata);
+    document.getElementById('contentarea').innerHTML = "<img src='static/images/loading_small.gif'><span id='walletlistwait' style='color:#0000AA;font-weight:bold'>We are opening the wallets page. Please be patient.</span>";
 }
 
 
@@ -855,6 +857,7 @@ function add_address_to_wallet(){
     }
     xmlhttp.onreadystatechange = function(){
     	if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    formdiv.innerHTML = "";
 	    formdiv.innerHTML = xmlhttp.responseText;
         }
     }
@@ -862,6 +865,7 @@ function add_address_to_wallet(){
     postdata = "csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
     xmlhttp.open("POST",formurl,true); // Make it an ajax call.
     xmlhttp.send(postdata);
+    formdiv.innerHTML = "<img src='static/images/loading_small.gif'><span id='patiencemsg' style='color:\'#0000AA;font-weight:bold\''>Please be patient while we render the Add Address to Wallet form</span>";
 }
 
 function create_new_address(){
@@ -909,6 +913,9 @@ function delete_wallet(){
 function show_transaction_options(){
     document.getElementById('formdiv').style.display = "";
     alert("Transaction Options");
+}
+
+function upgrademembership(){
 }
 // End of wallets.html functions.
 
