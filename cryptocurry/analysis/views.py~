@@ -14,6 +14,7 @@ import decimal, math, base64
 from passlib.hash import pbkdf2_sha256 # To create hash of passwords
 from pandas.plotting import register_matplotlib_converters
 import urllib, urllib2
+import requests
 
 import cryptocurry.errors as err
 import cryptocurry.utils as utils
@@ -2576,6 +2577,8 @@ def create_wallet(request):
         message = "msg:err:The currency name field is mandatory. You have not entered a currency name. Please select a currency name and try again"
         response = HttpResponse(message)
         return response
+    if DEBUG:
+        print("Currency Name: %s\n"%currencyname)
     if request.POST.has_key('hdwallet'):
         hdwallet = request.POST['hdwallet']
     else:
@@ -2632,10 +2635,14 @@ def create_wallet(request):
     http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
     postdata = {'name' : walletname, 'addresses' : [address]}
     postdatastr = json.dumps(postdata)
+    #lcurrname = currencyname.lower()
+    lcurrname = "btc" # DOING THIS FOR NOW AS BLOCKCYPHER ONLY CREATES WALLETS WITH 'btc'. STUPID BLOCKCYPHER!!!!
     if hdwallet == '0' or not hdwallet:
-        api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
+        #api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
+        api_endpoint = "https://api.blockcypher.com/v1/" + lcurrname + "/main/wallets?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
     else:
-        api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets/hd?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
+        api_endpoint = "https://api.blockcypher.com/v1/" + lcurrname + "/main/wallets/hd?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
+        #api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets/hd?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
     if DEBUG:
         print("API Endpoint: %s\n"%api_endpoint)
     opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), utils.NoRedirectHandler())
@@ -2834,41 +2841,32 @@ def add_addresses_to_wallet(request):
                 # Now, send a request with the necessary params to the API hook to keep blockcypher in sync.
                 # If we reach here, it means that the named wallet is owned by the user requesting to add the address.
                 # Let's oblige her/him. For every address, a new document will be added to the 'wallets' collection.
-                if recwlt.count() < addresslimit:
-                    api_endpoint = "https://api.blockcypher.com/v1/%s/main/wallets/%s/addresses?token=%s"%(currencyname,walletname, BLOCKCYPHER_ACCOUNT_TOKEN)
-                    postdata = {'addresses' : [newaddr]}
-                    encoded_data = urllib.urlencode(postdata)
-                    http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
-                    if DEBUG:
-                        print("API endpoint is %s\n"%api_endpoint)
-                    blockcypher_request = urllib2.Request(api_endpoint, encoded_data, http_headers)
-                    blockcypher_response = None
-                    try:
-                        blockcypher_response = opener.open(blockcypher_request)
-                    except:
-                        print "Could not add the blockcypher addresses data to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
-                        message = "Could not add the blockcypher addresses data to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
-                        return HttpResponse(message)
-                    if not blockcypher_response:
-                        print "Could not retrieve response from the request to '%s'\n"%api_endpoint
-                        message = "Could not retrieve response from the request to '%s'\n"%api_endpoint
-                        return HttpResponse(message)
-                    blockcypher_response_json = blockcypher_response.read()
-                    blockcypher_response_dict = json.loads(blockcypher_response_json)
-                    if blockcypher_response_dict.has_key('token') and blockcypher_response_dict['token'] == BLOCKCYPHER_ACCOUNT_TOKEN and blockcypher_response_dict.has_key('name') and blockcypher_response_dict['name'] == walletname and blockcypher_response_dict.has_key('addresses'):
-                        successmessage += "<p style='color:#0000AA;font-weight:bold;'>The address (%s) have been added to the wallet successfully.</p>"%newaddr
-                    try:
-                        db.wallets.insert_one(qset)
+                # STUPID BLOCKCYPHER CAN USE BTC ONLY:
+                if currencyname.lower() == "btc": # Dumbass blockcypher - doesn't support anything other than bitcoin. It says it supports Litecoin, but it practically doesn't. What a looser!!!
+                    if recwlt.count() < addresslimit:
+                        params = {'token': BLOCKCYPHER_ACCOUNT_TOKEN}
+                        api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets/%s/addresses"%(walletname)
+                        postdata = {'addresses' : [newaddr]}
+                        r = requests.post(api_endpoint, json=postdata, params=params, verify=True, timeout=BLOCKCYPHER_REQUEST_TIMEOUT)
+                        blockcypher_response_dict = utils.get_valid_json(r)
                         if DEBUG:
-                            print("Address(es) added successfully to the target wallet.")
-                    except:
-                        message = "Couldn't add the address to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
-                        response = HttpResponse(response)
+                            print(blockcypher_response_dict)
+                        if blockcypher_response_dict.has_key('token') and blockcypher_response_dict['token'] == BLOCKCYPHER_ACCOUNT_TOKEN and blockcypher_response_dict.has_key('name') and blockcypher_response_dict['name'] == walletname and blockcypher_response_dict.has_key('addresses'):
+                            successmessage += "<p style='color:#0000AA;font-weight:bold;'>The address (%s) have been added to the wallet successfully.</p>"%newaddr
+                        try:
+                            db.wallets.insert_one(qset)
+                            if DEBUG:
+                                print("Address(es) added successfully to the target wallet.")
+                        except:
+                            message = "Couldn't add the address to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
+                            response = HttpResponse(response)
+                            return response
+                    else:
+                        message = "msg:err:You cannot add more addresses to this wallet with your membership status. Please <a href='#/' onclick='javascript:upgrademembership();'>upgrade</a>, or contact the support staff at support@cryptocurry.me if you are a Platinum member.<br />"
+                        response = HttpResponse(message)
                         return response
-                else:
-                    message = "msg:err:You cannot add more addresses to this wallet with your membership status. Please <a href='#/' onclick='javascript:upgrademembership();'>upgrade</a>, or contact the support staff at support@cryptocurry.me if you are a Platinum member.<br />"
-                    response = HttpResponse(message)
-                    return response
+                elif currencyname.lower() == "ltc" or currencyname.lower() == "eth":
+                    pass
         response = HttpResponse(successmessage)
         return response
 

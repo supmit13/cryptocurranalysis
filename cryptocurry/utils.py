@@ -32,6 +32,10 @@ from django.contrib.sites.models import get_current_site
 from django.contrib.sessions.backends.db import SessionStore
 
 from django.core.mail import send_mail
+try:
+    from json.decoder import JSONDecodeError as JSONError
+except ImportError:
+    JSONError = ValueError
 
 
 hextoascii = { '%3C' : '<', '%3E' : '>', '%20' : ' ', '%22' : '"', '%5B' : '[', '%5D' : ']', '%5C' : '\\', '%3A' : ':', '%3B' : ';', '%28' : '(', '%29' : ')', '%2D' : '-', '%2B' : '+', }
@@ -605,4 +609,15 @@ def check_currency_limits(userid, currencyname):
 
 currmap = {'Binance Coin' : 'bnb', 'Bitcoin' : 'btc',  'EOS' : 'eos', 'Litecoin' : 'ltc', 'Ripple' : 'xrp', 'Ethereum' : 'eth', 'Bitcoin Cash' : 'bch', 'Ethereum Classic' : 'etc', 'Monero' : 'xmr', 'Stellar' : 'xlm', 'Bitcoin Gold' : 'btg', 'NEO' : 'neo' }
 
+
+def get_valid_json(request, allow_204=False):
+    if request.status_code == 429:
+        raise RateLimitError('Status Code 429', request.text)
+    elif request.status_code == 204 and allow_204:
+        return True
+    try:
+        return request.json()
+    except JSONError as error:
+        msg = 'JSON deserialization failed: {}'.format(str(error))
+        raise requests.exceptions.ContentDecodingError(msg)
 
