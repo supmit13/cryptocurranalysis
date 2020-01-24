@@ -1001,8 +1001,11 @@ function linkaddresstowallet(){
             if(responseparts.length > 0 && responseparts[1] == "err"){
 		//alert(responseparts[2]);
 		responseparts[2] = "<span style='color:#AA0000;font-weight:bold;'>" + responseparts[2] + "</span>";
+		statusmsg.innerHTML = responseparts[2];
 	    }
-	    statusmsg.innerHTML = responseparts[2];
+	    else{
+		statusmsg.innerHTML = xmlhttp.responseText;
+	    }
         }
     }
     targeturl = document.address_wallet_form.action;

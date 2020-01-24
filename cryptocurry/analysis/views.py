@@ -2846,7 +2846,6 @@ def add_addresses_to_wallet(request):
                     addresslimit = NUM_ADDRESSES_PER_WALLET_PLATINUM
                 else:
                     pass
-                
                 # Now, send a request with the necessary params to the API hook to keep blockcypher in sync.
                 # If we reach here, it means that the named wallet is owned by the user requesting to add the address.
                 # Let's oblige her/him. For every address, a new document will be added to the 'wallets' collection.
@@ -2867,7 +2866,7 @@ def add_addresses_to_wallet(request):
                             if DEBUG:
                                 print("Address(es) added successfully to the target wallet.")
                         except:
-                            message = "Couldn't add the address to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
+                            message = "msg#|#err#|#Couldn't add the address to the wallet - Error: %s\n"%sys.exc_info()[1].__str__()
                             response = HttpResponse(response)
                             return response
                     else:
@@ -2998,9 +2997,14 @@ def showwalletspage(request):
         response = HttpResponse(message)
         return response
     message += "<div style='color:#0000AA;' id='walletslist'>You have the following wallets:<br />"
+    walletsdict = {}
     for r in rec:
         walletname = r["wallet_name"]
         currency = r["currencyname"]
+        if walletsdict.has_key(walletname):
+            continue
+        else:
+            walletsdict[walletname] = currency
         message += "<a href='#/' onClick=\"javascript:showwalletdetails('%s', '%s');\" style='color:#0000AA;font-weight:bold;'>%s (%s)</a><br />"%(userid, walletname, walletname, currency)
     message += "</div>"
     response = HttpResponse(message)
@@ -3133,7 +3137,7 @@ def delete_addresses(request):
     if request.POST.has_key('walletname'):
         walletname = request.POST['walletname']
     else:
-        message = "The name of the wallet to query was not found. Please contact the support staff with the userid '%s' and wallet name '%s' at support@cryptocurry.me"%(userid, walletname)
+        message = "<span style='color:#AA0000;font-weight:bold'>The name of the wallet to query was not found. Please contact the support staff with the userid '%s' and wallet name '%s' at support@cryptocurry.me</span>"%(userid, walletname)
         response = HttpResponse(message)
         return response
     addresses = []
@@ -3174,9 +3178,11 @@ def delete_addresses(request):
                 db.wallets.remove({'wallet_name' : walletname, 'wallet_address' : vkaddr, 'userid' : userid})
             else:
                 if blockcypher_response.status == 404:
-                    message += "Could not remove the address from the wallets collection. The address doesn't exist in the given wallet. Please contact support at support@crytocurry.com with the following information: wallet name, address, and response status.<br />"
+                    message += "<span style='color:#AA0000;font-weight:bold'>Could not remove the address from the wallets collection. The address doesn't exist in the given wallet. Please contact support at support@crytocurry.com with the following information: wallet name, address, and username.</span><br />"
+                    # Since the address doesn't exist in the wallet for the API, we should delete it from our DB too.
+                    db.wallets.remove({'wallet_name' : walletname, 'wallet_address' : vkaddr, 'userid' : userid})
                 else:
-                    message += "Could not remove the address from the wallets collection. The status code was '%s'. Please contact support at support@crytocurry.com with the following information: wallet name, address, and response status.<br />"%(str(blockcypher_response.status))
+                    message += "<span style='color:#AA0000;font-weight:bold'>Could not remove the address from the wallets collection. The status code was '%s'. Please contact support at support@crytocurry.com with the following information: wallet name, address, and response status.</span><br />"%(str(blockcypher_response.status))
         except:
             message += "<span style='color:#AA0000;font-weight:bold'>This address could not be removed from the wallet. The error encountered was '%s'.</span><br />"%(sys.exc_info()[1].__str__())
     if len(message) == 0: # No errors were commited during deletion of the given address(es).
@@ -3258,7 +3264,9 @@ def deletewallet(request):
             db.wallets.remove({'wallet_name' : walletname, 'userid' : userid})
         else:
             if blockcypher_response.status == 404:
-                message += "<span style='color:#AA0000;font-weight:bold'>Could not remove the wallet from the wallets collection. The selected wallet doesn't exist. Please contact support at support@crytocurry.com with the following information: wallet name and response status.</span><br />"
+                message += "<span style='color:#AA0000;font-weight:bold'>Could not remove the wallet from the wallets collection. The selected wallet doesn't exist. Please contact support at support@crytocurry.com with the following information: wallet name and username or userid.</span><br />"
+                # Since the wallet doesn't exist for the API, we need to delete it from the database at our end
+                db.wallets.remove({'wallet_name' : walletname, 'userid' : userid})
             else:
                 message += "<span style='color:#AA0000;font-weight:bold'>Could not remove the wallet from the wallets collection. The status code was '%s'. Please contact support at support@crytocurry.com with the following information: wallet name and response status.</span><br />"%(str(blockcypher_response.status))
     except:
@@ -3285,10 +3293,11 @@ def buysellcrypto(request):
 def exchangecryptocurrency(request):
     """
     'exchangecryptocurrency' allows user to buy another cryptocurrency with
-    whatever cryptocurrency she/he possesses. This has nothing to do with
+    whatever cryptocurrency the user possesses. This has nothing to do with
     physical money.
     """
     pass
+
 
 @utils.is_session_valid
 @utils.session_location_match
@@ -3301,7 +3310,6 @@ def payments(request):
     will grow phenomenally in the future.
     """
     pass
-
 
 
 @utils.is_session_valid

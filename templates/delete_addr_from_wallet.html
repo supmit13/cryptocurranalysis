@@ -35,7 +35,7 @@ function deleteaddresses(){
     	formurl = "{{hosturl}}/cryptocurry/addresses/deleteaddresses/";
     	xmlhttp.open("POST",formurl,true); // Make it an ajax call.
     	xmlhttp.send(postdata);
-	processindicator.innerHTML = "<img src='static/images/loading_small.gif'>Processing the delete request... Might take a while depending upon the number of requests the server is getting at this moment. We are doing our best.";
+	processindicator.innerHTML = "<img src='static/images/loading_small.gif'><span style='color:#0000AA;font-weight:bold'>Processing the delete request... Might take a while depending upon the number of requests the server is getting at this moment. We are doing our best.</span>";
     }
     else{
 	//Do nothing
