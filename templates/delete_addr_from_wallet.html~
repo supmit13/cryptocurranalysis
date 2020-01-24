@@ -1,0 +1,126 @@
+<html>
+<head><title>Delete Wallet Address Form</title>
+<script type='text/javascript' id='deletescript'>
+
+function deleteaddresses(){
+    yn = confirm("Do you want to delete the selected address? Please note that if you delete it, it will no longer be accessible and the amount of currencies in that account will be lost forever. You have been warned.");
+    if(yn){// code to call the deletion view
+	wallet = document.getElementById('wallet');
+    	selwallet = wallet.options[wallet.options.selectedIndex].value;
+    	walletaddress = document.getElementById('walletaddress');
+	seladdresses = [];
+        for(i=0;i < walletaddress.options.length;i++){
+	    if(walletaddress.options[i].selected){
+		seladdresses.push(walletaddress.options[i].value);
+	    }
+	}
+    	// Create a xmlhttprequest using seladdresses
+	postdata = "csrfmiddlewaretoken=" + document.deladdrfrmwlt.csrfmiddlewaretoken.value + "&walletname=" + selwallet + "&addresses=";
+	seladdressesstr = seladdresses.join(";");
+	postdata += seladdressesstr;
+	var xmlhttp;
+    	if (window.XMLHttpRequest){
+	    xmlhttp=new XMLHttpRequest();
+    	}
+    	else{
+	    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    	}
+	processindicator = document.getElementById('processindicator');
+    	xmlhttp.onreadystatechange = function(){
+    	    if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    	processindicator.innerHTML = "";
+	    	processindicator.innerHTML = xmlhttp.responseText;
+	    }
+    	}
+    	formurl = "{{hosturl}}/cryptocurry/addresses/deleteaddresses/";
+    	xmlhttp.open("POST",formurl,true); // Make it an ajax call.
+    	xmlhttp.send(postdata);
+	processindicator.innerHTML = "<img src='static/images/loading_small.gif'>Processing the delete request... Might take a while depending upon the number of requests the server is getting at this moment. We are doing our best.";
+    }
+    else{
+	//Do nothing
+    }
+}
+
+
+function canceloperation(){
+    yn = confirm("Do you want to cancel this operation? This will close the address deletion form content.");
+    if(yn){
+        selectwallettodeletediv = document.getElementById('selectwallettodelete');
+        selectwallettodeletediv.innerHTML = "";
+        listaddressesdiv = document.getElementById('listaddresses');
+        listaddressesdiv.innerHTML = "";
+    }
+    else{ 
+	//Do nothing
+    }
+}
+
+
+function displayaddresses(){
+    wallet = document.getElementById('wallet');
+    selwallet = wallet.options[wallet.options.selectedIndex].value;
+    walletaddress = document.getElementById('walletaddress');
+    // Clear all previous wallet addresses first.
+    //alert(walletaddress.options.length);
+    for(i=0;i < walletaddress.options.length;){
+	walletaddress.remove(i);
+ 	if(walletaddress.options.length == 0){
+	    break;
+	}
+    }
+    for(i=0;i < 100; i++){ // This is a hack to get out of the template for loop once a match of the cryptocurrency is found.
+			   // If there are more than 100 cryptocurrencies that we support in the future, this loop needs to
+			   // have the limit i < 100 changed appropriately. #important_limit.
+	    {% for wlt, addrs in walletsaddrdict.items %}
+		if(selwallet == "{{wlt}}"){
+		    {% for addr in addrs %}
+		    	walletaddress.options[walletaddress.options.length] = new Option('{{addr}}', '{{addr}}');
+		    {% endfor %}
+		    break;
+		}
+	    {% endfor %}
+    }
+    return("");
+}
+
+</script>
+<style>
+#semitrans2 {
+  position: fixed; /* Sit on top of the page content */
+  display: none; /* Hidden by default */
+  width: 100%; /* Full width (cover the whole page) */
+  height: 100%; /* Full height (cover the whole page) */
+  top: 0; 
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5); /* Black background with opacity */
+  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  cursor: pointer; /* Add a pointer on hover */
+}
+</style>
+</head>
+<body>
+<form name='deladdrfrmwlt' method='POST' action=''>
+<div id='selectwallettodelete' style='color:#0000AA;font-weight:bold;text-decoration:underline;'>
+Please Select Wallet First: 
+<select name='wallet' id='wallet' onchange='javascript:s = document.getElementById("deletescript");eval(s.innerHTML); displayaddresses();'>
+{% for walletname,currname in walletscurrdict.items %}
+    <option value='{{walletname}}'>{{walletname}}</option>
+{% endfor %}
+</select>
+</div>
+<br />
+<div id='listaddresses' style='color:#0000AA;font-weight:bold;text-decoration:underline;'>
+Select Address(es) to Delete:
+<select name='walletaddress' id='walletaddress' multi size=3>
+<option value=''>Select Addresses</option>
+</select>
+</div>
+<br />
+{% csrf_token %}
+<div style='align:center;' id='closeoverlay();'><input type='button' name='deleteaddr' value='Delete Selected Address(es)' onClick='javascript:s = document.getElementById("deletescript");eval(s.innerHTML);deleteaddresses();'>&nbsp;&nbsp;<input type='button' name='closeoverlay' value='Close' onClick='javascript:closethis();'></div><div id='processindicator'></div>
+</form>
+</body>
+

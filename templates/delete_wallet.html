@@ -1,0 +1,72 @@
+<html>
+<head><title>Delete Wallet Form</title>
+<script type='text/javascript' id='deletescript'>
+
+function deletewallet(){
+    yn = confirm("Do you want to delete the selected wallet? Please note that if you delete it, it will no longer be accessible and the amount of currencies in that wallet will be lost forever. This is a permanent destruction of your assets. You have been warned.");
+    if(yn){// code to call the deletion view
+	wallet = document.getElementById('wallet');
+    	selwallet = wallet.options[wallet.options.selectedIndex].value;
+    	currname = "";
+        walletparts = selwallet.split("##");
+        walletname = walletparts[0];
+        currname= walletparts[1];
+    	// Create a xmlhttprequest using seladdresses
+	postdata = "csrfmiddlewaretoken=" + document.frmdeletewallet.csrfmiddlewaretoken.value + "&walletname=" + walletname + "&currency=" + currname;
+	var xmlhttp;
+    	if (window.XMLHttpRequest){
+	    xmlhttp=new XMLHttpRequest();
+    	}
+    	else{
+	    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    	}
+	processindicator = document.getElementById('processindicator');
+    	xmlhttp.onreadystatechange = function(){
+    	    if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    	processindicator.innerHTML = "";
+	    	processindicator.innerHTML = xmlhttp.responseText;
+	    }
+    	}
+    	formurl = "{{hosturl}}/cryptocurry/wallets/deletewallet/";
+    	xmlhttp.open("POST",formurl,true); // Make it an ajax call.
+    	xmlhttp.send(postdata);
+	processindicator.innerHTML = "<img src='static/images/loading_small.gif'><span style='color:#0000AA;font-weight:bold'>Processing the delete request... Might take a while depending upon the number of requests the server is getting at this moment. We are doing our best.</span>";
+    }
+    else{
+	//Do nothing
+    }
+}
+
+</script>
+<style>
+#semitrans2 {
+  position: fixed; /* Sit on top of the page content */
+  display: none; /* Hidden by default */
+  width: 100%; /* Full width (cover the whole page) */
+  height: 100%; /* Full height (cover the whole page) */
+  top: 0; 
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5); /* Black background with opacity */
+  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  cursor: pointer; /* Add a pointer on hover */
+}
+</style>
+</head>
+<body>
+<form name='frmdeletewallet' method='POST' action=''>
+<div id='selectwallettodelete' style='color:#0000AA;font-weight:bold;text-decoration:underline;'>
+Please Select Wallet to Delete: 
+<select name='wallet' id='wallet'>
+{% for walletname,currname in walletscurrdict.items %}
+    <option value='{{walletname}}##{{currname}}'>{{walletname}}</option>
+{% endfor %}
+</select>
+</div>
+<br />
+{% csrf_token %}
+<div style='align:center;' id='closeoverlay();'><input type='button' name='btndeletewallet' value='Delete Selected Wallet' onClick='javascript:s = document.getElementById("deletescript");eval(s.innerHTML);deletewallet();'>&nbsp;&nbsp;<input type='button' name='closeoverlay' value='Close' onClick='javascript:closethis();'></div><div id='processindicator'></div>
+</form>
+</body>
+

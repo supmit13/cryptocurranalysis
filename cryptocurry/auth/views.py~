@@ -686,22 +686,7 @@ def profileimagechange(request):
     return HttpResponse(message)
 
 
-@utils.is_session_valid
-@utils.session_location_match
-@csrf_protect
-def removeprofileimage(request):
-    if request.method != 'POST':
-        return HttpResponse("0")
-    sesscode = request.COOKIES['sessioncode']
-    userid = request.COOKIES['userid']
-    db = utils.get_mongo_client()
-    rec = db.users.find({'userid' : userid})
-    if not rec or rec.count() < 1:
-        return HttpResponse("0")
-    username = rec[0]['username']
-    profile_img_path = settings.USERDATA_PATH + os.path.sep + username + os.path.sep + "images"
-    shutil.rmtree(profile_img_path)
-    return HttpResponse("1")
+
 
 
 

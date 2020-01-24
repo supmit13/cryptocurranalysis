@@ -1,0 +1,10 @@
+<form name='deladdrfrmwlt' method='POST' action=''>
+<div id='selectwallettodelete' style='color:#0000AA;font-weight:bold;text-decoration:underline'>Select Wallet: 
+<select name='wallet' onSelect='javascript:displayaddresses();'>
+{% for walletname,currname in walletscurrdict.items %}
+    <option value='{{walletname}}'>{{walletname}}</option>
+{% endfor %}
+</select>
+</div>
+</form>
+

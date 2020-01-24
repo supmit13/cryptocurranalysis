@@ -1,0 +1,40 @@
+eval(
+function deleteaddresses(){
+   yn = confirm("Do you want to delete the selected address? Please note that if you delete it, it will no longer be accessible and the amount of currencies in that account will be lost forever. You have been warned.");
+   if(yn){// code to call the deletion view
+       alert("You have chosen to delete the address.");
+   }
+   else{
+	//Do nothing
+   }
+}
+
+
+function canceloperation(){
+    yn = confirm("Do you want to cancel this operation? This will close the address deletion form content.");
+    if(yn){
+        selectwallettodeletediv = document.getElementById('selectwallettodelete');
+        selectwallettodeletediv.innerHTML = "";
+        listaddressesdiv = document.getElementById('listaddresses');
+        listaddressesdiv.innerHTML = "";
+    }
+    else{ //Do nothing
+    }
+}
+
+
+function displayaddresses(){
+    selwallet = document.deladdrfrmwlt.wallet.options[document.deladdrfrmwlt.wallet.options.selectedIndex].value;
+    //alert(selwallet);
+    listaddressesdiv = document.getElementById('listaddresses');
+    listaddressesdiv.innerHTML = "Select Address(es) to Delete:";
+    alert({{walletsaddrdict}});
+    listaddressesdiv.innerHTML += "<select name='walletaddress' multi>";
+    {% for address in walletsaddrdict.selwallet %}
+        listaddressesdiv.innerHTML += "<option value='{{address}}'>{{address}}</option>";
+    {% endfor %}
+    listaddressesdiv.innerHTML += "</select><br />";
+    listaddressesdiv.innerHTML += "<input type='button' name='btndeleteaddr' value='Delete Selected Address(es)' onClick='javascript:deleteaddresses(\'" + selwallet + "\');'>&nbsp;&nbsp;<input type='button' value='Cancel Operation' name='btncancel' onClick='javascript:canceloperation();'>";
+}
+);
+

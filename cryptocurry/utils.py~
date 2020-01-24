@@ -34,7 +34,7 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.core.mail import send_mail
 try:
     from json.decoder import JSONDecodeError as JSONError
-except ImportError: 
+except ImportError:
     JSONError = ValueError
 
 
@@ -460,6 +460,26 @@ def populate_ifacedict_basic(request):
              'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
              'hosturl' : gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH, 'availabilityURL' : AVAILABILITY_URL, 'register_url' : REGISTER_URL, 'profile_image_tag' :  prof_img_tag}
+    allwalletsdict = {}
+    walletcurrdict = {}
+    userid = request.COOKIES["userid"]
+    db = get_mongo_client()
+    rec = db.wallets.find({'userid' : userid})
+    for r in rec:
+        walletname = str(r['wallet_name'])
+        currname = str(r['currencyname'])
+        addr = str(r['wallet_address'])
+        if allwalletsdict.has_key(walletname):
+            addresseslist = allwalletsdict[walletname]
+            addresseslist.append(addr)
+            allwalletsdict[walletname] = addresseslist
+        else:
+            allwalletsdict[walletname] = [addr,]
+            walletcurrdict[walletname] = currname
+    c['walletscurrdict'] = walletcurrdict
+    if DEBUG:
+        print allwalletsdict
+    c['walletsaddrdict'] = allwalletsdict
     return c
 
 

@@ -13,7 +13,7 @@ import cPickle, urlparse
 import decimal, math, base64
 from passlib.hash import pbkdf2_sha256 # To create hash of passwords
 from pandas.plotting import register_matplotlib_converters
-import urllib, urllib2
+import urllib, urllib2, httplib
 import requests
 
 import cryptocurry.errors as err
@@ -720,7 +720,6 @@ def visualize_ohlcv_voltraded(request):
             currency_times[currname] = [datetimeentry, ]
             alldatetimes.append(datetimeentry)
             max_rows = 1
-    
     datarecs = []
     currencynames = []
     datelists = []
@@ -2635,34 +2634,44 @@ def create_wallet(request):
     http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
     postdata = {'name' : walletname, 'addresses' : [address]}
     postdatastr = json.dumps(postdata)
-    #lcurrname = currencyname.lower()
-    lcurrname = "btc" # DOING THIS FOR NOW AS BLOCKCYPHER ONLY CREATES WALLETS WITH 'btc'. STUPID BLOCKCYPHER!!!!
-    if hdwallet == '0' or not hdwallet:
-        #api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
-        api_endpoint = "https://api.blockcypher.com/v1/" + lcurrname + "/main/wallets?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
+    lcurrname = currencyname.lower()
+    if lcurrname == "btc":
+        if hdwallet == '0' or not hdwallet:
+            api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
+        else:
+            api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets/hd?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
+        if DEBUG:
+            print("API Endpoint: %s\n"%api_endpoint)
+        opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), utils.NoRedirectHandler())
+        blockcypher_request = urllib2.Request(api_endpoint, postdatastr, http_headers)
+        blockcypher_response = None
+        try:
+            blockcypher_response = opener.open(blockcypher_request)
+        except:
+            print "msg:err:Could not get the blockcypher wallet data - Error= %s\n"%sys.exc_info()[1].__str__()
+            message = "msg:err:Could not get the blockcypher wallet data - Error= %s\n"%sys.exc_info()[1].__str__()
+            response = HttpResponse(message)
+            return response
+        if not blockcypher_response:
+            print "msg:err:Could not retrieve response from the request to '%s'\n"%api_endpoint
+            message = "msg:err:Could not retrieve response from the request to '%s'\n"%api_endpoint
+            response = HttpResponse(message)
+            return response
+        blockcypher_data_json = blockcypher_response.read()
+        if DEBUG:
+            print(blockcypher_data_json)
+    elif lcurrname == "eth": #Blockcypher will handle it. Note, Ethereum wallets are basically addresses with cryptographic pair of keys.
+        # curl -sX POST https://api.blockcypher.com/v1/eth/main/addrs?token=37315496914d40a49c48316595b5e392
+        message = "msg:err:Create Wallet not implemented for this currency as yet"
+        return HttpResponse(message)
+    elif lcurrname == "ltc": # Need to handle these too. With CryptoAPIs.io
+        apikey = CRYPTOAPIS_KEY_VALUE
+        keyname = CRYPTOAPIS_KEY_NAME
+        message = "msg:err:Create Wallet not implemented for this currency as yet"
+        return HttpResponse(message)
     else:
-        api_endpoint = "https://api.blockcypher.com/v1/" + lcurrname + "/main/wallets/hd?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
-        #api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets/hd?token=" + BLOCKCYPHER_ACCOUNT_TOKEN
-    if DEBUG:
-        print("API Endpoint: %s\n"%api_endpoint)
-    opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), utils.NoRedirectHandler())
-    blockcypher_request = urllib2.Request(api_endpoint, postdatastr, http_headers)
-    blockcypher_response = None
-    try:
-        blockcypher_response = opener.open(blockcypher_request)
-    except:
-        print "msg:err:Could not get the blockcypher wallet data - Error= %s\n"%sys.exc_info()[1].__str__()
-        message = "msg:err:Could not get the blockcypher wallet data - Error= %s\n"%sys.exc_info()[1].__str__()
-        response = HttpResponse(message)
-        return response
-    if not blockcypher_response:
-        print "msg:err:Could not retrieve response from the request to '%s'\n"%api_endpoint
-        message = "msg:err:Could not retrieve response from the request to '%s'\n"%api_endpoint
-        response = HttpResponse(message)
-        return response
-    blockcypher_data_json = blockcypher_response.read()
-    if DEBUG:
-        print(blockcypher_data_json)
+        message = "msg:err:Create Wallet not implemented for this currency as yet"
+        return HttpResponse(message)
     # At this point, the wallet has been created, and we can store that in our DB with key pair and address associated with it.
     db = utils.get_mongo_client()
     timenow = datetime.datetime.now()
@@ -2791,7 +2800,7 @@ def add_addresses_to_wallet(request):
     # Now check if the wallet exist in our DB and it is owned by the user specified using the username.
     db = utils.get_mongo_client()
     recwlt = db.wallets.find({'username' : username, 'wallet_name' : walletname})
-    currencyname, balance_amt, public_key, wif, dtimestr = "", "", "", "",""
+    currencyname, balance_amt, public_key, wif, dtimestr = "btc", "", "", "",""
     if not recwlt or recwlt.count < 1:
         message = "It seems that you have specified a wrong wallet name. Either the wallet doesn't exist or you are not the owner of the wallet. Kindly rectify your mistake and try again."
         response = HtpResponse(message)
@@ -2828,7 +2837,7 @@ def add_addresses_to_wallet(request):
                     else:
                         usertype = '0' # By default, you are a 'general' member.
                 memtype = REVERSE_MEMBERSHIP_TYPES[usertype]
-                addresslimit = 2 # By default, general membership
+                addresslimit = NUM_ADDRESSES_PER_WALLET_GENERAL # By default, general membership
                 if memtype == "SILVER":
                     addresslimit = NUM_ADDRESSES_PER_WALLET_SILVER
                 elif memtype == "GOLD":
@@ -2841,8 +2850,8 @@ def add_addresses_to_wallet(request):
                 # Now, send a request with the necessary params to the API hook to keep blockcypher in sync.
                 # If we reach here, it means that the named wallet is owned by the user requesting to add the address.
                 # Let's oblige her/him. For every address, a new document will be added to the 'wallets' collection.
-                # STUPID BLOCKCYPHER CAN USE BTC ONLY:
-                if currencyname.lower() == "btc": # Dumbass blockcypher - doesn't support anything other than bitcoin. It says it supports Litecoin, but it practically doesn't. What a looser!!!
+                # STUPID BLOCKCYPHER CAN USE BTC and ETH ONLY:
+                if currencyname.lower() == "btc": # Dumbass blockcypher - doesn't support anything other than bitcoin and ethereum. It says it supports Litecoin, but it practically doesn't. What a looser!!!
                     if recwlt.count() < addresslimit:
                         params = {'token': BLOCKCYPHER_ACCOUNT_TOKEN}
                         api_endpoint = "https://api.blockcypher.com/v1/btc/main/wallets/%s/addresses"%(walletname)
@@ -2862,11 +2871,18 @@ def add_addresses_to_wallet(request):
                             response = HttpResponse(response)
                             return response
                     else:
-                        message = "msg:err:You cannot add more addresses to this wallet with your membership status. Please <a href='#/' onclick='javascript:upgrademembership();'>upgrade</a>, or contact the support staff at support@cryptocurry.me if you are a Platinum member.<br />"
+                        message = "msg#|#err#|#You cannot add more addresses to this wallet with your membership status. Please <a href='#/' style='color:#000011;font-weight:bold;text-decoration:underline;' onclick='upgrademembership();'>upgrade</a>, or contact the support staff at support@cryptocurry.me if you are a Platinum member.<br />"
                         response = HttpResponse(message)
                         return response
-                elif currencyname.lower() == "ltc" or currencyname.lower() == "eth":
-                    pass
+                elif currencyname.lower() == "eth": # This is handled by blockcypher too. Note, Ethereum wallets are basically just addresses.
+                    message = "msg#|#err#|#Process not implemented for this currency as yet"
+                    return HttpResponse(message)
+                elif currencyname.lower() == "ltc":
+                    message = "msg#|#err#|#Process not implemented for this currency as yet"
+                    return HttpResponse(message)
+                else:
+                    message = "msg#|#err#|#Process not implemented for this currency as yet"
+                    return HttpResponse(message)
         response = HttpResponse(successmessage)
         return response
 
@@ -2900,6 +2916,7 @@ def create_new_address(request):
         return response
     # Now create a HTTP(S) request to the address creation endpoint.
     api_endpoint = "https://api.blockcypher.com/v1/btc/main/addrs"
+    addr_type = "btc"
     encoded_data = "" # Empty POST parameters.
     http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
     blockcypher_request = urllib2.Request(api_endpoint, encoded_data, http_headers)
@@ -2924,7 +2941,7 @@ def create_new_address(request):
         timenow = datetime.datetime.now()
         ts = time.time()
         dtimestr = timenow.strftime("%Y-%m-%d %H:%M:%S")
-        insertd = {'userid' : userid, 'username' : username, 'address' : address, 'publickey' : publickey, 'created' : dtimestr, 'wif' : wif, 'timestamp' : str(int(ts))}
+        insertd = {'userid' : userid, 'username' : username, 'address' : address, 'publickey' : publickey, 'created' : dtimestr, 'wif' : wif, 'timestamp' : str(int(ts)), 'addrtype' : addr_type}
         try:
             db.address.insert_one(insertd) # TODO: Dillema as to whether to store the private key in the DB or not. (Right now, we don't store the private key in our DB).
         except:
@@ -3037,9 +3054,267 @@ def getwalletdetails(request):
     walletdictstr = json.dumps(walletdict)
     return HttpResponse(walletdictstr)
 
+
 @utils.is_session_valid
 @utils.session_location_match
 @csrf_protect
 def upgrademembership(request):
     pass
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def delete_addr_from_wallet(request):
+    """
+    This method helps display the deletion screen for all currencies.
+    """
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "<span id='sessterm' style='color:#AA0000;font-weight:bold;'>Either you are not logged in or your session has been corrupted. Please login and try again.</span>"
+        response = HttpResponse(message)
+        return response
+    tmpl = get_template("delete_addr_from_wallet.html")
+    c = {'userid' : userid }
+    c['hosturl'] = utils.gethosturl(request)
+    # FIND OUT ALL WALLETS THIS USER POSSESSES
+    db = utils.get_mongo_client()
+    rec = db.wallets.find({'userid' : userid})
+    if not rec or rec.count() < 1:
+        message = "<span style='color:#AA0000;font-weight:bold'>This user doesn't have any wallets</span>"
+        return HttpResponse(message)
+    allwalletsdict = {}
+    walletcurrdict = {}
+    for r in rec:
+        walletname = str(r['wallet_name'])
+        currname = str(r['currencyname'])
+        addr = str(r['wallet_address'])
+        if allwalletsdict.has_key(walletname):
+            addresseslist = allwalletsdict[walletname]
+            addresseslist.append(addr)
+            allwalletsdict[walletname] = addresseslist
+        else:
+            allwalletsdict[walletname] = [addr,]
+            walletcurrdict[walletname] = currname
+    c['walletscurrdict'] = walletcurrdict
+    if DEBUG:
+        print allwalletsdict
+    c['walletsaddrdict'] = allwalletsdict
+    c.update(csrf(request))
+    cxt = Context(c)
+    deladdrfrmwallethtml = tmpl.render(cxt)
+    for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+        deladdrfrmwallethtml = deladdrfrmwallethtml.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
+    return HttpResponse(deladdrfrmwallethtml)
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def delete_addresses(request):
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "<span id='sessterm' style='color:#AA0000;font-weight:bold;'>Either you are not logged in or your session has been corrupted. Please login and try again.</span>"
+        response = HttpResponse(message)
+        return response
+    # Remember to get the address type (currency name/code) by matching the address param in the "address" collection.
+    # The 'addrtype' attribute will provide the address type (currency code). If there is no 'addrtype' attribute,
+    # then the currency code is "btc" (by default). Now, start by getting the POST parameters.
+    # API to hit:https://api.blockcypher.com/v1/<CURRENCY_CODE>/main/wallets/<WALLETNAME>/addresses?token=USERTOKEN&address=<ADDRESSES_VALUES>
+    walletname = ""
+    if request.POST.has_key('walletname'):
+        walletname = request.POST['walletname']
+    else:
+        message = "The name of the wallet to query was not found. Please contact the support staff with the userid '%s' and wallet name '%s' at support@cryptocurry.me"%(userid, walletname)
+        response = HttpResponse(message)
+        return response
+    addresses = []
+    if request.POST.has_key('addresses'):
+        addresses_str = request.POST['addresses']
+    if ";" in addresses_str:
+        addressses = addresses_str.split(";")
+    else:
+        addresses.append(addresses_str)
+    db = utils.get_mongo_client()
+    # Make sure the wallet with the given name exists and belongs  to the logged in user
+    rec = db.wallets.find({'wallet_name' : walletname, 'userid' : userid})
+    if not rec or rec.count() < 1:
+        message = "<span style='color:#AA0000;font-weight:bold'>This wallet doesn't exist for the logged in user.</span>"
+        return HttpResponse(message)
+    # Also check if the wallet contains the given addresses
+    validaddresses = {}
+    for addr in addresses:
+        rec = db.wallets.find({'wallet_name' : walletname, 'wallet_address' : addr, 'userid' : userid})
+        if not rec or rec.count() < 1:
+            print("The wallet address doesn't exist in the wallets collection for the logged in user")
+            continue
+        for r in rec:
+            validaddresses[addr] = r["currencyname"] # Actually, we expect only one record here.
+    # Now validaddresses contains all valid addresses that can be deleted. The keys are the addresses and the values are the address types.
+    http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'application/json', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : BLOCKCYPHER_HOST }
+    message = ""
+    for vkaddr in validaddresses.keys():
+        addrtype = validaddresses[vkaddr]
+        if not addrtype:
+            addrtype = "btc"
+        blockcypher_response = None
+        try:
+            conn = httplib.HTTPSConnection('api.blockcypher.com')  # Marked as 'https' request.
+            conn.request('DELETE', "/v1/%s/main/wallets/%s/addresses?token=%s&address=%s"%(addrtype, walletname, BLOCKCYPHER_ACCOUNT_TOKEN, vkaddr))
+            blockcypher_response = conn.getresponse()
+            if blockcypher_response.status == 204: # Remove a document from wallets collection
+                db.wallets.remove({'wallet_name' : walletname, 'wallet_address' : vkaddr, 'userid' : userid})
+            else:
+                if blockcypher_response.status == 404:
+                    message += "Could not remove the address from the wallets collection. The address doesn't exist in the given wallet. Please contact support at support@crytocurry.com with the following information: wallet name, address, and response status.<br />"
+                else:
+                    message += "Could not remove the address from the wallets collection. The status code was '%s'. Please contact support at support@crytocurry.com with the following information: wallet name, address, and response status.<br />"%(str(blockcypher_response.status))
+        except:
+            message += "<span style='color:#AA0000;font-weight:bold'>This address could not be removed from the wallet. The error encountered was '%s'.</span><br />"%(sys.exc_info()[1].__str__())
+    if len(message) == 0: # No errors were commited during deletion of the given address(es).
+        message = "<span style='color:#0000AA;font-weight:bold'>All address(es) were correctly deleted for given wallet. Please note that the address(es) was/were deleted for the specified wallet. The address will continue to exist until you actually delete the address itself.</span>"
+    return HttpResponse(message)
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def show_delete_wallet_form(request):
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "<span id='sessterm' style='color:#AA0000;font-weight:bold;'>Either you are not logged in or your session has been corrupted. Please login and try again.</span>"
+        response = HttpResponse(message)
+        return response
+    tmpl = get_template("delete_wallet.html")
+    c = {'userid' : userid }
+    c['hosturl'] = utils.gethosturl(request)
+    # FIND OUT ALL WALLETS THIS USER POSSESSES
+    db = utils.get_mongo_client()
+    rec = db.wallets.find({'userid' : userid})
+    if not rec or rec.count() < 1:
+        message = "<span style='color:#AA0000;font-weight:bold'>This user doesn't have any wallets <input type='button' name='btnclose' value='Close' onclick='javascript:closethis();'></span>"
+        return HttpResponse(message)
+    walletcurrdict = {}
+    for r in rec:
+        walletname = str(r['wallet_name'])
+        currname = str(r['currencyname'])
+        if not walletcurrdict.has_key(walletname):
+            walletcurrdict[walletname] = currname
+    c['walletscurrdict'] = walletcurrdict
+    c.update(csrf(request))
+    cxt = Context(c)
+    delwallethtml = tmpl.render(cxt)
+    for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+        delwallethtml = delwallethtml.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
+    return HttpResponse(delwallethtml)
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def deletewallet(request):
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "<span id='sessterm' style='color:#AA0000;font-weight:bold;'>Either you are not logged in or your session has been corrupted. Please login and try again.</span>"
+        response = HttpResponse(message)
+        return response
+    if request.POST.has_key('walletname'):
+        walletname = request.POST['walletname']
+    else:
+        message = "<span style='color:#AA0000;font-weight:bold'>The name of the wallet to query was not found. Please contact the support staff with the userid '%s' and wallet name '%s' at support@cryptocurry.me</span>"%(userid, walletname)
+        response = HttpResponse(message)
+        return response
+    currency = "btc"
+    db = utils.get_mongo_client()
+    if request.POST.has_key("currency"):
+        currency = request.POST['currency']
+    # API method and endpoint: DELETE https://api.blockcypher.com/v1/<CURRENCY_CODE>/main/wallets/<WALLET_NAME>?token=YOURTOKEN
+    message = ""
+    try:
+        conn = httplib.HTTPSConnection('api.blockcypher.com')  # Marked as 'https' request.
+        if DEBUG:
+            print("/v1/%s/main/wallets/%s?token=%s"%(currency, walletname, BLOCKCYPHER_ACCOUNT_TOKEN))
+        conn.request('DELETE', "/v1/%s/main/wallets/%s?token=%s"%(currency, walletname, BLOCKCYPHER_ACCOUNT_TOKEN))
+        blockcypher_response = conn.getresponse()
+        if DEBUG:
+            print("STATUS CODE: %s\n"%blockcypher_response.status)
+        if blockcypher_response.status == 204: # Remove all document satisfying the below condition from wallets collection
+            db.wallets.remove({'wallet_name' : walletname, 'userid' : userid})
+        else:
+            if blockcypher_response.status == 404:
+                message += "<span style='color:#AA0000;font-weight:bold'>Could not remove the wallet from the wallets collection. The selected wallet doesn't exist. Please contact support at support@crytocurry.com with the following information: wallet name and response status.</span><br />"
+            else:
+                message += "<span style='color:#AA0000;font-weight:bold'>Could not remove the wallet from the wallets collection. The status code was '%s'. Please contact support at support@crytocurry.com with the following information: wallet name and response status.</span><br />"%(str(blockcypher_response.status))
+    except:
+        message += "<span style='color:#AA0000;font-weight:bold'>This wallet could not be removed. The error encountered was '%s'.</span><br />"%(sys.exc_info()[1].__str__())
+    if len(message) == 0: # No errors were commited during deletion of the given address(es).
+        message = "<span style='color:#0000AA;font-weight:bold'>The selected wallet has been permanently deleted. If you think this is a mistake, please contact support@cryptocurry.com immediately. However, as you had been sufficiently warned, we cannot guarantee that this change can be undone.</span>"
+    return HttpResponse(message)
+
+## The functions defined below are part of the "transaction" processes.
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def buysellcrypto(request):
+    """
+    'buysellcrypto' allows user to either buy or sell a single cryptocurrency 
+    using physical currencies (USD, EUR, AUD, INR will be supported as of now.)
+    """
+    pass
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def exchangecryptocurrency(request):
+    """
+    'exchangecryptocurrency' allows user to buy another cryptocurrency with
+    whatever cryptocurrency she/he possesses. This has nothing to do with
+    physical money.
+    """
+    pass
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def payments(request):
+    """
+    This operation allows user to buy goods/services using crypto currencies.
+    As of now, only a select few organizations (products or services companies)
+    recognize cryptocurrency as a valid mode of payment. Expecting this list
+    will grow phenomenally in the future.
+    """
+    pass
+
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def calculator(request):
+    """
+    This operation calculates various cryptocurrency values and would let the
+    user to know how much money is owned in terms of some other cryptocurrency
+    or in terms of physical money (USD, EUR, AUD, INR)
+    """
+    pass
+
+
+
 

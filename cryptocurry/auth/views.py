@@ -166,8 +166,7 @@ def register(request):
              'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
              'hosturl' : utils.gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH, 'availabilityURL' : utils.AVAILABILITY_URL, 'usertypes' : usertypes }
-        c.update(csrf(request))
-        
+        c.update(csrf(request))        
         cxt = Context(c)
         registerhtml = tmpl.render(cxt)
         for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():

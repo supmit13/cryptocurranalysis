@@ -44,7 +44,7 @@ def getmongoclient():
 
 
 def scrapeFromInvest():
-    url = "https://www.investing.com/crypto/"
+    url = "https://www.investing.com/crypto/currencies"
     opener = urllib2.build_opener(urllib2.HTTPHandler(), urllib2.HTTPSHandler(), NoRedirectHandler())
     http_headers = { 'User-Agent' : r'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36',  'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language' : 'en-US,en;q=0.8', 'Accept-Encoding' : 'gzip,deflate,sdch', 'Connection' : 'keep-alive', 'Host' : 'www.investing.com', 'Referer' : 'https://www.google.com' }
     investing_request = urllib2.Request(url, None, http_headers)
@@ -55,7 +55,7 @@ def scrapeFromInvest():
         print "Could not get the raw cryptocurrency data - Error: %s\n"%sys.exc_info()[1].__str__()
         return False
     if not investing_response:
-        print "Could not retrieve response from the request to https://www.investing.com/crypto/"
+        print "Could not retrieve response from the request to https://www.investing.com/crypto/currencies"
         return False
     investing_data_enc = investing_response.read()
     investing_data = decodeGzippedContent(investing_data_enc)

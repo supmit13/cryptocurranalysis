@@ -82,7 +82,7 @@ function drawChart(data, source="investdb"){
       plotname = dataparsed["plotname"];
       colors = dataparsed["colors"];
       datetimeslist = dataparsed["datetimeslist"];
-      plotareadiv = document.getElementById('plotnamearea');
+      plotareadiv = document.getElementById('plotimage');
       plotimgdiv = document.getElementById('plotimage');
       currencynames = dataparsed["currencynames"];
       var keys = Object.keys(datadict);
@@ -691,12 +691,12 @@ function showwalletspage(){
     postdata = "userid=" + userid + "&csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
     xmlhttp.open("POST",walletslisturl,true); // Make it an ajax call.
     xmlhttp.send(postdata);
-    document.getElementById('contentarea').innerHTML = "<img src='static/images/loading_small.gif'><span id='walletlistwait' style='color:#0000AA;font-weight:bold'>We are opening the wallets page. Please be patient.</span>";
+    document.getElementById('contentarea').innerHTML = "<img src='static/images/loading_small.gif'><span id='walletlistwait' style='color:#0000AA;font-weight:bold'>We are opening the wallets section. Please be patient.</span>";
 }
 
 
 function closeme(){
-    divarea = document.getElementById('plotnamearea');
+    divarea = document.getElementById('plotimage');
     divarea.innerHTML = "";
 }
 
@@ -736,7 +736,7 @@ function showfloatingscreen(content){ // Display a floating screen displaying th
 
 function showwalletdetails(userid, walletname){
     //alert(walletname);
-    nameareadiv = document.getElementById('plotnamearea');
+    nameareadiv = document.getElementById('plotimage');
     var xmlhttp;
     if (window.XMLHttpRequest){
         xmlhttp=new XMLHttpRequest();
@@ -747,7 +747,7 @@ function showwalletdetails(userid, walletname){
     xmlhttp.onreadystatechange = function(){
     	if(xmlhttp.readyState == 4 && xmlhttp.status==200){
 	// xmlhttp.responseText would be a JSON object with wallet addresses as keys and [currname, balance_amt, walletaddr, public_key, last_updation, wif] as values.
-	    document.getElementById('plotnamearea').innerHTML = showfloatingscreen(xmlhttp.responseText);
+	    document.getElementById('plotimage').innerHTML = showfloatingscreen(xmlhttp.responseText);
     	}
     };
     walletslisturl = "{{hosturl}}/cryptocurry/wallets/showwalletdetails/";
@@ -916,14 +916,65 @@ function create_new_address(){
 }
 
 function delete_address_from_wallet(){
-    document.getElementById('formdiv').style.display = "";
-    alert("Delete Address from Wallet");
+    document.getElementById('transscreens').style.display = "";
+    transscreenselement = document.getElementById('transscreens');
+    //alert("Delete Address from Wallet");
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+    	if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    transscreenselement.innerHTML = xmlhttp.responseText;
+    	}
+    };
+    deleteaddrformurl = "{{hosturl}}/cryptocurry/addresses/deleteaddressfromwallet/";
+    postdata = "csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
+    xmlhttp.open("POST",deleteaddrformurl,true); // Make it an ajax call.
+    xmlhttp.send(postdata);
+    //alert(postdata);
+    document.getElementById('transscreens').innerHTML = "<img src='static/images/loading_big.gif'><div style='color:blue;font-style:italics;'>Trying to display address deletion form....</div>";
+}
+
+
+
+function closethis(){
+    transscreenselement = document.getElementById('transscreens');
+    transscreenselement.innerHTML = "";
+    transscreenselement.style.display = "none";
 }
 
 function delete_wallet(){
-    document.getElementById('formdiv').style.display = "";
-    alert("Delete Wallet");
+    yn = confirm("This is a very dangerous operation. Are you sure you want to continue?");
+    if(!yn){
+	return(""); //This is fine.
+    }
+    // If user wants to go ahead, show the wallets selection form for the user.
+    document.getElementById('transscreens').style.display = "";
+    transscreenselement = document.getElementById('transscreens');
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+    	if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    transscreenselement.innerHTML = xmlhttp.responseText;
+    	}
+    };
+    deletewalletformurl = "{{hosturl}}/cryptocurry/wallets/deletewalletform/";
+    postdata = "csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
+    xmlhttp.open("POST",deletewalletformurl,true); // Make it an ajax call.
+    xmlhttp.send(postdata);
+    //alert(postdata);
+    document.getElementById('transscreens').innerHTML = "<img src='static/images/loading_big.gif'><div style='color:blue;font-style:italics;'>Trying to display wallet deletion form....</div>";
 }
+
 
 function show_transaction_options(){
     document.getElementById('formdiv').style.display = "";
@@ -945,7 +996,13 @@ function linkaddresstowallet(){
     xmlhttp.onreadystatechange = function(){
     	if(xmlhttp.readyState == 4 && xmlhttp.status==200){
 	    statusmsg.innerHTML = "";
-	    statusmsg.innerHTML = xmlhttp.responseText;
+	    responseparts = xmlhttp.responseText.split("#|#");
+	    //alert(xmlhttp.responseText);
+            if(responseparts.length > 0 && responseparts[1] == "err"){
+		//alert(responseparts[2]);
+		responseparts[2] = "<span style='color:#AA0000;font-weight:bold;'>" + responseparts[2] + "</span>";
+	    }
+	    statusmsg.innerHTML = responseparts[2];
         }
     }
     targeturl = document.address_wallet_form.action;
@@ -958,10 +1015,46 @@ function linkaddresstowallet(){
     xmlhttp.send(postdata);
     statusmsg.innerHTML = "<img src='static/images/loading_small.gif'><span id='statusspanmsg' style='color:#0000AA;font-weight:bold;'>Please be patient while we link the selected address(es) to the selected wallet.</span>";
 }
+
+
+function displayaddresses2(){
+    selwallet = document.deladdrfrmwlt.wallet.options[document.deladdrfrmwlt.wallet.options.selectedIndex].value;
+    //alert(selwallet);
+    listaddressesdiv = document.getElementById('listaddresses');
+    
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+    	if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    listaddressesdiv.innerHTML = "Select Address(es) to Delete:";
+	    alert({{walletsaddrdict}});
+	    alert({{walletname}});
+	    listaddressesdiv.innerHTML += "<select name='walletaddress' multi>";
+	    {% for walletname, addresses in walletsaddrdict.items %}
+		{% for addr in addresses %}
+		listaddressesdiv.innerHTML += "<option value='{{addr}}'>{{addr}}</option>";
+		{% endfor %}
+	    {% endfor %}
+	    listaddressesdiv.innerHTML += "</select><br />";
+	    listaddressesdiv.innerHTML += "<input type='button' name='btndeleteaddr' value='Delete Selected Address(es)' onClick='javascript:deleteaddresses(\'" + selwallet + "\');'>&nbsp;&nbsp;<input type='button' value='Cancel Operation' name='btncancel' onClick='javascript:canceloperation();'>";
+        }
+    }
+    targeturl = "{{hosturl}}/cryptocurry/addresses/getaddressesforwallet/";
+    //alert(targeturl);
+    postdata = "selwallet=" + selwallet;
+    postdata += "&csrfmiddlewaretoken=" + document.deladdrfrmwlt.csrfmiddlewaretoken.value;
+    xmlhttp.open("POST",targeturl,true); // Make it an ajax call.
+    xmlhttp.send(postdata);
+    listaddressesdiv.innerHTML = "<img src='static/images/loading_small.gif'><span id='statusspanmsg' style='color:#0000AA;font-weight:bold;'>Please be patient while we get the addresses for the selected wallet.</span>";
+}
 // End of wallets.html functions.
 
 </script>
-
 </head>
 
 <body>
