@@ -50,9 +50,9 @@ import cryptocurry.settings as settings
 @csrf_protect
 @never_cache
 def login(request):
-    if request.method != 'POST': # Illegal bad request... 
-        message = err.ERR_INCORRECT_HTTP_METHOD
-        response = HttpResponseBadRequest(message)
+    if request.method != 'POST': # Request is caused by lack of session. (Either corrupt or timed out). 
+        message = "Request was caused by lack of a valid session. Please login to access this page."
+        response = HttpResponse(message)
         return response
     username = request.POST.get('username') or ""
     password = request.POST.get('password') or ""

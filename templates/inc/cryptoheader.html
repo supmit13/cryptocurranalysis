@@ -695,6 +695,38 @@ function showwalletspage(){
 }
 
 
+function showbuysellpage(){
+    userid = "{{userid}}";
+    var xmlhttp;
+    document.getElementById('contentarea').innerHTML = "";
+    document.getElementById('plotimage').innerHTML = "";
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+    if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	document.getElementById('contentarea').innerHTML = "";
+	document.getElementById('contentarea').innerHTML = xmlhttp.responseText;
+    }
+    };
+    var buysellurl = "{{hosturl}}/cryptocurry/transaction/buysell/";
+    postdata = "userid=" + userid + "&csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
+    xmlhttp.open("POST",buysellurl,true); // Make it an ajax call.
+    xmlhttp.send(postdata);
+    document.getElementById('contentarea').innerHTML = "<img src='static/images/loading_small.gif'><span id='walletlistwait' style='color:#0000AA;font-weight:bold'>We are opening the buy/sell transactions section. Please be patient.</span>";
+}
+
+
+function closebuysell(){
+  yn = confirm("Do you want to close the buy/sell section? Your inputs will be lost if you do that.");
+  if(yn){
+    document.getElementById('contentarea').innerHTML = "";
+  }
+}
+
 function closeme(){
     divarea = document.getElementById('plotimage');
     divarea.innerHTML = "";

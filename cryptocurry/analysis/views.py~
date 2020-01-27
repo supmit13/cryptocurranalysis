@@ -3284,7 +3284,47 @@ def buysellcrypto(request):
     'buysellcrypto' allows user to either buy or sell a single cryptocurrency 
     using physical currencies (USD, EUR, AUD, INR will be supported as of now.)
     """
-    pass
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "<span id='sessterm' style='color:#AA0000;font-weight:bold;'>Either you are not logged in or your session has been corrupted. Please login and try again.</span>"
+        response = HttpResponse(message)
+        return response
+    currency = "btc"
+    db = utils.get_mongo_client()
+    if request.POST.has_key("currency"):
+        currency = request.POST['currency']
+    # List out the user's wallets so that the user can select the wallet from which the tokens may be chosen.
+    # The form should also contain a text field where the user can enter a private key. Inform the user that
+    # the private key will NOT be stored in our database (for security reasons). There should also be a 'to-
+    # address' text field to which the tokens will be sent. As of now, we will be supporting only 'btc'.
+    rec = db.wallets.find({'userid' : userid })
+    walletaddrsdict = {}
+    if not rec or rec.count() < 1:
+        message = "<span style='color:#AA0000;font-weight:bold'>This user doesn't have any wallets <input type='button' name='btnclose' value='Close' onclick='javascript:closebuysell();'></span>"
+        return HttpResponse(message)
+    for r in rec:
+        walletname = str(r['wallet_name'])
+        address = str(r['wallet_address'])
+        if walletname not in walletaddrsdict.keys():
+            walletaddrsdict[walletname] = [address, ]
+        else:
+            addresses = walletaddrsdict[walletname]
+            addresses.append(address)
+            walletaddrsdict[walletname] = addresses
+    tmpl = get_template("buysell.html")
+    c = {'userid' : userid }
+    c['hosturl'] = utils.gethosturl(request)
+    c['walletaddrsdict'] = walletaddrsdict
+    c.update(csrf(request))
+    cxt = Context(c)
+    buysellhtml = tmpl.render(cxt)
+    for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+        buysellhtml = buysellhtml.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
+    return HttpResponse(buysellhtml)
 
 
 @utils.is_session_valid

@@ -50,9 +50,9 @@ import cryptocurry.settings as settings
 @csrf_protect
 @never_cache
 def login(request):
-    if request.method != 'POST': # Illegal bad request... 
-        message = err.ERR_INCORRECT_HTTP_METHOD
-        response = HttpResponseBadRequest(message)
+    if request.method != 'POST': # Request is caused by lack of session. (Either corrupt or timed out). 
+        message = "Request was caused by lack of a valid session. Please login to access this page."
+        response = HttpResponse(message)
         return response
     username = request.POST.get('username') or ""
     password = request.POST.get('password') or ""
@@ -166,8 +166,7 @@ def register(request):
              'min_passwd_strength' : MIN_ALLOWABLE_PASSWD_STRENGTH, 'username' : username, 'password' : password, 'password2' : password2,\
                  'email' : email, 'firstname' : firstname, 'middlename' : middlename, 'lastname' : lastname, 'mobilenum' : mobilenum, \
              'hosturl' : utils.gethosturl(request), 'profpicheight' : PROFILE_PHOTO_HEIGHT, 'profpicwidth' : PROFILE_PHOTO_WIDTH, 'availabilityURL' : utils.AVAILABILITY_URL, 'usertypes' : usertypes }
-        c.update(csrf(request))
-        
+        c.update(csrf(request))        
         cxt = Context(c)
         registerhtml = tmpl.render(cxt)
         for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():

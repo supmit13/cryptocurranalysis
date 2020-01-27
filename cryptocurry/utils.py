@@ -258,6 +258,7 @@ def session_location_match(func):
             else: # The session id may or may not be valid. If invalid, an exception will be thrown.
                 message = err.error_msg('1006')
                 destroy_conn(db)
+                response = HttpResponseRedirect(gethosturl(request) + "/" + LOGIN_URL + "?msg=" + message)
         except:
             message = err.error_msg('1006')
             # Create response with redirect to login page and this message as GET arg. Return that response
