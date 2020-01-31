@@ -3258,6 +3258,7 @@ def deletewallet(request):
             print("/v1/%s/main/wallets/%s?token=%s"%(currency, walletname, BLOCKCYPHER_ACCOUNT_TOKEN))
         conn.request('DELETE', "/v1/%s/main/wallets/%s?token=%s"%(currency, walletname, BLOCKCYPHER_ACCOUNT_TOKEN))
         blockcypher_response = conn.getresponse()
+        resp_msg = blockcypher_response.read()
         if DEBUG:
             print("STATUS CODE: %s\n"%blockcypher_response.status)
         if blockcypher_response.status == 204: # Remove all document satisfying the below condition from wallets collection
@@ -3274,6 +3275,7 @@ def deletewallet(request):
     if len(message) == 0: # No errors were commited during deletion of the given address(es).
         message = "<span style='color:#0000AA;font-weight:bold'>The selected wallet has been permanently deleted. If you think this is a mistake, please contact support@cryptocurry.com immediately. However, as you had been sufficiently warned, we cannot guarantee that this change can be undone.</span>"
     return HttpResponse(message)
+
 
 ## The functions defined below are part of the "transaction" processes.
 @utils.is_session_valid
@@ -3364,5 +3366,144 @@ def calculator(request):
     pass
 
 
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def showbankacctscreen(request):
+    """
+    Display the "Associate Bank Account" Screen.
+    """
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "<span id='sessterm' style='color:#AA0000;font-weight:bold;'>Either you are not logged in or your session has been corrupted. Please login and try again.</span>"
+        response = HttpResponse(message)
+        return response
+    currency = "btc"
+    db = utils.get_mongo_client()
+    walletsrecs = db.wallets.find({'userid' : userid})
+    walletaccountsdict = {}
+    for walletrec in walletsrecs:
+        walletname = str(walletrec['wallet_name'])
+        if DEBUG:
+            print("\nWALLET NAME: " + walletname + "\n")
+        walletaddress = str(walletrec['wallet_address'])
+        existingaccts = db.bankaccounts.find({'walletaddress' : walletaddress, 'walletname' : walletname, 'valid' : '1'})
+        bankname = ""
+        branchcode = ""
+        acctnumber = ""
+        acctholdername = ""
+        if existingaccts and existingaccts.count() > 0: # Bank account fields: bankname, accountnumber, acctholdername, branchcode (IFSCode), walletaddress, walletname, lastbalance, lastupdated, lasttransaction, created. lasttransaction and lastupdated will be same if money has been spent from the bank to buy some token(s), but will be different if money has been earned by selling some token(s).
+            for existingacct in existingaccts:
+                bankname = existingacct['bankname']
+                branchcode = existingacct['branchcode']
+                acctnumber = existingacct['accountnumber']
+                acctholdername = existingacct['acctholdername']
+                break
+        if walletaccountsdict.has_key(walletname):
+            walletaddressdict = walletaccountsdict[walletname]
+            walletaddressdict[walletaddress] = [bankname, acctnumber, acctholdername, branchcode]
+            walletaccountsdict[walletname] = walletaddressdict
+        else:
+            walletaccountsdict[walletname] = {walletaddress : [bankname, acctnumber, acctholdername, branchcode]}
+    tmpl = get_template("bankaccount.html")
+    c = {'userid' : userid }
+    c['hosturl'] = utils.gethosturl(request)
+    c['walletaccountsdict'] = walletaccountsdict
+    c.update(csrf(request))
+    cxt = Context(c)
+    bankaccount = tmpl.render(cxt)
+    for htmlkey in HTML_ENTITIES_CHAR_MAP.keys():
+        bankaccount = bankaccount.replace(htmlkey, HTML_ENTITIES_CHAR_MAP[htmlkey])
+    return HttpResponse(bankaccount)
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def registerbankaccount(request):
+    """
+    Handle bank account registration.
+    """
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "<span id='sessterm' style='color:#AA0000;font-weight:bold;'>Either you are not logged in or your session has been corrupted. Please login and try again.</span>"
+        response = HttpResponse(message)
+        return response
+    currency = "btc"
+    db = utils.get_mongo_client()
+    walletname = request.POST.get('selwalletname', '')
+    walletaddress = request.POST.get('walletaddress', '')
+    bankname = request.POST.get('bankname', '')
+    accountnumber = request.POST.get('acctnumber', '')
+    accountname = request.POST.get('acctname', '')
+    bankcode = request.POST.get('bankcode', '')
+    if not utils.validate_args(walletname, 'wallet_name') or not utils.validate_args(walletaddress, 'wallet_address') or not utils.validate_args(bankname, 'bank_name') or not utils.validate_args(accountnumber, 'account_number') or not utils.validate_args(accountname, 'account_name') or not utils.validate_args(bankcode, 'bank_code'):
+        message = "msg:err:One or more values sent are not in correct format. Please rectify the problem and try again."
+        return HttpResponse(message)
+    # Check if the account already exists in the DB
+    existingaccts = db.bankaccounts.find({'walletaddress' : walletaddress, 'walletname' : walletname, 'valid' : '1'})
+    if existingaccts and existingaccts.count() > 0:
+        if DEBUG:
+            print("Number of bank accounts recs: " + str(existingaccts.count()))
+        message = "msg:err:An account is already registered for this wallet. Please remove that first to add another one."
+        return HttpResponse(message)
+    # If not registered to the user, add it to the DB. But check the balance in the account first.
+    acct_balance = utils.checkaccountbalance(bankname, bankcode, accountnumber, accountname)
+    currdatetime = datetime.datetime.now()
+    strcurrdatetime = currdatetime.strftime("%Y-%m-%d %H:%M:%S")
+    insertd = {'walletaddress' : walletaddress, 'walletname' : walletname, 'bankname' : bankname.lower(), 'branchcode' : bankcode, 'accountnumber' : accountnumber, 'acctholdername' : accountname, 'lastbalance' : str(acct_balance), 'lastupdated' : strcurrdatetime, 'lasttransaction' : '', 'created' : strcurrdatetime, 'valid' : '1'}
+    try:
+        db.bankaccounts.insert_one(insertd)
+    except:
+        message = "msg:err:Could not add the bank account. Please contact support@cryptocurry.me with the following error message and your username and bank account information. - Error: %s\n"%sys.exc_info()[1].__str__()
+        response = HttpResponse(response)
+        return response
+    message = "Bank account registered successfully."
+    return HttpResponse(message)
+
+
+@utils.is_session_valid
+@utils.session_location_match
+@csrf_protect
+def removebankaccount(request):
+    """
+    Handle bank account removal.
+    """
+    if request.method != 'POST':
+        message = err.ERR_INCORRECT_HTTP_METHOD
+        response = HttpResponseBadRequest(message)
+        return response
+    userid = request.COOKIES["userid"]
+    if not userid:
+        message = "<span id='sessterm' style='color:#AA0000;font-weight:bold;'>Either you are not logged in or your session has been corrupted. Please login and try again.</span>"
+        response = HttpResponse(message)
+        return response
+    currency = "btc"
+    db = utils.get_mongo_client()
+    walletname = request.POST.get('selwalletname', '')
+    walletaddress = request.POST.get('walletaddress', '')
+    bankname = request.POST.get('bankname', '')
+    accountnumber = request.POST.get('acctnumber', '')
+    accountname = request.POST.get('acctname', '')
+    bankcode = request.POST.get('bankcode', '')
+    if not utils.validate_args(walletname, 'wallet_name') or not utils.validate_args(walletaddress, 'wallet_address') or not utils.validate_args(bankname, 'bank_name') or not utils.validate_args(accountnumber, 'account_number') or not utils.validate_args(accountname, 'account_name') or not utils.validate_args(bankcode, 'bank_code'):
+        message = "msg:err:One or more values sent are not in correct format. Please rectify the problem and try again."
+        return HttpResponse(message)
+    # Try to remove the account from the collection
+    try:
+        db.bankaccounts.remove({'walletaddress' : walletaddress, 'walletname' : walletname, 'bankname' : bankname.lower(), 'accountnumber' : accountnumber, 'acctholdername' : accountname, 'branchcode' : bankcode})
+    except:
+        message = "msg:err:The specified bank account doesn't exist. Possibly you have mistyped one or more parameters. Please rectify the mistake to try again. - Error: %s"%sys.exc_info()[1].__str__()
+        return HttpResponse(message)
+    message = "Successfully removed the bank account from wallet. Please reopen the overlay screen to view the updated condition of the walet."
+    return HttpResponse(message)
 
 

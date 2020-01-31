@@ -23,6 +23,10 @@ Display Collections in a "selected" database:
 ---------------------------------------------
 show collections
 
+Create a Collection:
+----------------------
+db.createCollection(<collection_name>)
+
 Display unique values of "currency_name" in ohlcvdata table:
 ------------------------------------------------------------
 db.ohlcvdata.distinct("currency_name")

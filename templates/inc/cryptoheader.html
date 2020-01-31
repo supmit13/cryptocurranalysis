@@ -31,6 +31,9 @@
 	  background-color:#ff6600;
 	  color:#FFFFFF;
 	  position:absolute; top:250px; left:100px; width:80%; height:150%; text-align:left; vertical-align:middle;padding-left:25px;padding-top:35px;padding-right:50px;
+	  box-shadow: 0px 0px 25px 20px #000000;
+	  -webkit-box-shadow: 3px 3px 5px 6px #ccc;
+  	  -moz-box-shadow:    3px 3px 5px 6px #ccc;
 	}
 
 	.semitrans2 {
@@ -42,6 +45,9 @@
 	  background-color:#ff751a;
 	  color:#FFFFFF;
 	  position:absolute; top:250px; left:100px; width:80%; height:25%; text-align:left; vertical-align:middle;padding-left:25px;padding-top:35px;padding-right:50px;
+	  box-shadow: 0px 0px 25px 20px #ccc;
+	  -webkit-box-shadow: 3px 3px 5px 6px #ccc;
+  	  -moz-box-shadow:    3px 3px 5px 6px #ccc;
 	}
     </style>
     <!-- <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1.1','packages':['line']}]}"></script> -->
@@ -800,7 +806,7 @@ function open_address_form(){
 
 
 function confirmcancel(){
-    yn = confirm("Are you sure you don't want to create this wallet?");
+    yn = confirm("Don't want to create this wallet?");
     if(yn == true){
         formdiv = document.getElementById('formdiv');
 	formdiv.innerHTML = "";
@@ -877,11 +883,12 @@ function show_create_wallet_form(rules){
     // intend to put this in a settings file and take the values from there. As for now, if we need to add another crypto, we
     // will just create a option tag and insert it here.
     formdiv = document.getElementById('formdiv');
-    formdiv.innerHTML = "<div id='waitdivcreatewallet'></div><br><form name='createwallet' method='POST' action='{{hosturl}}/cryptocurry/analysis/createwallet/'><table border='0' cellspacing='2' cellpadding='3'><tr><td style='font-weight:bold;color:blue'>Select Currency Name *:</td><td><select name='currency_name'><option value='BTC' defaultSelected>Bitcoin</option><option value='BNB'>Binance Coin</option><option value='EOS'>EOS</option><option value='LTC'>Litecoin</option><option value='XRP'>Ripple</option><option value='ETH'>Ethereum</option><option value='BCH'>Bitcoin Cash</option><option value='ETC'>Ethereum Classic</option><option value='XMR'>Monero</option><option value='XLM'>Stellar</option><option value='BTG'>Bitcoin Gold</option><option value='NEO'>NEO</option></select> &nbsp;&nbsp;<span style='font-style:italic;color:blue;'>As of now, we support only the listed cryptocurrencies. In the near future, we will add some more.</span></td></tr><tr><td colspan='2'>&nbsp;</td></tr><tr><td style='font-weight:bold;color:blue'>Enter Wallet Name *:</td><td><input type='text' name='walletname' value='' maxlength='25'></td></tr><tr><td style='font-weight:bold;color:blue' colspan='2' align='left'>HD Wallet *:<input type='checkbox' name='hdwallet' value='0'></td></tr><tr><td>&nbsp;</td></tr><tr><td style='font-style:italic;color:blue' colspan=2>*" + rules + "</td></tr></table><p style='font-weight:italic;color:blue'>If you want to enter address details (address, public key and wif), then you may click this <a href='#/' onClick='javascript:open_address_form();'>link</a> here. Otherwise, the address, public key, private key and wif will be generated automatically and will be displayed to you. We will keep the address, public key and wif values in our database, but you would need to note down the private key value corresponding to the address and the public key mentioned and store it safely as you would need it during transactions. We will NOT store your private key as it is against our policy.</p><div id='addressdiv'></div><p align='center'><input type='button' name='create' value='Create Wallet' onClick='javascript:create_wallet();'>&nbsp;&nbsp;<input type='button' name='cancel' onClick='confirmcancel();' value='Confirm Cancel'></p></form><br><hr><br>";
+    formdiv.innerHTML = "<div id='waitdivcreatewallet'></div><br><form name='createwallet' method='POST' action='{{hosturl}}/cryptocurry/analysis/createwallet/'><table border='0' cellspacing='2' cellpadding='3'><tr><td style='font-weight:bold;color:blue'>Select Currency Name *:</td><td><select name='currency_name'><option value='BTC' defaultSelected>Bitcoin</option><option value='BNB'>Binance Coin</option><option value='EOS'>EOS</option><option value='LTC'>Litecoin</option><option value='XRP'>Ripple</option><option value='ETH'>Ethereum</option><option value='BCH'>Bitcoin Cash</option><option value='ETC'>Ethereum Classic</option><option value='XMR'>Monero</option><option value='XLM'>Stellar</option><option value='BTG'>Bitcoin Gold</option><option value='NEO'>NEO</option></select> &nbsp;&nbsp;<span style='font-style:italic;color:blue;'>As of now, we support only the listed cryptocurrencies. In the near future, we will add some more.</span></td></tr><tr><td colspan='2'>&nbsp;</td></tr><tr><td style='font-weight:bold;color:blue'>Enter Wallet Name *:</td><td><input type='text' name='walletname' value='' maxlength='25'></td></tr><tr><td style='font-weight:bold;color:blue' colspan='2' align='left'>HD Wallet *:<input type='checkbox' name='hdwallet' value='0'></td></tr><tr><td>&nbsp;</td></tr><tr><td style='font-style:italic;color:blue' colspan=2>*" + rules + "</td></tr></table><p style='font-weight:italic;color:blue'>If you want to enter address details (address, public key and wif), then you may click this <a href='#/' onClick='javascript:open_address_form();'>link</a> here. Otherwise, the address, public key, private key and wif will be generated automatically and will be displayed to you. We will keep the address, public key and wif values in our database, but you would need to note down the private key value corresponding to the address and the public key mentioned and store it safely as you would need it during transactions. We will NOT store your private key as it is against our policy.</p><div id='addressdiv'></div><p align='center'><input type='button' name='create' value='Create Wallet' onClick='javascript:create_wallet();'>&nbsp;&nbsp;<input type='button' name='cancel' onClick='confirmcancel();' value='Cancel'></p></form><br><hr><br>";
 }
 
+
 function closeform(){
-    yn = confirm("Do you really want to close this form?");
+    yn = confirm("Do you want to close this form?");
     if(!yn){
         return (false);
     }
@@ -890,6 +897,7 @@ function closeform(){
     formdiv.style.display = "";
     return(true);
 }
+
 
 function add_address_to_wallet(){
     document.getElementById('formdiv').style.display = "";
@@ -980,7 +988,7 @@ function closethis(){
 }
 
 function delete_wallet(){
-    yn = confirm("This is a very dangerous operation. Are you sure you want to continue?");
+    yn = confirm("This is a very dangerous operation. Do you want to continue?");
     if(!yn){
 	return(""); //This is fine.
     }
@@ -1007,6 +1015,28 @@ function delete_wallet(){
     document.getElementById('transscreens').innerHTML = "<img src='static/images/loading_big.gif'><div style='color:blue;font-style:italics;'>Trying to display wallet deletion form....</div>";
 }
 
+
+function assoc_bank_acct(){
+    //alert("Accociate Bank Account");
+    document.getElementById('transscreens').style.display = "";
+    transscreenselement = document.getElementById('transscreens');
+    var xmlhttp;
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+    	if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    transscreenselement.innerHTML = xmlhttp.responseText;
+    	}
+    };
+    showbankaccturl = "{{hosturl}}/cryptocurry/wallets/showbankacctscreen/";
+    postdata = "csrfmiddlewaretoken=" + document.cryptoanalysis.csrfmiddlewaretoken.value;
+    xmlhttp.open("POST",showbankaccturl,true); // Make it an ajax call.
+    xmlhttp.send(postdata);
+}
 
 function show_transaction_options(){
     document.getElementById('formdiv').style.display = "";

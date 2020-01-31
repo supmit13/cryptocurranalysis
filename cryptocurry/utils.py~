@@ -622,3 +622,26 @@ def get_valid_json(request, allow_204=False):
         msg = 'JSON deserialization failed: {}'.format(str(error))
         raise requests.exceptions.ContentDecodingError(msg)
 
+
+def validate_args(varvalue, vartype):
+    if vartype == 'wallet_name':
+        pass
+    elif vartype == 'wallet_address':
+        pass
+    elif vartype == 'bank_name':
+        pass
+    elif vartype == 'account_number':
+        pass
+    elif vartype == 'account_name':
+        pass
+    elif vartype == 'bank_code':
+        pass
+    return True
+
+
+def checkaccountbalance(bankname, bankcode, accountnumber, accountname):
+    return 0.00
+
+
+
+

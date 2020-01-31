@@ -89,6 +89,9 @@ urlpatterns += patterns('',
     url(r'cryptocurry/transaction/exchange/$', 'cryptocurry.analysis.views.exchangecryptocurrency', name='exchangecryptocurrency'),
     url(r'cryptocurry/transaction/payments/$', 'cryptocurry.analysis.views.payments', name='payments'),
     url(r'cryptocurry/transaction/calculator/$', 'cryptocurry.analysis.views.calculator', name='calculator'),
+    url(r'cryptocurry/wallets/showbankacctscreen/$', 'cryptocurry.analysis.views.showbankacctscreen', name='showbankacctscreen'),
+    url(r'cryptocurry/wallets/registerbankaccount/$', 'cryptocurry.analysis.views.registerbankaccount', name='registerbankaccount'),
+    url(r'cryptocurry/wallets/removebankaccount/$', 'cryptocurry.analysis.views.removebankaccount', name='removebankaccount'),
 )
 
 

@@ -1,0 +1,317 @@
+<script  language='JavaScript' type="text/javascript" src="static/scripts/pageutils.js" id='utilsscript'></script>
+<script type='text/javascript' id='bankacctscript'>
+
+function validate_arg(varvalue, vartype){
+  varvalue = varvalue.trim();
+  if(varvalue == ""){
+    return(false);
+  }
+  if(vartype == 'bank_name'){
+  }
+  else if(vartype == 'account_number'){
+  }
+  else if(vartype == 'account_holder_name'){
+  }
+  else if(vartype == 'bank_code'){
+  }
+  return(true);
+}
+
+
+function listwalletaddresses(){
+  selectedwallet = document.frmbankacct.selwalletname.options[document.frmbankacct.selwalletname.options.selectedIndex].value;
+  walletaddrs = document.getElementById('walletaddress');
+  addrlen = walletaddrs.options.length;
+  for(i=0;i < addrlen; i++){ // Clear all existing options elements.
+    walletaddrs.remove(walletaddrs.options[i]);
+  }
+  {% for walletname, walletdict in walletaccountsdict.items %}
+    if(selectedwallet == "{{walletname}}"){
+      {% for addr,acctinfo in walletdict.items %}
+	optiontag = document.createElement("option");
+        optiontag.text = "{{addr}}";
+ 	optiontag.value = "{{addr}}";
+	walletaddrs.add(optiontag);
+      {% endfor %}
+    }
+  {% endfor %}
+}
+
+function listbankaccount(){
+  selectedwallet = document.frmbankacct.selwalletname.options[document.frmbankacct.selwalletname.options.selectedIndex].value;
+  walletaddrs = document.getElementById('walletaddress');
+  {% for walletname, walletdict in walletaccountsdict.items %}
+    if(selectedwallet == "{{walletname}}"){
+      selectedaddress = document.frmbankacct.walletaddress.options[document.frmbankacct.walletaddress.options.selectedIndex].value;
+      {% for addr,acctinfo in walletdict.items %}
+	if(selectedaddress == "{{addr}}"){
+	  bankinfop = document.getElementById("bankinfo");
+	  html = "<table border='0'><tr>";
+	  i = 0;
+	  {% for acctdet in acctinfo %}
+	    if(i == 0){
+	      html += "<td>Bank Name: <input type='text' name='bankname' value='{{acctdet}}' maxlength=35></td>";
+	    }
+	    else if(i == 1){
+	      html += "<td>Account Number: <input type='text' name='acctnumber' value='{{acctdet}}' maxlength=35></td>";
+	    }
+	    else if(i == 2){
+	      html += "<td>Account Name: <input type='text' name='acctname' value='{{acctdet}}' maxlength=35></td>";
+	    }
+	    else if(i == 3){
+	      html += "<td>Branch Code: <input type='text' name='bankcode' value='{{acctdet}}' maxlength=35></td>";
+	    }
+	    else{
+	    }
+	    i++;
+	  {% endfor %}
+	  html += "</tr></table>";
+          bankinfop.innerHTML = html;
+	}
+      {% endfor %}
+    }
+  {% endfor %}
+}
+
+
+function registeracct(){
+    var xmlhttp;
+    formdivelem = document.getElementById('formdiv');
+    waitdivelem = document.getElementById('waitdiv');
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+    	if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    response = xmlhttp.responseText;
+	    waitdivelem.innerHTML = "";
+	    waitdivelem.style.display = "none";
+	    //alert(xmlhttp.responseText);
+	    resp_parts = response.split(":");
+	    if(resp_parts.length > 2){
+		alert(resp_parts[2]);
+		message = "<span style='color:#AA0000;font-weight:bold;display:;'>" + resp_parts[2] + "</span>";
+		formdivelem.innerHTML = message;
+	    }
+	    else{
+		alert(xmlhttp.responseText);
+		formdivelem.innerHTML = "<span style='color:#0000AA;font-weight:bold;display:;'>" + xmlhttp.responseText + "</span>";
+	    }
+    	}
+    };
+    addbankaccturl = "{{hosturl}}/cryptocurry/wallets/registerbankaccount/";
+    postdata = "csrfmiddlewaretoken=" + document.frmbankacct.csrfmiddlewaretoken.value;
+    walletname = document.frmbankacct.selwalletname.options[document.frmbankacct.selwalletname.options.selectedIndex].value;
+    walletaddrs = document.frmbankacct.walletaddress.options[document.frmbankacct.walletaddress.options.selectedIndex].value;
+    strbankname = document.frmbankacct.bankname.value;
+    stracctnumber = document.frmbankacct.acctnumber.value;
+    stracctname = document.frmbankacct.acctname.value;
+    strbankcode = document.frmbankacct.bankcode.value;
+    if(!validate_arg(strbankname, 'bank_name') || !validate_arg(stracctnumber, 'account_number') || !validate_arg(stracctname, 'account_holder_name') || !validate_arg(strbankcode, 'bank_code')){
+	alert("One or more of the inputs is either incomplete or not in correct format. Please rectify the issue and try again.");
+	return(false);
+    }
+    postdata += "&selwalletname=" + walletname + "&walletaddress=" + walletaddrs + "&bankname=" + strbankname + "&acctnumber=" + stracctnumber + "&acctname=" + stracctname + "&bankcode=" + strbankcode;
+    //alert(postdata);
+    xmlhttp.open("POST",addbankaccturl,true);
+    xmlhttp.send(postdata);
+    waitdivelem.style.display = "";
+    waitdivelem.innerHTML = "<img src='static/images/loading_small.gif'>";
+}
+
+
+function removeacct(){
+    yn = confirm("You are going to delete the bank account from the wallet. Do you want to continue?");
+    if(!yn){
+        return(false);
+    }
+    var xmlhttp;
+    formdivelem = document.getElementById('formdiv');
+    waitdivelem = document.getElementById('waitdivrem');
+    if (window.XMLHttpRequest){
+        xmlhttp=new XMLHttpRequest();
+    }
+    else{
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    xmlhttp.onreadystatechange = function(){
+    	if(xmlhttp.readyState == 4 && xmlhttp.status==200){
+	    response = xmlhttp.responseText;
+	    waitdivelem.innerHTML = "";
+	    waitdivelem.style.display = "none";
+	    //alert(xmlhttp.responseText);
+	    resp_parts = response.split(":");
+	    if(resp_parts.length > 2){
+		alert(resp_parts[2]);
+		message = "<span style='color:#AA0000;font-weight:bold;display:;'>" + resp_parts[2] + "</span>";
+		formdivelem.innerHTML = message;
+	    }
+	    else{
+		alert(xmlhttp.responseText);
+		formdivelem.innerHTML = "<span style='color:#0000AA;font-weight:bold;display:;'>" + xmlhttp.responseText + "</span>";
+	    }
+    	}
+    };
+    rembankaccturl = "{{hosturl}}/cryptocurry/wallets/removebankaccount/";
+    postdata = "csrfmiddlewaretoken=" + document.frmbankacct.csrfmiddlewaretoken.value;
+    walletname = document.frmbankacct.selwalletname.options[document.frmbankacct.selwalletname.options.selectedIndex].value;
+    walletaddrs = document.frmbankacct.walletaddress.options[document.frmbankacct.walletaddress.options.selectedIndex].value;
+    strbankname = document.frmbankacct.bankname.value;
+    stracctnumber = document.frmbankacct.acctnumber.value;
+    stracctname = document.frmbankacct.acctname.value;
+    strbankcode = document.frmbankacct.bankcode.value;
+    if(!validate_arg(strbankname, 'bank_name') || !validate_arg(stracctnumber, 'account_number') || !validate_arg(stracctname, 'account_holder_name') || !validate_arg(strbankcode, 'bank_code')){
+	alert("One or more of the inputs is either incomplete or not in correct format. Please rectify the issue and try again.");
+	return(false);
+    }
+    postdata += "&selwalletname=" + walletname + "&walletaddress=" + walletaddrs + "&bankname=" + strbankname + "&acctnumber=" + stracctnumber + "&acctname=" + stracctname + "&bankcode=" + strbankcode;
+    //alert(postdata);
+    xmlhttp.open("POST",rembankaccturl,true);
+    xmlhttp.send(postdata);
+    waitdivelem.style.display = "";
+    waitdivelem.innerHTML = "<img src='static/images/loading_small.gif'>";
+}
+
+
+function closeacctscreen(){
+  yn = confirm("Do you want to close the bank account section? Your inputs will be lost if you do that.");
+  if(yn){
+    document.getElementById('transscreens').innerHTML = "";
+    document.getElementById('transscreens').style.display = "none";
+  }
+}
+
+</script>
+
+
+<style>
+$height:65;
+$depth:6;
+$color:#7fbb98;
+$text-color:darken($color,10%);
+$lighten-on-hover:7%;
+$button-speed:.06;
+$timing-function: ease-out;
+
+.container {
+  margin:auto;
+}
+.button {
+  cursor:pointer;
+  margin-left:5px;
+  margin-bottom:15px;
+  text-shadow:0 -2px 0 darken($color,20%),0 1px 1px lighten($color,20%) ;
+  box-sizing:border-box;
+  font-size:1em;
+  font-family: Helvetica, Arial, Sans-Serif;
+  text-decoration:none;
+  font-weight:bold;
+  color:$text-color;
+  &:visited {
+    color:$text-color;
+  }
+  height:$height+px;
+  line-height:$height+px;
+  padding: 0 (($height/2)+px);
+  display:inline-block;
+  width:auto;
+  background: linear-gradient(to bottom,
+    saturate(lighten($color,15%),35%) 0%,
+    saturate(lighten($color,12%),15%) 26%,
+    $color 100%);
+  border-radius:5px;
+  border-top:1px solid lighten($color,22%);
+  border-bottom:1px solid lighten($color,20%);
+ top:0;
+  transition:all ($button-speed + s) $timing-function;
+  position:relative;
+}
+.button:hover {
+  background: linear-gradient(to bottom,
+    lighten(saturate(lighten($color,15%),35%),$lighten-on-hover) 0%,
+    lighten(saturate(lighten($color,12%),15%),$lighten-on-hover) 26%,
+    lighten($color,$lighten-on-hover) 100%);
+}
+.button:active {
+  top:$depth+px;
+       text-shadow:0 -2px 0 darken($color,0%),0 1px 1px lighten($color,20%), 0 0 4px white ;
+  color:lighten($color,45%);
+  &:before {
+    top:0;
+    box-shadow: 0 3px 3px rgba(0,0,0,.7),0 3px 9px rgba(0,0,0,.2);
+  }
+}
+.button:before {
+  display:inline-block;
+  content:'';
+  position:absolute;
+  left:0;
+  right:0;
+  z-index:-1;
+  top:($depth)+px;
+  border-radius:5px;
+  height:($height)+px;
+  background: linear-gradient(to top,
+    saturate(darken($color,40%),15%) 0%,
+    saturate(darken($color,25%),10%) $depth+px);
+  transition:all (($button-speed*1.3) + s) $timing-function;
+  box-shadow:
+    0 1px 0 2px rgba(0,0,0,.3),
+    0 5px ($depth*.4+px) rgba(0,0,0,.5),
+    0 ($depth*1.8+px) 9px rgba(0,0,0,.2);
+    
+  
+}
+
+button {
+	cursor: pointer;
+	position: relative;
+	padding: 2.5rem 7.5rem;
+	border-radius: 3.75rem;
+	line-height: 2.5rem;
+	font-size: 1rem;
+	font-weight: 300;
+	border: 1px solid #012880;
+	background-image: linear-gradient(-180deg, #FF89D6 0%, #C01F9E 100%);
+	box-shadow: 0 1rem 1.25rem 0 rgba(22,75,195,0.50),
+							0 -0.25rem 1.5rem rgba(110, 15, 155, 1) inset,
+							0 0.75rem 0.5rem rgba(255,255,255, 0.4) inset,
+							0 0.25rem 0.5rem 0 rgba(180, 70, 207, 1) inset;
+}
+</style>
+
+<div id='container' class="container">
+  <form name='frmbankacct' method='POST' action=''>
+  <p style='color:#0000AA;font-weight:bold;'>Select Wallet:
+  <select name='selwalletname' id='selwalletname' onChange='javascript:s = document.getElementById("bankacctscript");eval(s.innerHTML);u=document.getElementById("utilsscript");eval(u.innerHTML); listwalletaddresses();'>
+    <!-- select the wallet from the list of wallets below -->
+    {% for k,v in walletaccountsdict.items %}
+      <option value='{{k}}'>{{k}}</option>
+    {% endfor %}
+  </select>
+  </p>
+  <p style='color:#0000AA;font-weight:bold;'>Select Address: 
+  <select name='walletaddress' id='walletaddress' onchange='javascript:s = document.getElementById("bankacctscript");eval(s.innerHTML);u=document.getElementById("utilsscript");eval(u.innerHTML); listbankaccount();' size=3>
+    <option value=''>Select Wallet Above</option>
+    <!-- list of addresses of the selected wallet above -->
+  </select>
+  </p>
+  <p style='color:#0000AA;font-weight:bold;' id='bankinfo'>
+  </p>
+  <br />
+  <input type='button' name='registeraccount' value='Register Account' class="button" onClick="javascript:s = document.getElementById('bankacctscript');eval(s.innerHTML);u=document.getElementById('utilsscript');eval(u.innerHTML);registeracct();"><div id='waitdiv'></div>
+  <input type='button' name='removeaccount' value='Remove Account' class="button" onClick="javascript:s = document.getElementById('bankacctscript');eval(s.innerHTML);u=document.getElementById('utilsscript');eval(u.innerHTML);removeacct();"><div id='waitdivrem'></div>
+  <input type='button' name='closeacctscreen' value='Close Screen' class="button" onClick="javascript:s = document.getElementById('bankacctscript');eval(s.innerHTML);u=document.getElementById('utilsscript');eval(u.innerHTML);closeacctscreen();">
+  {% csrf_token %}
+  </form>
+</div>
+<div id='formdiv' style="display:none">
+</div>
+<div style='display:none;' id="transscreens" class="semitrans2"></div>
+<div id='plotnamearea'></div>
+
+
+

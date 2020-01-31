@@ -149,8 +149,8 @@ button {
   </select>
   </p>
   <p style='color:#0000AA;font-weight:bold;'>Enter Private Key: <input type='text' name='privkey' value=''></p>
-  <p style='color:#0000AA;font-weight:bold;'>Enter Address to Send/Receive: <input type='text' name='toaddress' value=''></p>
-  <p style='color:#0000AA;font-weight:bold;'>Enter Amount to Send/Receive: <input type='text' name='amount' value=''></p>
+  <p style='color:#0000AA;font-weight:bold;'>Enter Address to Sell to/Buy from: <input type='text' name='toaddress' value=''></p>
+  <p style='color:#0000AA;font-weight:bold;'>Enter Number of Tokens to Sell to/Buy from: <input type='text' name='amount' value=''></p>
   <p style='color:#0000AA;font-weight:bold;'>Choose Currency:
   <select name='selcurrency' id='selcurrency'>
     <option value='USD'>USD</option>
@@ -160,8 +160,8 @@ button {
   </select>
   </p>
   <br />
-  <input type='button' name='sendamount' value='Send' class="button" onClick="javascript:s = document.getElementById('buysellscript');eval(s.innerHTML);sellamount();">
-  <input type='button' name='getamount' value='Receive' class="button" onClick="javascript:s = document.getElementById('buysellscript');eval(s.innerHTML);buyamount();">
+  <input type='button' name='buyamt' value='Buy' class="button" onClick="javascript:s = document.getElementById('buysellscript');eval(s.innerHTML);buyamount();">
+  <input type='button' name='sellamt' value='Sell' class="button" onClick="javascript:s = document.getElementById('buysellscript');eval(s.innerHTML);sellamount();">
   <input type='button' name='canceltransaction' value='Cancel' class="button" onClick="javascript:s = document.getElementById('buysellscript');eval(s.innerHTML);cancelbuysell();">
   </form>
 </div>
