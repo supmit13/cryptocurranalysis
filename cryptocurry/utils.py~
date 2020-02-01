@@ -624,19 +624,44 @@ def get_valid_json(request, allow_204=False):
 
 
 def validate_args(varvalue, vartype):
+    varvalue = str(varvalue)
+    walletnamepattern = re.compile(r"^[a-zA-Z][\w\d]+$") # Should contain only alphanumeric characters and start with an alphabet.
+    walletaddresspattern = re.compile(r"^[\w\d]+$") # Should contain only alphabets and numeric digits.
+    banknamepattern = re.compile(r"^[a-zA-Z][\w\s\&]*$") # Should start with alphabets and contain alphanumeric characters, '&' and spaces.
+    accountnumberpattern = re.compile(r"^[\d]+$") # Should contain numeric digits only.
+    accountnamepattern = re.compile(r"^[a-zA-Z][a-zA-Z\s]*$") # Should contain only alphabets and space characters.
+    bankcodepattern = re.compile(r"^[\w\d]+$") # Should contain only alphanumeric characters.
     if vartype == 'wallet_name':
-        pass
+        m = walletnamepattern.match(varvalue)
+        if not m:
+            message = "msg:err:Wallet name is not in correct format. Wallet name may contain alphanumeric characters and should start with a alphabet."
+            return message
     elif vartype == 'wallet_address':
-        pass
+        m = walletaddresspattern.match(varvalue)
+        if not m:
+            message = "msg:err:Wallet Address is not in correct format. Wallet address may contain alphanumeric characters only."
+            return message
     elif vartype == 'bank_name':
-        pass
+        m = banknamepattern.match(varvalue)
+        if not m:
+            message = "msg:err:Bank name is not in correct format. Bank name may contain alphabets, & and spaces, and should start with an alphabet."
+            return message
     elif vartype == 'account_number':
-        pass
+        m = accountnumberpattern.match(varvalue)
+        if not m:
+            message = "msg:err:Account number is not in correct format. Account number may contain numeric digits only."
+            return message
     elif vartype == 'account_name':
-        pass
+        m = accountnamepattern.match(varvalue)
+        if not m:
+            message = "msg:err:Account name is not in correct format. Account name may contain alphabets and spaces only."
+            return message
     elif vartype == 'bank_code':
-        pass
-    return True
+        m = bankcodepattern.match(varvalue)
+        if not m:
+            message = "msg:err:Bank code is not in correct format. Bank code may contain alphanumeric characters and should start with a alphabet."
+            return message
+    return ""
 
 
 def checkaccountbalance(bankname, bankcode, accountnumber, accountname):

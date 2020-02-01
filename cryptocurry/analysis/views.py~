@@ -3445,8 +3445,35 @@ def registerbankaccount(request):
     accountnumber = request.POST.get('acctnumber', '')
     accountname = request.POST.get('acctname', '')
     bankcode = request.POST.get('bankcode', '')
-    if not utils.validate_args(walletname, 'wallet_name') or not utils.validate_args(walletaddress, 'wallet_address') or not utils.validate_args(bankname, 'bank_name') or not utils.validate_args(accountnumber, 'account_number') or not utils.validate_args(accountname, 'account_name') or not utils.validate_args(bankcode, 'bank_code'):
-        message = "msg:err:One or more values sent are not in correct format. Please rectify the problem and try again."
+    wltnamemsg = utils.validate_args(walletname, 'wallet_name')
+    wltaddrmsg = utils.validate_args(walletaddress, 'wallet_address')
+    banknamemsg = utils.validate_args(bankname, 'bank_name')
+    acctnomsg = utils.validate_args(accountnumber, 'account_number')
+    acctnamemsg = utils.validate_args(accountname, 'account_name')
+    bankcodemsg = utils.validate_args(bankcode, 'bank_code')
+    wltnamemsgparts = wltnamemsg.split(":")
+    wltaddrmsgparts = wltaddrmsg.split(":")
+    banknamemsgparts = banknamemsg.split(":")
+    acctnomsgparts = acctnomsg.split(":")
+    acctnamemsgparts = acctnamemsg.split(":")
+    bankcodemsgparts = bankcodemsg.split(":")
+    if wltnamemsgparts.__len__() > 2 and wltnamemsgparts[1] == "err":
+        message = wltnamemsg
+        return HttpResponse(message)
+    elif wltaddrmsgparts.__len__() > 2 and wltaddrmsgparts[1] == "err":
+        message = wltaddrmsg
+        return HttpResponse(message)
+    elif banknamemsgparts.__len__() > 2 and banknamemsgparts[1] == "err":
+        message = banknamemsg
+        return HttpResponse(message)
+    elif acctnomsgparts.__len__() > 2 and acctnomsgparts[1] == "err":
+        message = acctnomsg
+        return HttpResponse(message)
+    elif acctnamemsgparts.__len__() > 2 and acctnamemsgparts[1] == "err":
+        message = acctnamemsg
+        return HttpResponse(message)
+    elif bankcodemsgparts.__len__() > 2 and bankcodemsgparts[1] == "err":
+        message = bankcodemsg
         return HttpResponse(message)
     # Check if the account already exists in the DB
     existingaccts = db.bankaccounts.find({'walletaddress' : walletaddress, 'walletname' : walletname, 'valid' : '1'})
@@ -3494,16 +3521,48 @@ def removebankaccount(request):
     accountnumber = request.POST.get('acctnumber', '')
     accountname = request.POST.get('acctname', '')
     bankcode = request.POST.get('bankcode', '')
-    if not utils.validate_args(walletname, 'wallet_name') or not utils.validate_args(walletaddress, 'wallet_address') or not utils.validate_args(bankname, 'bank_name') or not utils.validate_args(accountnumber, 'account_number') or not utils.validate_args(accountname, 'account_name') or not utils.validate_args(bankcode, 'bank_code'):
-        message = "msg:err:One or more values sent are not in correct format. Please rectify the problem and try again."
+    """ Why do we need to validate input here??
+    wltnamemsg = utils.validate_args(walletname, 'wallet_name')
+    wltaddrmsg = utils.validate_args(walletaddress, 'wallet_address')
+    banknamemsg = utils.validate_args(bankname, 'bank_name')
+    acctnomsg = utils.validate_args(accountnumber, 'account_number')
+    acctnamemsg = utils.validate_args(accountname, 'account_name')
+    bankcodemsg = utils.validate_args(bankcode, 'bank_code')
+    wltnamemsgparts = wltnamemsg.split(":")
+    wltaddrmsgparts = wltaddrmsg.split(":")
+    banknamemsgparts = banknamemsg.split(":")
+    acctnomsgparts = acctnomsg.split(":")
+    acctnamemsgparts = acctnamemsg.split(":")
+    bankcodemsgparts = bankcodemsg.split(":")
+    if wltnamemsgparts.__len__() > 2 and wltnamemsgparts[1] == "err":
+        message = wltnamemsg
         return HttpResponse(message)
+    elif wltaddrmsgparts.__len__() > 2 and wltaddrmsgparts[1] == "err":
+        message = wltaddrmsg
+        return HttpResponse(message)
+    elif banknamemsgparts.__len__() > 2 and banknamemsgparts[1] == "err":
+        message = banknamemsg
+        return HttpResponse(message)
+    elif acctnomsgparts.__len__() > 2 and acctnomsgparts[1] == "err":
+        message = acctnomsg
+        return HttpResponse(message)
+    elif acctnamemsgparts.__len__() > 2 and acctnamemsgparts[1] == "err":
+        message = acctnamemsg
+        return HttpResponse(message)
+    elif bankcodemsgparts.__len__() > 2 and bankcodemsgparts[1] == "err":
+        message = bankcodemsg
+        return HttpResponse(message)
+    """
     # Try to remove the account from the collection
     try:
-        db.bankaccounts.remove({'walletaddress' : walletaddress, 'walletname' : walletname, 'bankname' : bankname.lower(), 'accountnumber' : accountnumber, 'acctholdername' : accountname, 'branchcode' : bankcode})
+        rmvdict = db.bankaccounts.remove({'walletaddress' : walletaddress, 'walletname' : walletname, 'bankname' : bankname.lower(), 'accountnumber' : accountnumber, 'acctholdername' : accountname, 'branchcode' : bankcode})
     except:
         message = "msg:err:The specified bank account doesn't exist. Possibly you have mistyped one or more parameters. Please rectify the mistake to try again. - Error: %s"%sys.exc_info()[1].__str__()
         return HttpResponse(message)
-    message = "Successfully removed the bank account from wallet. Please reopen the overlay screen to view the updated condition of the walet."
+    if rmvdict['n'] > 0:
+        message = "Successfully removed the bank account from wallet. Please reopen the overlay screen to view the updated condition of the walet."
+    else:
+        message = "msg:err:The specified bank account doesn't exist. Possibly you have mistyped one or more parameters. Please rectify the mistake to try again. - Error: %s"%sys.exc_info()[1].__str__()
     return HttpResponse(message)
 
 

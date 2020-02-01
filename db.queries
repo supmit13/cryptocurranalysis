@@ -83,4 +83,9 @@ Mongo DB collection to CSV file:
 ---------------------------------
 mongoexport --host localhost --db cryptocurrency --collection coinmarketdata --csv --out coinmarketdata.csv --fields currency_name,percent_change_7days,idno,last_updated,percent_change_24hr,volume_24hr,percent_change_1hr,currency_price,entrydatetime
 
+Update a Mongo DB collection using pymongo:
+-------------------------------------------
+myquery = { "address": "Valley 345" }
+newvalues = { "$set": { "address": "Canyon 123" } }
+mycol.update_one(myquery, newvalues)
 

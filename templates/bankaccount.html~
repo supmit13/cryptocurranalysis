@@ -3,17 +3,37 @@
 
 function validate_arg(varvalue, vartype){
   varvalue = varvalue.trim();
+  // Escape regex tokens appropriately.
+  walletnamepattern = new RegExp("^[a-zA-Z][\\w\\d]+$"); // Should contain only alphanumeric characters and start with an alphabet.
+  walletaddresspattern = new RegExp("^[\\w\\d]+$"); // Should contain only alphabets and numeric digits.
+  banknamepattern = new RegExp("^[a-zA-Z][\\w\\s\\&]*$"); // Should start with alphabets and contain alphanumeric characters, '&' and spaces.
+  accountnumberpattern = new RegExp("^[\\d]+$"); // Should contain numeric digits only.
+  accountnamepattern = new RegExp("^[a-zA-Z][a-zA-Z\\s]*$"); // Should contain only alphabets and space characters.
+  bankcodepattern = new RegExp("^[\\w\\d]+$"); // Should contain alphanumeric characters only.
   if(varvalue == ""){
     return(false);
   }
   if(vartype == 'bank_name'){
+    if(!varvalue.match(banknamepattern)){
+      return(false);
+    }
   }
   else if(vartype == 'account_number'){
+    if(!varvalue.match(accountnumberpattern)){
+      return(false);
+    }
   }
   else if(vartype == 'account_holder_name'){
+    if(!varvalue.match(accountnamepattern)){
+      return(false);
+    }
   }
   else if(vartype == 'bank_code'){
+    if(!varvalue.match(bankcodepattern)){
+      return(false);
+    }
   }
+  //alert(varvalue);
   return(true);
 }
 
@@ -129,7 +149,7 @@ function removeacct(){
         return(false);
     }
     var xmlhttp;
-    formdivelem = document.getElementById('formdiv');
+    formdivelem = document.getElementById('msgs');
     waitdivelem = document.getElementById('waitdivrem');
     if (window.XMLHttpRequest){
         xmlhttp=new XMLHttpRequest();
@@ -163,16 +183,18 @@ function removeacct(){
     stracctnumber = document.frmbankacct.acctnumber.value;
     stracctname = document.frmbankacct.acctname.value;
     strbankcode = document.frmbankacct.bankcode.value;
-    if(!validate_arg(strbankname, 'bank_name') || !validate_arg(stracctnumber, 'account_number') || !validate_arg(stracctname, 'account_holder_name') || !validate_arg(strbankcode, 'bank_code')){
-	alert("One or more of the inputs is either incomplete or not in correct format. Please rectify the issue and try again.");
-	return(false);
-    }
+    // Do we need input validation for remove account details functionality? I think no. But what is your opinion?
+    //if(!validate_arg(strbankname, 'bank_name') || !validate_arg(stracctnumber, 'account_number') || !validate_arg(stracctname, 'account_holder_name') || !validate_arg(strbankcode, 'bank_code')){
+    //	alert("One or more of the inputs is either incomplete or not in correct format. Please rectify the issue and try again.");
+    //	return(false);
+    //}
     postdata += "&selwalletname=" + walletname + "&walletaddress=" + walletaddrs + "&bankname=" + strbankname + "&acctnumber=" + stracctnumber + "&acctname=" + stracctname + "&bankcode=" + strbankcode;
     //alert(postdata);
     xmlhttp.open("POST",rembankaccturl,true);
     xmlhttp.send(postdata);
     waitdivelem.style.display = "";
     waitdivelem.innerHTML = "<img src='static/images/loading_small.gif'>";
+    formdivelem.innerHTML = "";
 }
 
 
@@ -284,6 +306,7 @@ button {
 </style>
 
 <div id='container' class="container">
+  <div id='msgs'></div>
   <form name='frmbankacct' method='POST' action=''>
   <p style='color:#0000AA;font-weight:bold;'>Select Wallet:
   <select name='selwalletname' id='selwalletname' onChange='javascript:s = document.getElementById("bankacctscript");eval(s.innerHTML);u=document.getElementById("utilsscript");eval(u.innerHTML); listwalletaddresses();'>
