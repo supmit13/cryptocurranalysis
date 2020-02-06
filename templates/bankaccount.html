@@ -57,6 +57,7 @@ function listwalletaddresses(){
   {% endfor %}
 }
 
+
 function listbankaccount(){
   selectedwallet = document.frmbankacct.selwalletname.options[document.frmbankacct.selwalletname.options.selectedIndex].value;
   walletaddrs = document.getElementById('walletaddress');
@@ -70,7 +71,20 @@ function listbankaccount(){
 	  i = 0;
 	  {% for acctdet in acctinfo %}
 	    if(i == 0){
-	      html += "<td>Bank Name: <input type='text' name='bankname' value='{{acctdet}}' maxlength=35></td>";
+	      //html += "<td>Bank Name: <input type='text' name='bankname' value='{{acctdet}}' maxlength=35></td>";
+	      html += "<td>Bank Name: <select name='bankname'>";
+	      html += "<option value=''>Bank Names</option>";
+	      {% for k, v in supportedbanks.items %}
+		//alert("{{k}}");
+		if("{{acctdet}}" == "{{k}}"){
+		    //alert("bank is {{acctdet}}");
+		    html += "<option value='{{k}}' selected>{{v}}</option>";
+		}
+		else{
+		    html += "<option value='{{k}}'>{{v}}</option>";
+		}
+	      {% endfor %}
+	      html += "</select><td>";
 	    }
 	    else if(i == 1){
 	      html += "<td>Account Number: <input type='text' name='acctnumber' value='{{acctdet}}' maxlength=35></td>";
@@ -114,11 +128,11 @@ function registeracct(){
 	    if(resp_parts.length > 2){
 		alert(resp_parts[2]);
 		message = "<span style='color:#AA0000;font-weight:bold;display:;'>" + resp_parts[2] + "</span>";
-		formdivelem.innerHTML = message;
+		//formdivelem.innerHTML = message;
 	    }
 	    else{
 		alert(xmlhttp.responseText);
-		formdivelem.innerHTML = "<span style='color:#0000AA;font-weight:bold;display:;'>" + xmlhttp.responseText + "</span>";
+		//formdivelem.innerHTML = "<span style='color:#0000AA;font-weight:bold;display:;'>" + xmlhttp.responseText + "</span>";
 	    }
     	}
     };
@@ -167,11 +181,11 @@ function removeacct(){
 	    if(resp_parts.length > 2){
 		alert(resp_parts[2]);
 		message = "<span style='color:#AA0000;font-weight:bold;display:;'>" + resp_parts[2] + "</span>";
-		formdivelem.innerHTML = message;
+		//formdivelem.innerHTML = message;
 	    }
 	    else{
 		alert(xmlhttp.responseText);
-		formdivelem.innerHTML = "<span style='color:#0000AA;font-weight:bold;display:;'>" + xmlhttp.responseText + "</span>";
+		//formdivelem.innerHTML = "<span style='color:#0000AA;font-weight:bold;display:;'>" + xmlhttp.responseText + "</span>";
 	    }
     	}
     };
@@ -306,6 +320,7 @@ button {
 </style>
 
 <div id='container' class="container">
+  <p style='color:#0000AA;text-align:center;font-weight:bold;font-size:10;'>Bank Accounts to Wallets Mapping</p>
   <div id='msgs'></div>
   <form name='frmbankacct' method='POST' action=''>
   <p style='color:#0000AA;font-weight:bold;'>Select Wallet:

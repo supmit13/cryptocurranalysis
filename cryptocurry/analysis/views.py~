@@ -3176,6 +3176,8 @@ def delete_addresses(request):
             blockcypher_response = conn.getresponse()
             if blockcypher_response.status == 204: # Remove a document from wallets collection
                 db.wallets.remove({'wallet_name' : walletname, 'wallet_address' : vkaddr, 'userid' : userid})
+                # Also delete any bank account associated with this address
+                db.bankaccounts.remove({'walletaddress' : vkaddr, 'walletname' : walletname})
             else:
                 if blockcypher_response.status == 404:
                     message += "<span style='color:#AA0000;font-weight:bold'>Could not remove the address from the wallets collection. The address doesn't exist in the given wallet. Please contact support at support@crytocurry.com with the following information: wallet name, address, and username.</span><br />"
@@ -3411,6 +3413,10 @@ def showbankacctscreen(request):
             walletaccountsdict[walletname] = {walletaddress : [bankname, acctnumber, acctholdername, branchcode]}
     tmpl = get_template("bankaccount.html")
     c = {'userid' : userid }
+    supportedbanks = {}
+    for bankname in SUPPORTED_BANKS.keys():
+        supportedbanks[bankname] = SUPPORTED_BANKS[bankname]
+    c['supportedbanks'] = supportedbanks
     c['hosturl'] = utils.gethosturl(request)
     c['walletaccountsdict'] = walletaccountsdict
     c.update(csrf(request))
@@ -3480,7 +3486,7 @@ def registerbankaccount(request):
     if existingaccts and existingaccts.count() > 0:
         if DEBUG:
             print("Number of bank accounts recs: " + str(existingaccts.count()))
-        message = "msg:err:An account is already registered for this wallet. Please remove that first to add another one."
+        message = "msg:err:An account is already registered for this wallet. Please remove that to add another account."
         return HttpResponse(message)
     # If not registered to the user, add it to the DB. But check the balance in the account first.
     acct_balance = utils.checkaccountbalance(bankname, bankcode, accountnumber, accountname)

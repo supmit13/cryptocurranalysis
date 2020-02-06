@@ -3,7 +3,7 @@
 <script type='text/javascript' id='deletescript'>
 
 function deleteaddresses(){
-    yn = confirm("Do you want to delete the selected address? Please note that if you delete it, it will no longer be accessible and the amount of currencies in that account will be lost forever. You have been warned.");
+    yn = confirm("Do you want to delete the selected address? Please note that if you delete it, it will no longer be accessible and the amount of currencies in that account will be lost forever. Also, the bank account associated with the address will be disassociated too. You have been warned.");
     if(yn){// code to call the deletion view
 	wallet = document.getElementById('wallet');
     	selwallet = wallet.options[wallet.options.selectedIndex].value;
