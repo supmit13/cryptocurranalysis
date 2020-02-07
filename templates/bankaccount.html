@@ -75,9 +75,7 @@ function listbankaccount(){
 	      html += "<td>Bank Name: <select name='bankname'>";
 	      html += "<option value=''>Bank Names</option>";
 	      {% for k, v in supportedbanks.items %}
-		//alert("{{k}}");
 		if("{{acctdet}}" == "{{k}}"){
-		    //alert("bank is {{acctdet}}");
 		    html += "<option value='{{k}}' selected>{{v}}</option>";
 		}
 		else{

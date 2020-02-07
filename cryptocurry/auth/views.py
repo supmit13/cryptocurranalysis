@@ -51,7 +51,7 @@ import cryptocurry.settings as settings
 @never_cache
 def login(request):
     if request.method != 'POST': # Request is caused by lack of session. (Either corrupt or timed out). 
-        message = "Request was caused by lack of a valid session. Please login to access this page."
+        message = "Request was aborted by lack of a valid session. Please login to access this page."
         response = HttpResponse(message)
         return response
     username = request.POST.get('username') or ""
